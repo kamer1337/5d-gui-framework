@@ -363,20 +363,57 @@ void Renderer::Render3DLine(HDC hdc, const Vector3D& start, const Vector3D& end,
 void Renderer::Render3DCube(HDC hdc, const Vector3D& center, float size, int originX, int originY, Color color, float rotX, float rotY, float rotZ) {
     float halfSize = size / 2.0f;
     
-    // Define cube vertices
+    // Define cube vertices relative to origin
     Vector3D vertices[8] = {
-        Vector3D(center.x - halfSize, center.y - halfSize, center.z - halfSize),
-        Vector3D(center.x + halfSize, center.y - halfSize, center.z - halfSize),
-        Vector3D(center.x + halfSize, center.y + halfSize, center.z - halfSize),
-        Vector3D(center.x - halfSize, center.y + halfSize, center.z - halfSize),
-        Vector3D(center.x - halfSize, center.y - halfSize, center.z + halfSize),
-        Vector3D(center.x + halfSize, center.y - halfSize, center.z + halfSize),
-        Vector3D(center.x + halfSize, center.y + halfSize, center.z + halfSize),
-        Vector3D(center.x - halfSize, center.y + halfSize, center.z + halfSize)
+        Vector3D(-halfSize, -halfSize, -halfSize),
+        Vector3D(halfSize, -halfSize, -halfSize),
+        Vector3D(halfSize, halfSize, -halfSize),
+        Vector3D(-halfSize, halfSize, -halfSize),
+        Vector3D(-halfSize, -halfSize, halfSize),
+        Vector3D(halfSize, -halfSize, halfSize),
+        Vector3D(halfSize, halfSize, halfSize),
+        Vector3D(-halfSize, halfSize, halfSize)
     };
     
-    // Apply rotations (simplified)
-    // TODO: Implement proper rotation matrices
+    // Apply rotation matrices
+    for (int i = 0; i < 8; i++) {
+        Vector3D& v = vertices[i];
+        
+        // Rotation around X axis
+        if (rotX != 0.0f) {
+            float cosX = cos(rotX);
+            float sinX = sin(rotX);
+            float y = v.y * cosX - v.z * sinX;
+            float z = v.y * sinX + v.z * cosX;
+            v.y = y;
+            v.z = z;
+        }
+        
+        // Rotation around Y axis
+        if (rotY != 0.0f) {
+            float cosY = cos(rotY);
+            float sinY = sin(rotY);
+            float x = v.x * cosY + v.z * sinY;
+            float z = -v.x * sinY + v.z * cosY;
+            v.x = x;
+            v.z = z;
+        }
+        
+        // Rotation around Z axis
+        if (rotZ != 0.0f) {
+            float cosZ = cos(rotZ);
+            float sinZ = sin(rotZ);
+            float x = v.x * cosZ - v.y * sinZ;
+            float y = v.x * sinZ + v.y * cosZ;
+            v.x = x;
+            v.y = y;
+        }
+        
+        // Translate to center position
+        v.x += center.x;
+        v.y += center.y;
+        v.z += center.z;
+    }
     
     // Draw cube edges
     int edges[12][2] = {

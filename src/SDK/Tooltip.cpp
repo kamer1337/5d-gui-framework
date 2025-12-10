@@ -170,7 +170,31 @@ void Tooltip::UpdatePosition() {
             m_x = m_targetX;
             m_y = m_targetY;
             
-            // TODO: Check screen bounds and adjust if needed
+            // Check screen bounds and adjust if needed
+            {
+                int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+                int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+                
+                // Ensure tooltip doesn't go off right edge
+                if (m_x + m_width > screenWidth) {
+                    m_x = screenWidth - m_width - 5;
+                }
+                
+                // Ensure tooltip doesn't go off left edge
+                if (m_x < 0) {
+                    m_x = 5;
+                }
+                
+                // Ensure tooltip doesn't go off bottom edge
+                if (m_y + m_height > screenHeight) {
+                    m_y = screenHeight - m_height - 5;
+                }
+                
+                // Ensure tooltip doesn't go off top edge
+                if (m_y < 0) {
+                    m_y = 5;
+                }
+            }
             break;
             
         case Position::ABOVE:
