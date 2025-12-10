@@ -122,23 +122,22 @@ void PromptWindowBuilder::ParseWidgets(const std::vector<Token>& tokens, size_t&
             if (m_widgetFactories.find(widgetType) != m_widgetFactories.end()) {
                 spec.widgets.push_back(widgetType);
             }
+        } else if (token.type == Token::NUMBER && index + 1 < tokens.size()) {
             // Check for numeric prefix (e.g., "3 progressbars")
-            else if (token.type == Token::NUMBER && index + 1 < tokens.size()) {
-                int count = std::stoi(token.value);
-                std::wstring nextWidget = tokens[index + 1].value;
-                std::transform(nextWidget.begin(), nextWidget.end(), nextWidget.begin(), ::towlower);
-                
-                // Remove plural 's' if present
-                if (!nextWidget.empty() && nextWidget.back() == L's') {
-                    nextWidget.pop_back();
+            int count = std::stoi(token.value);
+            std::wstring nextWidget = tokens[index + 1].value;
+            std::transform(nextWidget.begin(), nextWidget.end(), nextWidget.begin(), ::towlower);
+            
+            // Remove plural 's' if present
+            if (!nextWidget.empty() && nextWidget.back() == L's') {
+                nextWidget.pop_back();
+            }
+            
+            if (m_widgetFactories.find(nextWidget) != m_widgetFactories.end()) {
+                for (int i = 0; i < count; i++) {
+                    spec.widgets.push_back(nextWidget);
                 }
-                
-                if (m_widgetFactories.find(nextWidget) != m_widgetFactories.end()) {
-                    for (int i = 0; i < count; i++) {
-                        spec.widgets.push_back(nextWidget);
-                    }
-                    index++;
-                }
+                index++;
             }
         }
         

@@ -174,8 +174,10 @@ void ProgressBar::Render(HDC hdc) {
     if (m_showText) {
         std::wstring displayText = m_text;
         if (displayText.empty()) {
-            wchar_t buffer[32];
-            swprintf_s(buffer, 32, L"%.0f%%", GetPercentage());
+            // Format percentage text
+            constexpr int BUFFER_SIZE = 32;
+            wchar_t buffer[BUFFER_SIZE];
+            swprintf_s(buffer, BUFFER_SIZE, L"%.0f%%", GetPercentage());
             displayText = buffer;
         }
         

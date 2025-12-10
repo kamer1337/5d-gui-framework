@@ -239,11 +239,12 @@ void Tooltip::Render(HDC hdc) {
     Color bgColor = m_backgroundColor;
     bgColor.a = (BYTE)(m_backgroundColor.a * m_opacity);
     
-    Color textColor = m_textColor;
-    textColor.a = (BYTE)(m_textColor.a * m_opacity);
-    
     Color borderColor = m_borderColor;
     borderColor.a = (BYTE)(m_borderColor.a * m_opacity);
+    
+    // Note: Text color opacity is limited by GDI's SetTextColor which doesn't support alpha.
+    // For full text fade effect, would need to render text to a memory bitmap and alpha blend.
+    Color textColor = m_textColor;
     
     // Draw shadow
     if (m_shadowEnabled) {
