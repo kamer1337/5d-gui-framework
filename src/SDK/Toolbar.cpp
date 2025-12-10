@@ -211,14 +211,14 @@ void Toolbar::RenderHorizontal(HDC hdc) {
     
     // Draw items
     for (auto& layout : m_itemLayouts) {
-        RECT itemRect = layout.rect;
-        itemRect.left += m_x;
-        itemRect.right += m_x;
-        itemRect.top += m_y;
-        itemRect.bottom += m_y;
+        // Create temporary rect with absolute coordinates for rendering
+        ItemLayout tempLayout = layout;
+        tempLayout.rect.left += m_x;
+        tempLayout.rect.right += m_x;
+        tempLayout.rect.top += m_y;
+        tempLayout.rect.bottom += m_y;
         
-        layout.rect = itemRect;
-        RenderItem(hdc, layout);
+        RenderItem(hdc, tempLayout);
     }
 }
 
@@ -238,14 +238,14 @@ void Toolbar::RenderVertical(HDC hdc) {
     
     // Draw items
     for (auto& layout : m_itemLayouts) {
-        RECT itemRect = layout.rect;
-        itemRect.left += m_x;
-        itemRect.right += m_x;
-        itemRect.top += m_y;
-        itemRect.bottom += m_y;
+        // Create temporary rect with absolute coordinates for rendering
+        ItemLayout tempLayout = layout;
+        tempLayout.rect.left += m_x;
+        tempLayout.rect.right += m_x;
+        tempLayout.rect.top += m_y;
+        tempLayout.rect.bottom += m_y;
         
-        layout.rect = itemRect;
-        RenderItem(hdc, layout);
+        RenderItem(hdc, tempLayout);
     }
 }
 
@@ -383,18 +383,12 @@ void Toolbar::UpdateAutoHideState(int mouseX, int mouseY, float deltaTime) {
             }
         }
         
+        // Slide in animation (same logic for both orientations)
         if (m_slideOffset != 0.0f) {
             float slideSpeed = 500.0f * deltaTime;
-            if (m_orientation == Orientation::HORIZONTAL) {
-                m_slideOffset += slideSpeed;
-                if (m_slideOffset > 0.0f) {
-                    m_slideOffset = 0.0f;
-                }
-            } else {
-                m_slideOffset += slideSpeed;
-                if (m_slideOffset > 0.0f) {
-                    m_slideOffset = 0.0f;
-                }
+            m_slideOffset += slideSpeed;
+            if (m_slideOffset > 0.0f) {
+                m_slideOffset = 0.0f;
             }
         }
     } else {
@@ -471,8 +465,12 @@ bool Toolbar::IsInTriggerZone(int x, int y) const {
 }
 
 Toolbar::ItemLayout* Toolbar::GetItemAt(int x, int y) {
+    // Convert absolute coordinates to relative
+    int relX = x - m_x;
+    int relY = y - m_y;
+    
     for (auto& layout : m_itemLayouts) {
-        POINT pt = {x, y};
+        POINT pt = {relX, relY};
         if (PtInRect(&layout.rect, pt)) {
             return &layout;
         }
@@ -485,10 +483,14 @@ bool Toolbar::HandleMouseMove(int x, int y) {
         return false;
     }
     
+    // Convert absolute coordinates to relative
+    int relX = x - m_x;
+    int relY = y - m_y;
+    
     // Update hover states
     bool anyHovered = false;
     for (auto& layout : m_itemLayouts) {
-        POINT pt = {x, y};
+        POINT pt = {relX, relY};
         layout.hovered = !layout.item->separator && 
                          layout.item->enabled &&
                          PtInRect(&layout.rect, pt) != 0;
@@ -527,13 +529,17 @@ bool Toolbar::HandleMouseUp(int x, int y, int button) {
         return false;
     }
     
+    // Convert absolute coordinates to relative
+    int relX = x - m_x;
+    int relY = y - m_y;
+    
     bool handled = false;
     
     for (auto& layout : m_itemLayouts) {
         if (layout.pressed) {
             layout.pressed = false;
             
-            POINT pt = {x, y};
+            POINT pt = {relX, relY};
             if (PtInRect(&layout.rect, pt) && layout.item->enabled) {
                 // Item was clicked
                 if (m_itemClickCallback) {

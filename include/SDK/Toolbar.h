@@ -10,6 +10,7 @@
 #include <memory>
 #include <functional>
 #include "Widget.h"
+#include "Theme.h"
 
 namespace SDK {
 
