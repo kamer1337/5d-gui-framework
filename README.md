@@ -65,7 +65,61 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 
 ## Quick Start
 
-### Basic Window with Widgets
+### Basic Window with Widgets (Universal Function)
+
+The SDK now provides a universal `CreateWidgetsWindow` function that simplifies window creation:
+
+```cpp
+#include "SDK/SDK.h"
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
+    // Initialize SDK
+    SDK::Initialize();
+    
+    // Configure window
+    SDK::PromptWindowBuilder::WindowConfig config;
+    config.className = L"MyClass";
+    config.title = L"Widget App";
+    config.width = 800;
+    config.height = 600;
+    config.theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateDarkTheme());
+    config.depth = SDK::WindowDepth::FOREGROUND;
+    config.roundedCorners = true;
+    
+    // Create window with automatic SDK registration
+    HWND hwnd = SDK::PromptWindowBuilder::CreateWidgetsWindow(config, hInstance);
+    
+    // Get the SDK window to add widgets
+    auto window = SDK::WindowManager::GetInstance().GetWindow(hwnd);
+    
+    // Add widgets
+    auto button = std::make_shared<SDK::Button>(L"Click Me");
+    button->SetPosition(50, 50);
+    button->SetSize(150, 40);
+    button->SetEventCallback([](SDK::Widget* w, SDK::WidgetEvent e, void* data) {
+        if (e == SDK::WidgetEvent::CLICK) {
+            MessageBoxW(nullptr, L"Button clicked!", L"Info", MB_OK);
+        }
+    });
+    window->AddWidget(button);
+    
+    auto textBox = std::make_shared<SDK::TextBox>();
+    textBox->SetPosition(50, 100);
+    textBox->SetSize(300, 30);
+    window->AddWidget(textBox);
+    
+    ShowWindow(hwnd, nCmdShow);
+    
+    // Message loop...
+    
+    SDK::Shutdown();
+    return 0;
+}
+```
+
+### Basic Window with Widgets (Manual Registration)
+
+You can also create windows manually if you need more control:
 
 ```cpp
 #include "SDK/SDK.h"

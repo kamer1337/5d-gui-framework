@@ -510,6 +510,11 @@ public:
                          HINSTANCE hInstance,
                          HWND parent = nullptr);
     
+    // Universal window creation function (NEW)
+    // Creates window, registers with SDK, applies theme, and configures settings
+    static HWND CreateWidgetsWindow(const WindowConfig& config,
+                                    HINSTANCE hInstance);
+    
     // Get last created widget manager
     std::shared_ptr<WidgetManager> GetLastWidgetManager() const;
     
@@ -518,6 +523,59 @@ public:
     void RegisterWidgetFactory(const std::wstring& widgetType, WidgetFactory factory);
 };
 ```
+
+### Universal Window Creation (Recommended)
+
+The `CreateWidgetsWindow` static function provides a unified way to create windows with automatic SDK integration:
+
+```cpp
+#include "SDK/SDK.h"
+
+// Configure window with all options
+SDK::PromptWindowBuilder::WindowConfig config;
+config.className = L"MyAppClass";
+config.title = L"My Application";
+config.width = 800;
+config.height = 600;
+config.x = CW_USEDEFAULT;
+config.y = CW_USEDEFAULT;
+config.style = WS_OVERLAPPEDWINDOW;
+config.exStyle = WS_EX_LAYERED;
+config.theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateModernTheme());
+config.depth = SDK::WindowDepth::FOREGROUND;
+config.roundedCorners = true;
+config.cornerRadius = 12;
+config.renderCallback = MyRenderFunction;
+
+// Create window with automatic SDK registration
+HWND hwnd = SDK::PromptWindowBuilder::CreateWidgetsWindow(config, hInstance);
+
+// Get the SDK window to add widgets
+auto window = SDK::WindowManager::GetInstance().GetWindow(hwnd);
+window->AddWidget(myWidget);
+```
+
+**WindowConfig Structure:**
+- `className` - Window class name (default: "5DGUIDemo")
+- `title` - Window title (default: "Window")
+- `width`, `height` - Window dimensions (default: 800x600)
+- `x`, `y` - Window position (default: CW_USEDEFAULT)
+- `style` - Window style flags (default: WS_OVERLAPPEDWINDOW)
+- `exStyle` - Extended style flags (default: WS_EX_LAYERED)
+- `parent` - Parent window handle (default: nullptr)
+- `theme` - Theme to apply (default: ModernTheme)
+- `depth` - Window depth level (default: FOREGROUND)
+- `roundedCorners` - Enable rounded corners (default: false)
+- `cornerRadius` - Corner radius in pixels (default: 12)
+- `renderCallback` - Custom render function (default: nullptr)
+
+**Benefits:**
+- Single function call for complete window setup
+- Automatic SDK registration
+- Automatic theme application
+- Consistent window creation across the application
+- Reduces boilerplate code
+- Error handling built-in
 
 ### Custom Widget Registration
 

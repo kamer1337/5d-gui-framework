@@ -405,15 +405,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     
     RegisterClassExW(&wc);
     
-    // Create window
-    g_mainWindow = CreateWindowExW(
-        0,
-        L"CameraDemo3D",
-        L"3D Camera Controller Demo - 5D GUI SDK",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 1024, 768,
-        nullptr, nullptr, hInstance, nullptr
-    );
+    // Create window using universal function
+    SDK::PromptWindowBuilder::WindowConfig config;
+    config.className = L"CameraDemo3D";
+    config.title = L"3D Camera Controller Demo - 5D GUI SDK";
+    config.width = 1024;
+    config.height = 768;
+    config.exStyle = 0;  // No layered window for this demo
+    
+    g_mainWindow = SDK::PromptWindowBuilder::CreateWidgetsWindow(config, hInstance);
     
     if (!g_mainWindow) {
         MessageBoxW(nullptr, L"Failed to create window!", L"Error", MB_ICONERROR);
