@@ -147,7 +147,9 @@ void Widget3D::ScreenToRay(int screenX, int screenY, int screenWidth, int screen
     float aspectRatio = (float)screenWidth / (float)screenHeight;
     
     // Scale factors based on FOV (convert to proper perspective)
-    float fovScale = 1.0f / (fov * 0.002f); // Adjust scaling factor
+    // The scaling factor maps FOV values (typically 400-600) to normalized view space
+    constexpr float FOV_TO_VIEW_SCALE = 0.002f;
+    float fovScale = 1.0f / (fov * FOV_TO_VIEW_SCALE);
     
     rayDirection.x = forward.x + ndcX * right.x * aspectRatio * fovScale + ndcY * up.x * fovScale;
     rayDirection.y = forward.y + ndcX * right.y * aspectRatio * fovScale + ndcY * up.y * fovScale;

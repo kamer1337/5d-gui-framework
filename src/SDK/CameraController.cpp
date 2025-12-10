@@ -448,7 +448,7 @@ void CameraController::ApplyToProjection(const Renderer::Vector3D& point3D, int&
     
     // Apply perspective projection
     float distance = viewPoint.z + m_distance;
-    if (distance < m_nearPlane) distance = m_nearPlane;
+    distance = std::max(distance, m_nearPlane); // Clamp to near plane
     
     float perspectiveScale = m_fov / distance;
     

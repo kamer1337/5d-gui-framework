@@ -55,6 +55,8 @@ public:
     float GetDistanceFromCamera(const CameraController* camera) const;
     
     // Calculate ray from screen coordinates
+    // Note: If camera is null, rayOrigin and rayDirection will be left unmodified.
+    // Callers should verify camera is valid before calling this method.
     static void ScreenToRay(int screenX, int screenY, int screenWidth, int screenHeight, 
                            const CameraController* camera, 
                            Renderer::Vector3D& rayOrigin, Renderer::Vector3D& rayDirection);
