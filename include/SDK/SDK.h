@@ -28,6 +28,8 @@
 #include "Renderer.h"
 #include "Widget.h"
 #include "AdvancedWidgets.h"
+#include "CameraController.h"
+#include "Widget3D.h"
 
 namespace SDK {
 
