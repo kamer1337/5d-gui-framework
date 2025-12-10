@@ -1,5 +1,6 @@
 #include "../../include/SDK/WindowManager.h"
 #include <algorithm>
+#include <cmath>
 
 namespace SDK {
 

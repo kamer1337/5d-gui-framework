@@ -1,5 +1,7 @@
 #include "../../include/SDK/Renderer.h"
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
 #include <algorithm>
 
 namespace SDK {

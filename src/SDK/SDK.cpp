@@ -1,6 +1,8 @@
 #include "../../include/SDK/SDK.h"
 #include "../../include/SDK/WindowHook.h"
 #include "../../include/SDK/WindowManager.h"
+#include <cstdlib>
+#include <ctime>
 
 namespace SDK {
 
@@ -10,6 +12,9 @@ bool Initialize() {
     if (g_bInitialized) {
         return true;
     }
+    
+    // Initialize random number generator for particle system
+    srand((unsigned int)time(nullptr));
     
     // Initialize window hook
     if (!WindowHook::GetInstance().Initialize()) {

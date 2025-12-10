@@ -203,7 +203,7 @@ void RenderMainWindow(HDC hdc) {
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-    // Initialize SDK
+    // Initialize SDK (includes random seed)
     if (!SDK::Initialize()) {
         MessageBoxW(nullptr, L"Failed to initialize 5D GUI SDK", L"Error", MB_ICONERROR);
         return -1;
