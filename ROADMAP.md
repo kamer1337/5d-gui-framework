@@ -2,7 +2,7 @@
 
 This document outlines planned features and improvements for the 5D GUI SDK.
 
-## Current Version: v1.0.0
+## Current Version: v1.2.0
 
 ### Implemented Features ✓
 - [x] Window hooking framework (CreateWindowExW)
@@ -23,40 +23,40 @@ This document outlines planned features and improvements for the 5D GUI SDK.
 - [x] Widget Manager for event handling
 - [x] Prompt-based window builder (AI-ready)
 
-## Version 1.1.0 (In Progress)
+## Version 1.1.0 (Completed)
 
-### UI Components (NEW - Partially Complete)
+### UI Components (NEW - Completed)
 - [x] **Built-in Widgets**
   - [x] ProgressBar with gradient fills and animations
   - [x] Tooltip with fade effects and multi-line support
   - [x] Base Widget class for extensibility
   - [x] Widget Manager for centralized management
-  - [ ] Buttons with hover/press states
-  - [ ] Text boxes with custom rendering
-  - [ ] Sliders and progress bars (advanced)
-  - [ ] Dropdown menus
-  - [ ] Tree views
-  - [ ] List views
+  - [x] Buttons with hover/press states
+  - [x] Text boxes with custom rendering
+  - [x] Sliders and progress bars (advanced)
+  - [x] Dropdown menus
+  - [x] Tree views
+  - [x] List views
 
-### Prompt-Based Window Generation (NEW)
+### Prompt-Based Window Generation (Completed)
 - [x] **Template System**
   - [x] Text prompt parser for window specifications
   - [x] Widget factory system
   - [x] Auto-layout for generated widgets
   - [x] Subwindow support
   - [x] Extensible for custom widgets
-  - [ ] Advanced layout algorithms
-  - [ ] Constraint-based positioning
+  - [x] Advanced layout algorithms
+  - [x] Constraint-based positioning
 
-### AI Integration (Foundation Ready)
+### AI Integration (Foundation Completed)
 - [x] **Architecture for Neural Networks**
   - [x] Prompt-based interface design
   - [x] Extensible factory pattern
   - [x] Window specification format
-  - [ ] Neural network model integration
-  - [ ] Natural language understanding
-  - [ ] Dynamic UI generation at runtime
-  - [ ] Context-aware widget suggestions
+  - [x] Neural network model integration (foundation)
+  - [x] Natural language understanding (foundation)
+  - [x] Dynamic UI generation at runtime
+  - [x] Context-aware widget suggestions (foundation)
 
 ### Enhanced Hooking System
 - [ ] **Production Hook Implementation**
@@ -106,7 +106,7 @@ This document outlines planned features and improvements for the 5D GUI SDK.
   - Pattern fills
   - Texture gradients
 
-## Version 1.2.0 (Planned)
+## Version 1.2.0 (In Progress)
 
 ### UI Components
 - [ ] **Built-in Controls**
@@ -328,7 +328,22 @@ We welcome contributions! Priority areas:
 
 ## Version History
 
-### v1.0.0 (Current)
+### v1.2.0 (Current - In Progress)
+- Starting advanced UI components and layout system
+- Enhanced window features
+- Menu system integration
+
+### v1.1.0 (Released)
+- Complete widget system with 15+ widgets
+- Prompt-based window generation
+- Advanced widgets (ComboBox, ListBox, TabControl, Toolbar)
+- 3D/4D/5D/6D rendering support
+- Camera controller with mouse/keyboard controls
+- Widget3D system for interactive 3D UI
+- AI integration foundation
+- Enhanced documentation
+
+### v1.0.0 (Released)
 - Initial release
 - Core SDK functionality
 - Basic examples and documentation

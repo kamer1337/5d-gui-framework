@@ -48,7 +48,7 @@ void Shutdown() {
 }
 
 const char* GetVersion() {
-    return "5D GUI SDK v1.0.0";
+    return "5D GUI SDK v1.2.0";
 }
 
 bool IsInitialized() {
