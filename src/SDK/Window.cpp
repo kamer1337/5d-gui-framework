@@ -150,6 +150,11 @@ void Window::Render(HDC hdc) {
     if (m_renderCallback) {
         m_renderCallback(hdc);
     }
+    
+    // Render widgets
+    for (auto& widget : m_widgets) {
+        widget->Render(hdc);
+    }
 }
 
 void Window::ApplyDepthSettings() {
@@ -197,6 +202,84 @@ void Window::UpdateLayeredWindow() {
     
     // Set layered window attributes
     SetLayeredWindowAttributes(m_hwnd, 0, m_alpha, LWA_ALPHA);
+}
+
+// Widget management
+void Window::AddWidget(std::shared_ptr<Widget> widget) {
+    m_widgets.push_back(widget);
+}
+
+void Window::RemoveWidget(std::shared_ptr<Widget> widget) {
+    auto it = std::find(m_widgets.begin(), m_widgets.end(), widget);
+    if (it != m_widgets.end()) {
+        m_widgets.erase(it);
+    }
+}
+
+void Window::ClearWidgets() {
+    m_widgets.clear();
+}
+
+// Widget input handling
+bool Window::HandleWidgetMouseMove(int x, int y) {
+    bool handled = false;
+    for (auto& widget : m_widgets) {
+        if (widget->HandleMouseMove(x, y)) {
+            handled = true;
+        }
+    }
+    return handled;
+}
+
+bool Window::HandleWidgetMouseDown(int x, int y, int button) {
+    for (auto& widget : m_widgets) {
+        if (widget->HandleMouseDown(x, y, button)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Window::HandleWidgetMouseUp(int x, int y, int button) {
+    for (auto& widget : m_widgets) {
+        if (widget->HandleMouseUp(x, y, button)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Window::HandleWidgetKeyDown(int keyCode) {
+    for (auto& widget : m_widgets) {
+        if (widget->HandleKeyDown(keyCode)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Window::HandleWidgetKeyUp(int keyCode) {
+    for (auto& widget : m_widgets) {
+        if (widget->HandleKeyUp(keyCode)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Window::HandleWidgetChar(wchar_t ch) {
+    for (auto& widget : m_widgets) {
+        if (widget->HandleChar(ch)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Window::UpdateWidgets(float deltaTime) {
+    for (auto& widget : m_widgets) {
+        widget->Update(deltaTime);
+    }
 }
 
 } // namespace SDK

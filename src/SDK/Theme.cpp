@@ -113,4 +113,56 @@ Theme Theme::CreateAuroraTheme() {
     return theme;
 }
 
+Theme Theme::CreateDarkTheme() {
+    Theme theme("Dark");
+    
+    // Dark gradient title bar
+    Gradient gradient(
+        GradientType::VERTICAL,
+        Color(45, 45, 48, 255),     // Dark gray
+        Color(30, 30, 32, 255)      // Darker gray
+    );
+    theme.SetTitleBarGradient(gradient);
+    
+    theme.SetBackgroundColor(Color(37, 37, 38, 255));  // VS Code dark background
+    theme.SetBorderColor(Color(60, 60, 60, 255));
+    theme.SetBorderWidth(1);
+    theme.SetCornerRadius(8);
+    
+    theme.SetShadowColor(Color(0, 0, 0, 180));
+    theme.SetShadowOffset(4, 4);
+    theme.SetShadowBlur(12);
+    
+    theme.SetGlowEnabled(false);
+    theme.SetGlassEffect(false);
+    
+    return theme;
+}
+
+Theme Theme::CreateLightTheme() {
+    Theme theme("Light");
+    
+    // Light gradient title bar
+    Gradient gradient(
+        GradientType::VERTICAL,
+        Color(255, 255, 255, 255),  // White
+        Color(240, 240, 240, 255)   // Light gray
+    );
+    theme.SetTitleBarGradient(gradient);
+    
+    theme.SetBackgroundColor(Color(250, 250, 250, 255));  // Almost white
+    theme.SetBorderColor(Color(200, 200, 200, 255));
+    theme.SetBorderWidth(1);
+    theme.SetCornerRadius(8);
+    
+    theme.SetShadowColor(Color(0, 0, 0, 40));
+    theme.SetShadowOffset(2, 2);
+    theme.SetShadowBlur(8);
+    
+    theme.SetGlowEnabled(false);
+    theme.SetGlassEffect(false);
+    
+    return theme;
+}
+
 } // namespace SDK

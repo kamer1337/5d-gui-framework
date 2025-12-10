@@ -11,6 +11,9 @@
 
 namespace SDK {
 
+// Forward declarations
+class Widget;
+
 // Window depth levels for 5D rendering
 enum class WindowDepth {
     FAR_BACKGROUND = 0,  // 70% scale, alpha 170
@@ -74,6 +77,23 @@ public:
     void SetRenderCallback(std::function<void(HDC)> callback);
     void Render(HDC hdc);
     
+    // Widget management
+    void AddWidget(std::shared_ptr<Widget> widget);
+    void RemoveWidget(std::shared_ptr<Widget> widget);
+    void ClearWidgets();
+    const std::vector<std::shared_ptr<Widget>>& GetWidgets() const { return m_widgets; }
+    
+    // Widget input handling
+    bool HandleWidgetMouseMove(int x, int y);
+    bool HandleWidgetMouseDown(int x, int y, int button);
+    bool HandleWidgetMouseUp(int x, int y, int button);
+    bool HandleWidgetKeyDown(int keyCode);
+    bool HandleWidgetKeyUp(int keyCode);
+    bool HandleWidgetChar(wchar_t ch);
+    
+    // Update widgets
+    void UpdateWidgets(float deltaTime);
+    
 private:
     void ApplyDepthSettings();
     void UpdateLayeredWindow();
@@ -93,6 +113,7 @@ private:
     
     std::shared_ptr<Theme> m_theme;
     std::function<void(HDC)> m_renderCallback;
+    std::vector<std::shared_ptr<Widget>> m_widgets;
 };
 
 } // namespace SDK

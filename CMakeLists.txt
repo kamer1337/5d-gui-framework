@@ -18,6 +18,8 @@ set(SDK_SOURCES
     src/SDK/WindowManager.cpp
     src/SDK/Theme.cpp
     src/SDK/Renderer.cpp
+    src/SDK/Widget.cpp
+    src/SDK/AdvancedWidgets.cpp
 )
 
 set(SDK_HEADERS
@@ -27,6 +29,8 @@ set(SDK_HEADERS
     include/SDK/WindowManager.h
     include/SDK/Theme.h
     include/SDK/Renderer.h
+    include/SDK/Widget.h
+    include/SDK/AdvancedWidgets.h
 )
 
 # Create static library
@@ -49,13 +53,23 @@ target_link_libraries(5DGUI_SDK PUBLIC
 add_executable(5DGUI_Demo examples/demo.cpp)
 target_link_libraries(5DGUI_Demo PRIVATE 5DGUI_SDK)
 
+# Widget showcase application
+add_executable(Widget_Showcase examples/widget_showcase.cpp)
+target_link_libraries(Widget_Showcase PRIVATE 5DGUI_SDK)
+
 # Set subsystem to Windows (GUI application)
 if(MSVC)
     set_target_properties(5DGUI_Demo PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
+    set_target_properties(Widget_Showcase PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+    )
 else()
     set_target_properties(5DGUI_Demo PROPERTIES
+        LINK_FLAGS "-mwindows"
+    )
+    set_target_properties(Widget_Showcase PROPERTIES
         LINK_FLAGS "-mwindows"
     )
 endif()
@@ -72,7 +86,7 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS 5DGUI_Demo
+install(TARGETS 5DGUI_Demo Widget_Showcase
     RUNTIME DESTINATION bin
 )
 
