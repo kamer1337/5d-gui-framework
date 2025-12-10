@@ -99,14 +99,29 @@ PIMAGE_THUNK_DATA WindowHook::FindIATEntry(HMODULE hModule, const char* dllName,
         return nullptr;
     }
     
+    // Get module information for bounds checking (must be done early)
+    MODULEINFO modInfo;
+    if (!GetModuleInformation(GetCurrentProcess(), hModule, &modInfo, sizeof(modInfo))) {
+        return nullptr;
+    }
+    
+    BYTE* moduleBase = (BYTE*)hModule;
+    BYTE* moduleEnd = moduleBase + modInfo.SizeOfImage;
+    
     // Get DOS header
     PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)hModule;
     if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
         return nullptr;
     }
     
+    // Validate e_lfanew before use
+    if (pDosHeader->e_lfanew < sizeof(IMAGE_DOS_HEADER) || 
+        pDosHeader->e_lfanew >= modInfo.SizeOfImage - sizeof(IMAGE_NT_HEADERS)) {
+        return nullptr;
+    }
+    
     // Get NT headers
-    PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)((BYTE*)hModule + pDosHeader->e_lfanew);
+    PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)(moduleBase + pDosHeader->e_lfanew);
     if (pNtHeaders->Signature != IMAGE_NT_SIGNATURE) {
         return nullptr;
     }
@@ -121,21 +136,7 @@ PIMAGE_THUNK_DATA WindowHook::FindIATEntry(HMODULE hModule, const char* dllName,
     }
     
     // Get import descriptor
-    PIMAGE_IMPORT_DESCRIPTOR pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)((BYTE*)hModule + importDirRva);
-    
-    // Get module information for bounds checking
-    HANDLE hProcess = GetCurrentProcess();
-    if (!hProcess) {
-        return nullptr;
-    }
-    
-    MODULEINFO modInfo;
-    if (!GetModuleInformation(hProcess, hModule, &modInfo, sizeof(modInfo))) {
-        return nullptr;
-    }
-    
-    BYTE* moduleBase = (BYTE*)hModule;
-    BYTE* moduleEnd = moduleBase + modInfo.SizeOfImage;
+    PIMAGE_IMPORT_DESCRIPTOR pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)(moduleBase + importDirRva);
     
     // Validate import descriptor is within module bounds
     if ((BYTE*)pImportDesc < moduleBase || (BYTE*)pImportDesc >= moduleEnd) {

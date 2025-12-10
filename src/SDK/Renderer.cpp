@@ -379,8 +379,8 @@ void Renderer::Render3DCube(HDC hdc, const Vector3D& center, float size, int ori
     for (int i = 0; i < 8; i++) {
         Vector3D& v = vertices[i];
         
-        // Rotation around X axis
-        if (rotX != 0.0f) {
+        // Rotation around X axis (use epsilon comparison to avoid unnecessary calculations)
+        if (std::abs(rotX) > 1e-6f) {
             float cosX = cos(rotX);
             float sinX = sin(rotX);
             float y = v.y * cosX - v.z * sinX;
@@ -390,7 +390,7 @@ void Renderer::Render3DCube(HDC hdc, const Vector3D& center, float size, int ori
         }
         
         // Rotation around Y axis
-        if (rotY != 0.0f) {
+        if (std::abs(rotY) > 1e-6f) {
             float cosY = cos(rotY);
             float sinY = sin(rotY);
             float x = v.x * cosY + v.z * sinY;
@@ -400,7 +400,7 @@ void Renderer::Render3DCube(HDC hdc, const Vector3D& center, float size, int ori
         }
         
         // Rotation around Z axis
-        if (rotZ != 0.0f) {
+        if (std::abs(rotZ) > 1e-6f) {
             float cosZ = cos(rotZ);
             float sinZ = sin(rotZ);
             float x = v.x * cosZ - v.y * sinZ;
