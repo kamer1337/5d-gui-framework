@@ -92,25 +92,23 @@ HWND WINAPI WindowHook::HookedCreateWindowExW(
 }
 
 // IAT Hooking implementation
-bool WindowHook::InstallIATHook() {
-    // IAT hook installation - patches Import Address Table
-    // This method finds and patches the CreateWindowExW entry in the IAT
-    
-    HMODULE hModule = GetModuleHandle(nullptr);
+
+// Helper function to find IAT entry
+PIMAGE_THUNK_DATA WindowHook::FindIATEntry(HMODULE hModule, const char* dllName, const char* functionName) {
     if (!hModule) {
-        return false;
+        return nullptr;
     }
     
     // Get DOS header
     PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)hModule;
     if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
-        return false;
+        return nullptr;
     }
     
     // Get NT headers
     PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)((BYTE*)hModule + pDosHeader->e_lfanew);
     if (pNtHeaders->Signature != IMAGE_NT_SIGNATURE) {
-        return false;
+        return nullptr;
     }
     
     // Get import descriptor
@@ -118,15 +116,15 @@ bool WindowHook::InstallIATHook() {
         pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
     
     if (!pImportDesc) {
-        return false;
+        return nullptr;
     }
     
-    // Iterate through import descriptors to find user32.dll
+    // Iterate through import descriptors to find the specified DLL
     for (; pImportDesc->Name != 0; pImportDesc++) {
         const char* pszModName = (const char*)((BYTE*)hModule + pImportDesc->Name);
         
-        if (_stricmp(pszModName, "user32.dll") == 0) {
-            // Found user32.dll, now find CreateWindowExW in its IAT
+        if (_stricmp(pszModName, dllName) == 0) {
+            // Found the DLL, now find the function in its IAT
             PIMAGE_THUNK_DATA pThunk = (PIMAGE_THUNK_DATA)((BYTE*)hModule + pImportDesc->FirstThunk);
             PIMAGE_THUNK_DATA pOrigThunk = (PIMAGE_THUNK_DATA)((BYTE*)hModule + pImportDesc->OriginalFirstThunk);
             
@@ -137,32 +135,48 @@ bool WindowHook::InstallIATHook() {
                 
                 PIMAGE_IMPORT_BY_NAME pImportName = (PIMAGE_IMPORT_BY_NAME)((BYTE*)hModule + pOrigThunk->u1.AddressOfData);
                 
-                if (strcmp((const char*)pImportName->Name, "CreateWindowExW") == 0) {
-                    // Found CreateWindowExW, patch it
-                    DWORD oldProtect;
-                    
-                    // Save original function pointer
-                    m_pOriginalCreateWindowExW = (CreateWindowExW_t)pThunk->u1.Function;
-                    
-                    // Change memory protection to allow writing
-                    if (!VirtualProtect(&pThunk->u1.Function, sizeof(PVOID), PAGE_READWRITE, &oldProtect)) {
-                        return false;
-                    }
-                    
-                    // Patch the IAT entry
-                    pThunk->u1.Function = (DWORD_PTR)&HookedCreateWindowExW;
-                    
-                    // Restore memory protection
-                    DWORD dummy;
-                    VirtualProtect(&pThunk->u1.Function, sizeof(PVOID), oldProtect, &dummy);
-                    
-                    return true;
+                if (strcmp((const char*)pImportName->Name, functionName) == 0) {
+                    return pThunk;
                 }
             }
         }
     }
     
-    return false;
+    return nullptr;
+}
+
+bool WindowHook::InstallIATHook() {
+    // IAT hook installation - patches Import Address Table
+    // This method finds and patches the CreateWindowExW entry in the IAT
+    
+    HMODULE hModule = GetModuleHandle(nullptr);
+    if (!hModule) {
+        return false;
+    }
+    
+    PIMAGE_THUNK_DATA pThunk = FindIATEntry(hModule, "user32.dll", "CreateWindowExW");
+    if (!pThunk) {
+        return false;
+    }
+    
+    DWORD oldProtect;
+    
+    // Save original function pointer
+    m_pOriginalCreateWindowExW = (CreateWindowExW_t)pThunk->u1.Function;
+    
+    // Change memory protection to allow writing
+    if (!VirtualProtect(&pThunk->u1.Function, sizeof(PVOID), PAGE_READWRITE, &oldProtect)) {
+        return false;
+    }
+    
+    // Patch the IAT entry
+    pThunk->u1.Function = (DWORD_PTR)&HookedCreateWindowExW;
+    
+    // Restore memory protection
+    DWORD dummy;
+    VirtualProtect(&pThunk->u1.Function, sizeof(PVOID), oldProtect, &dummy);
+    
+    return true;
 }
 
 void WindowHook::RemoveIATHook() {
@@ -176,64 +190,26 @@ void WindowHook::RemoveIATHook() {
         return;
     }
     
-    // Get DOS header
-    PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)hModule;
-    if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE) {
+    PIMAGE_THUNK_DATA pThunk = FindIATEntry(hModule, "user32.dll", "CreateWindowExW");
+    if (!pThunk) {
         return;
     }
     
-    // Get NT headers
-    PIMAGE_NT_HEADERS pNtHeaders = (PIMAGE_NT_HEADERS)((BYTE*)hModule + pDosHeader->e_lfanew);
-    if (pNtHeaders->Signature != IMAGE_NT_SIGNATURE) {
+    DWORD oldProtect;
+    
+    // Change memory protection to allow writing
+    if (!VirtualProtect(&pThunk->u1.Function, sizeof(PVOID), PAGE_READWRITE, &oldProtect)) {
         return;
     }
     
-    // Get import descriptor
-    PIMAGE_IMPORT_DESCRIPTOR pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)((BYTE*)hModule + 
-        pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+    // Restore the original IAT entry
+    pThunk->u1.Function = (DWORD_PTR)m_pOriginalCreateWindowExW;
     
-    if (!pImportDesc) {
-        return;
-    }
+    // Restore memory protection
+    DWORD dummy;
+    VirtualProtect(&pThunk->u1.Function, sizeof(PVOID), oldProtect, &dummy);
     
-    // Iterate through import descriptors to find user32.dll
-    for (; pImportDesc->Name != 0; pImportDesc++) {
-        const char* pszModName = (const char*)((BYTE*)hModule + pImportDesc->Name);
-        
-        if (_stricmp(pszModName, "user32.dll") == 0) {
-            // Found user32.dll, now find CreateWindowExW in its IAT
-            PIMAGE_THUNK_DATA pThunk = (PIMAGE_THUNK_DATA)((BYTE*)hModule + pImportDesc->FirstThunk);
-            PIMAGE_THUNK_DATA pOrigThunk = (PIMAGE_THUNK_DATA)((BYTE*)hModule + pImportDesc->OriginalFirstThunk);
-            
-            for (; pOrigThunk->u1.Function != 0; pThunk++, pOrigThunk++) {
-                if (pOrigThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) {
-                    continue;
-                }
-                
-                PIMAGE_IMPORT_BY_NAME pImportName = (PIMAGE_IMPORT_BY_NAME)((BYTE*)hModule + pOrigThunk->u1.AddressOfData);
-                
-                if (strcmp((const char*)pImportName->Name, "CreateWindowExW") == 0) {
-                    // Found CreateWindowExW, restore it
-                    DWORD oldProtect;
-                    
-                    // Change memory protection to allow writing
-                    if (!VirtualProtect(&pThunk->u1.Function, sizeof(PVOID), PAGE_READWRITE, &oldProtect)) {
-                        return;
-                    }
-                    
-                    // Restore the original IAT entry
-                    pThunk->u1.Function = (DWORD_PTR)m_pOriginalCreateWindowExW;
-                    
-                    // Restore memory protection
-                    DWORD dummy;
-                    VirtualProtect(&pThunk->u1.Function, sizeof(PVOID), oldProtect, &dummy);
-                    
-                    m_pOriginalCreateWindowExW = nullptr;
-                    return;
-                }
-            }
-        }
-    }
+    m_pOriginalCreateWindowExW = nullptr;
 }
 
 // Inline Hooking implementation

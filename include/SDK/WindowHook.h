@@ -84,6 +84,9 @@ private:
     void FreeTrampoline();
     bool WriteMemory(void* address, const void* data, size_t size);
     
+    // IAT hook helper
+    PIMAGE_THUNK_DATA FindIATEntry(HMODULE hModule, const char* dllName, const char* functionName);
+    
     CreateWindowExW_t m_pOriginalCreateWindowExW;
     void* m_pTrampoline;
     BYTE m_originalBytes[16];
