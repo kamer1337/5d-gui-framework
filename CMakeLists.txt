@@ -70,6 +70,7 @@ target_link_libraries(5DGUI_Demo PRIVATE 5DGUI_SDK)
 # Widget demo application
 add_executable(5DGUI_WidgetDemo examples/widget_demo.cpp)
 target_link_libraries(5DGUI_WidgetDemo PRIVATE 5DGUI_SDK)
+
 # Widget showcase application
 add_executable(Widget_Showcase examples/widget_showcase.cpp)
 target_link_libraries(Widget_Showcase PRIVATE 5DGUI_SDK)
@@ -129,8 +130,7 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS 5DGUI_Demo Widget_Showcase Camera_Demo Toolbar_Demo
-install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo
+install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo
     RUNTIME DESTINATION bin
 )
 

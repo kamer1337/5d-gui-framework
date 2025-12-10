@@ -248,11 +248,18 @@ MaterialGameEngine/
 │   ├── ProgressBar.h    # ProgressBar widget
 │   ├── Tooltip.h        # Tooltip widget
 │   ├── WidgetManager.h  # Widget management
-│   └── PromptWindowBuilder.h  # Prompt-based generation
+│   ├── PromptWindowBuilder.h  # Prompt-based generation
+│   ├── AdvancedWidgets.h     # Advanced widget components
+│   ├── CameraController.h    # 3D camera controls
+│   ├── Widget3D.h            # 3D widget placement
+│   └── Toolbar.h             # Toolbar widget
 ├── src/SDK/             # Implementation files
 ├── examples/            # Demo applications
-│   ├── demo.cpp         # Original 5D rendering demo
-│   └── widget_demo.cpp  # Widget system demo
+│   ├── demo.cpp              # Original 5D rendering demo
+│   ├── widget_demo.cpp       # Widget system demo
+│   ├── widget_showcase.cpp   # Complete widget showcase
+│   ├── camera_demo.cpp       # 3D camera controller demo
+│   └── toolbar_demo.cpp      # Toolbar widget demo
 ├── build/               # Build output (generated)
 ├── CMakeLists.txt       # CMake build file
 ├── Makefile             # Alternative build system
