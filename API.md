@@ -54,7 +54,7 @@ Get SDK version string.
 const char* SDK::GetVersion();
 ```
 
-**Returns**: Version string (e.g., "5D GUI SDK v1.0.0")
+**Returns**: Version string (e.g., "5D GUI SDK v1.2.0")
 
 ### SDK::IsInitialized()
 
