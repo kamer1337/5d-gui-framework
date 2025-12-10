@@ -2,6 +2,7 @@
 #include "../../include/SDK/Renderer.h"
 #include <cmath>
 #include <algorithm>
+#include <limits>
 
 namespace SDK {
 
@@ -141,13 +142,16 @@ void Widget3D::ScreenToRay(int screenX, int screenY, int screenWidth, int screen
     Renderer::Vector3D right = camera->GetRightVector();
     Renderer::Vector3D up = camera->GetUpVector();
     
-    // Calculate ray direction
+    // Calculate ray direction with FOV
     float fov = camera->GetFieldOfView();
     float aspectRatio = (float)screenWidth / (float)screenHeight;
     
-    rayDirection.x = forward.x + ndcX * right.x * aspectRatio + ndcY * up.x;
-    rayDirection.y = forward.y + ndcX * right.y * aspectRatio + ndcY * up.y;
-    rayDirection.z = forward.z + ndcX * right.z * aspectRatio + ndcY * up.z;
+    // Scale factors based on FOV (convert to proper perspective)
+    float fovScale = 1.0f / (fov * 0.002f); // Adjust scaling factor
+    
+    rayDirection.x = forward.x + ndcX * right.x * aspectRatio * fovScale + ndcY * up.x * fovScale;
+    rayDirection.y = forward.y + ndcX * right.y * aspectRatio * fovScale + ndcY * up.y * fovScale;
+    rayDirection.z = forward.z + ndcX * right.z * aspectRatio * fovScale + ndcY * up.z * fovScale;
     
     // Normalize ray direction
     float len = std::sqrt(rayDirection.x * rayDirection.x + 
@@ -421,7 +425,7 @@ std::shared_ptr<Widget3D> Widget3DManager::FindWidgetAtPosition(int screenX, int
     
     // Find closest widget hit by ray
     std::shared_ptr<Widget3D> closestWidget = nullptr;
-    float closestDistance = FLT_MAX;
+    float closestDistance = std::numeric_limits<float>::max();
     
     for (auto& widget : m_widgets) {
         if (!widget || !widget->IsVisible() || !widget->IsEnabled()) continue;

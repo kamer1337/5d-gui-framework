@@ -287,14 +287,14 @@ void CameraController::ProcessOrbitInput(int deltaX, int deltaY) {
 void CameraController::ProcessPanInput(int deltaX, int deltaY) {
     float panSpeed = m_distance * 0.002f; // Scale pan speed with distance
     
-    // Pan along right and up vectors
-    m_position.x -= m_right.x * deltaX * panSpeed;
-    m_position.y += m_upVector.y * deltaY * panSpeed;
-    m_position.z -= m_right.z * deltaX * panSpeed;
+    // Pan along right and up vectors (use all components for consistency)
+    m_position.x -= m_right.x * deltaX * panSpeed + m_upVector.x * deltaY * panSpeed;
+    m_position.y -= m_right.y * deltaX * panSpeed + m_upVector.y * deltaY * panSpeed;
+    m_position.z -= m_right.z * deltaX * panSpeed + m_upVector.z * deltaY * panSpeed;
     
-    m_target.x -= m_right.x * deltaX * panSpeed;
-    m_target.y += m_upVector.y * deltaY * panSpeed;
-    m_target.z -= m_right.z * deltaX * panSpeed;
+    m_target.x -= m_right.x * deltaX * panSpeed + m_upVector.x * deltaY * panSpeed;
+    m_target.y -= m_right.y * deltaX * panSpeed + m_upVector.y * deltaY * panSpeed;
+    m_target.z -= m_right.z * deltaX * panSpeed + m_upVector.z * deltaY * panSpeed;
 }
 
 void CameraController::ProcessZoomInput(int delta) {
