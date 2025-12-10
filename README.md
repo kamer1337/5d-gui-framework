@@ -47,6 +47,14 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **6D Rendering**: Multi-timeline path visualization
 - **Projection System**: Automatic dimension reduction with visual effects
 
+### Camera Controller & 3D Widgets (NEW)
+- **3D Camera Controller**: Full mouse and keyboard camera controls
+- **Camera Modes**: Orbit, pan, and zoom with smooth animations
+- **3D Widget Placement**: Place interactive UI widgets in 3D space
+- **Ray Casting**: Automatic 3D mouse picking for widget interaction
+- **Billboard Mode**: Widgets always face camera for optimal visibility
+- **Depth Sorting**: Proper rendering order for 3D widgets
+
 ## Quick Start
 
 ### Basic Window with Widgets
@@ -96,6 +104,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
 
 ## Documentation
 
+- **[Camera Controller Guide](CAMERA_GUIDE.md)**: Camera controls and 3D widget placement (NEW)
 - **[Widget Guide](WIDGET_GUIDE.md)**: Complete widget system documentation
 - **[API Reference](API.md)**: Complete API documentation with examples
 - **[Architecture](ARCHITECTURE.md)**: Technical design and internals
