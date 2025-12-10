@@ -82,6 +82,8 @@ if(MSVC)
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
     set_target_properties(5DGUI_WidgetDemo PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+    )
     set_target_properties(Widget_Showcase PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
@@ -93,6 +95,8 @@ else()
         LINK_FLAGS "-mwindows"
     )
     set_target_properties(5DGUI_WidgetDemo PROPERTIES
+        LINK_FLAGS "-mwindows"
+    )
     set_target_properties(Widget_Showcase PROPERTIES
         LINK_FLAGS "-mwindows"
     )
@@ -113,9 +117,7 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS 5DGUI_Demo Widget_Showcase Camera_Demo
-install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo
-install(TARGETS 5DGUI_Demo Widget_Showcase
+install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo
     RUNTIME DESTINATION bin
 )
 

@@ -4,6 +4,7 @@
 #include "WidgetManager.h"
 #include "ProgressBar.h"
 #include "Tooltip.h"
+#include "Window.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -53,6 +54,45 @@ public:
     
     // Parse and create a complete window with widgets in one call
     HWND BuildFromPrompt(const std::wstring& prompt, HINSTANCE hInstance, HWND parent = nullptr);
+    
+    // Universal window creation function that consolidates all window creation patterns
+    // Creates window, registers with SDK, applies theme, and optionally adds widgets
+    struct WindowConfig {
+        std::wstring className;
+        std::wstring title;
+        int width;
+        int height;
+        int x;
+        int y;
+        DWORD style;
+        DWORD exStyle;
+        HWND parent;
+        std::shared_ptr<Theme> theme;
+        WindowDepth depth;
+        bool roundedCorners;
+        int cornerRadius;
+        std::function<void(HDC)> renderCallback;
+        
+        // Default constructor with sensible defaults
+        WindowConfig()
+            : className(L"5DGUIDemo")
+            , title(L"Window")
+            , width(800)
+            , height(600)
+            , x(CW_USEDEFAULT)
+            , y(CW_USEDEFAULT)
+            , style(WS_OVERLAPPEDWINDOW)
+            , exStyle(WS_EX_LAYERED)
+            , parent(nullptr)
+            , theme(nullptr)
+            , depth(WindowDepth::FOREGROUND)
+            , roundedCorners(false)
+            , cornerRadius(12)
+            , renderCallback(nullptr)
+        {}
+    };
+    
+    static HWND CreateWidgetsWindow(const WindowConfig& config, HINSTANCE hInstance);
     
     // Get last created widget manager (for accessing widgets)
     std::shared_ptr<WidgetManager> GetLastWidgetManager() const { return m_lastWidgetManager; }

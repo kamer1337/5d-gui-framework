@@ -145,15 +145,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return -1;
     }
     
-    // Create main window
-    g_mainWindow = CreateWindowExW(
-        WS_EX_LAYERED,
-        L"WidgetShowcase",
-        L"Widget & Renderer Showcase",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 1000, 700,
-        nullptr, nullptr, hInstance, nullptr
-    );
+    // Create main window using universal function
+    SDK::PromptWindowBuilder::WindowConfig config;
+    config.className = L"WidgetShowcase";
+    config.title = L"Widget & Renderer Showcase";
+    config.width = 1000;
+    config.height = 700;
+    config.theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateModernTheme());
+    config.depth = SDK::WindowDepth::FOREGROUND;
+    config.roundedCorners = true;
+    config.cornerRadius = 12;
+    config.renderCallback = RenderWidgetShowcase;
+    
+    g_mainWindow = SDK::PromptWindowBuilder::CreateWidgetsWindow(config, hInstance);
     
     if (!g_mainWindow) {
         MessageBoxW(nullptr, L"Window Creation Failed!", L"Error", MB_ICONERROR);
@@ -161,16 +165,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return -1;
     }
     
-    // Register window with SDK
-    g_sdkWindow = SDK::WindowManager::GetInstance().RegisterWindow(g_mainWindow);
+    // Get the SDK window for widget management
+    g_sdkWindow = SDK::WindowManager::GetInstance().GetWindow(g_mainWindow);
     if (g_sdkWindow) {
-        // Apply modern theme
-        auto theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateModernTheme());
-        g_sdkWindow->SetTheme(theme);
-        g_sdkWindow->SetDepth(SDK::WindowDepth::FOREGROUND);
-        g_sdkWindow->SetRoundedCorners(true, 12);
-        g_sdkWindow->SetRenderCallback(RenderWidgetShowcase);
-        
         // Add widgets
         
         // Buttons section

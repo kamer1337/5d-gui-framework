@@ -265,29 +265,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return -1;
     }
     
-    // Create main window
-    g_mainWindow = CreateWindowExW(
-        WS_EX_LAYERED,
-        L"5DGUIDemo",
-        L"5D GUI SDK - Widget Demo",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
-        nullptr, nullptr, hInstance, nullptr
-    );
+    // Create main window using universal function
+    SDK::PromptWindowBuilder::WindowConfig config;
+    config.className = L"5DGUIDemo";
+    config.title = L"5D GUI SDK - Widget Demo";
+    config.width = 800;
+    config.height = 600;
+    config.theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateModernTheme());
+    config.depth = SDK::WindowDepth::FOREGROUND;
+    
+    g_mainWindow = SDK::PromptWindowBuilder::CreateWidgetsWindow(config, hInstance);
     
     if (!g_mainWindow) {
         MessageBoxW(nullptr, L"Window Creation Failed!", L"Error", MB_ICONERROR);
         SDK::Shutdown();
         return -1;
-    }
-    
-    // Register window with SDK
-    auto mainWindow = SDK::WindowManager::GetInstance().RegisterWindow(g_mainWindow);
-    if (mainWindow) {
-        auto theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateModernTheme());
-        mainWindow->SetTheme(theme);
-        mainWindow->SetDepth(SDK::WindowDepth::FOREGROUND);
-        mainWindow->UpdateAppearance();
     }
     
     // Create widget manager
