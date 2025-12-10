@@ -109,6 +109,8 @@ public:
     static Theme CreateDefaultTheme();
     static Theme CreateModernTheme();
     static Theme CreateAuroraTheme();
+    static Theme CreateDarkTheme();
+    static Theme CreateLightTheme();
     
 private:
     std::string m_name;

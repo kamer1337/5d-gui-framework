@@ -26,6 +26,8 @@
 #include "WindowManager.h"
 #include "Theme.h"
 #include "Renderer.h"
+#include "Widget.h"
+#include "AdvancedWidgets.h"
 
 namespace SDK {
 
