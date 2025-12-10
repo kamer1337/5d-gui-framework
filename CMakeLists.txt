@@ -19,6 +19,10 @@ set(SDK_SOURCES
     src/SDK/Theme.cpp
     src/SDK/Renderer.cpp
     src/SDK/Widget.cpp
+    src/SDK/ProgressBar.cpp
+    src/SDK/Tooltip.cpp
+    src/SDK/WidgetManager.cpp
+    src/SDK/PromptWindowBuilder.cpp
     src/SDK/AdvancedWidgets.cpp
     src/SDK/CameraController.cpp
     src/SDK/Widget3D.cpp
@@ -32,6 +36,10 @@ set(SDK_HEADERS
     include/SDK/Theme.h
     include/SDK/Renderer.h
     include/SDK/Widget.h
+    include/SDK/ProgressBar.h
+    include/SDK/Tooltip.h
+    include/SDK/WidgetManager.h
+    include/SDK/PromptWindowBuilder.h
     include/SDK/AdvancedWidgets.h
     include/SDK/CameraController.h
     include/SDK/Widget3D.h
@@ -57,6 +65,9 @@ target_link_libraries(5DGUI_SDK PUBLIC
 add_executable(5DGUI_Demo examples/demo.cpp)
 target_link_libraries(5DGUI_Demo PRIVATE 5DGUI_SDK)
 
+# Widget demo application
+add_executable(5DGUI_WidgetDemo examples/widget_demo.cpp)
+target_link_libraries(5DGUI_WidgetDemo PRIVATE 5DGUI_SDK)
 # Widget showcase application
 add_executable(Widget_Showcase examples/widget_showcase.cpp)
 target_link_libraries(Widget_Showcase PRIVATE 5DGUI_SDK)
@@ -70,6 +81,7 @@ if(MSVC)
     set_target_properties(5DGUI_Demo PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
+    set_target_properties(5DGUI_WidgetDemo PROPERTIES
     set_target_properties(Widget_Showcase PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
@@ -80,6 +92,7 @@ else()
     set_target_properties(5DGUI_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
+    set_target_properties(5DGUI_WidgetDemo PROPERTIES
     set_target_properties(Widget_Showcase PROPERTIES
         LINK_FLAGS "-mwindows"
     )
@@ -101,6 +114,8 @@ install(DIRECTORY include/SDK
 )
 
 install(TARGETS 5DGUI_Demo Widget_Showcase Camera_Demo
+install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo
+install(TARGETS 5DGUI_Demo Widget_Showcase
     RUNTIME DESTINATION bin
 )
 
