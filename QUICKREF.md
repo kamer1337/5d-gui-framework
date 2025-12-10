@@ -315,7 +315,7 @@ mingw32-make clean  # Clean
 ## SDK Version
 
 ```cpp
-const char* version = SDK::GetVersion();  // "5D GUI SDK v1.0.0"
+const char* version = SDK::GetVersion();  // "5D GUI SDK v1.2.0"
 bool initialized = SDK::IsInitialized();
 ```
 
