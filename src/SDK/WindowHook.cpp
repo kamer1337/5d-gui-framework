@@ -111,29 +111,54 @@ PIMAGE_THUNK_DATA WindowHook::FindIATEntry(HMODULE hModule, const char* dllName,
         return nullptr;
     }
     
-    // Get import descriptor
-    PIMAGE_IMPORT_DESCRIPTOR pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)((BYTE*)hModule + 
-        pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);
+    // Get import directory RVA and size
+    DWORD importDirRva = pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+    DWORD importDirSize = pNtHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size;
     
-    if (!pImportDesc) {
+    // Check if import directory exists
+    if (importDirRva == 0 || importDirSize == 0) {
         return nullptr;
     }
     
+    // Get import descriptor
+    PIMAGE_IMPORT_DESCRIPTOR pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)((BYTE*)hModule + importDirRva);
+    
+    // Get module information for bounds checking
+    MODULEINFO modInfo;
+    if (!GetModuleInformation(GetCurrentProcess(), hModule, &modInfo, sizeof(modInfo))) {
+        return nullptr;
+    }
+    
+    BYTE* moduleBase = (BYTE*)hModule;
+    BYTE* moduleEnd = moduleBase + modInfo.SizeOfImage;
+    
     // Iterate through import descriptors to find the specified DLL
     for (; pImportDesc->Name != 0; pImportDesc++) {
-        const char* pszModName = (const char*)((BYTE*)hModule + pImportDesc->Name);
+        // Validate Name RVA is within module bounds
+        BYTE* pszModNameAddr = moduleBase + pImportDesc->Name;
+        if (pszModNameAddr < moduleBase || pszModNameAddr >= moduleEnd) {
+            continue;
+        }
+        
+        const char* pszModName = (const char*)pszModNameAddr;
         
         if (_stricmp(pszModName, dllName) == 0) {
             // Found the DLL, now find the function in its IAT
-            PIMAGE_THUNK_DATA pThunk = (PIMAGE_THUNK_DATA)((BYTE*)hModule + pImportDesc->FirstThunk);
-            PIMAGE_THUNK_DATA pOrigThunk = (PIMAGE_THUNK_DATA)((BYTE*)hModule + pImportDesc->OriginalFirstThunk);
+            PIMAGE_THUNK_DATA pThunk = (PIMAGE_THUNK_DATA)(moduleBase + pImportDesc->FirstThunk);
+            PIMAGE_THUNK_DATA pOrigThunk = (PIMAGE_THUNK_DATA)(moduleBase + pImportDesc->OriginalFirstThunk);
             
             for (; pOrigThunk->u1.Function != 0; pThunk++, pOrigThunk++) {
                 if (pOrigThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) {
                     continue; // Skip ordinal imports
                 }
                 
-                PIMAGE_IMPORT_BY_NAME pImportName = (PIMAGE_IMPORT_BY_NAME)((BYTE*)hModule + pOrigThunk->u1.AddressOfData);
+                // Validate AddressOfData RVA is within module bounds
+                BYTE* pImportNameAddr = moduleBase + pOrigThunk->u1.AddressOfData;
+                if (pImportNameAddr < moduleBase || pImportNameAddr >= moduleEnd) {
+                    continue;
+                }
+                
+                PIMAGE_IMPORT_BY_NAME pImportName = (PIMAGE_IMPORT_BY_NAME)pImportNameAddr;
                 
                 if (strcmp((const char*)pImportName->Name, functionName) == 0) {
                     return pThunk;
