@@ -33,6 +33,7 @@
 #include "Tooltip.h"
 #include "WidgetManager.h"
 #include "PromptWindowBuilder.h"
+#include "AdvancedWidgets.h"
 
 namespace SDK {
 

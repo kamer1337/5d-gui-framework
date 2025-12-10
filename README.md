@@ -1,21 +1,30 @@
 # 5D GUI SDK - Custom Complex C++ GUI System
 
-A custom complex C++ GUI SDK for Windows with CreateWindowExW hooking, multimodal window support, and advanced theming capabilities. **Zero external dependencies** - pure Win32 API implementation.
+A custom complex C++ GUI SDK for Windows with inline hooking, complete widget system, multidimensional rendering, and advanced theming capabilities. **Zero external dependencies** - pure Win32 API implementation.
 
 ## Overview
 
-The 5D GUI SDK provides an enhanced window rendering system with 5-depth layering, modern visual effects, and comprehensive theming support. Windows are automatically enhanced through CreateWindowExW hooking or explicit registration, enabling advanced features without modifying existing code.
+The 5D GUI SDK provides an enhanced window rendering system with 5-depth layering, modern visual effects, comprehensive widget system, and multidimensional (3D/4D/5D/6D) rendering support. Windows are automatically enhanced through inline hooking or explicit registration, enabling advanced features without modifying existing code.
 
 ## Features
 
 ### Core Capabilities
-- **Window Hooking**: Automatic enhancement via CreateWindowExW interception
+- **Inline Hooking**: Production-ready CreateWindowExW interception with trampoline method
+- **Complete Widget System**: 15+ widgets including buttons, text inputs, lists, tabs, and more
 - **Multimodal Window Support**: Advanced window management with modal states
 - **5D Depth System**: 5 distinct depth levels (FAR_BACKGROUND to FOREGROUND)
 - **Layered Windows**: "Book stack" effect with perspective scaling
 - **Widget System**: ProgressBar, Tooltip, and extensible widget framework
 - **Prompt Window Builder**: Template-based window generation (extensible for AI)
+- **Multidimensional Rendering**: 3D/4D/5D/6D rendering with software projection
 - **Zero Dependencies**: Pure Win32 API - no external libraries required
+
+### Widget System
+- **Basic Widgets**: Button, Label, TextBox, CheckBox, Separator, Image
+- **Advanced Widgets**: ComboBox, ListBox, ListView (with checkboxes), TabControl
+- **Complex Widgets**: FileTree, FileExplorer, SyntaxHighlightTextEditor
+- **Event System**: Comprehensive event handling (click, hover, focus, value changes)
+- **Hierarchy Support**: Parent-child widget relationships
 
 ### Visual Effects
 - **Multi-directional Gradients**: Vertical, horizontal, and radial gradients
@@ -27,16 +36,18 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Glass Effect**: Translucent window surfaces
 
 ### Theming System
-- **Predefined Themes**: Default, Modern, and Aurora themes included
+- **Predefined Themes**: Default, Modern, Aurora, Dark, and Light themes
 - **Custom Themes**: Full control over colors, gradients, and effects
 - **Theme Inheritance**: Apply themes to multiple windows
 - **Dynamic Theming**: Change themes at runtime
+- **Widget Theme Support**: Widgets automatically adapt to window theme
 
-### Icon System
-- **5 Icon Types**: Circle, Square, Diamond, Folder, Star
-- **Depth Rendering**: Icons at different depth levels with auto-scaling
-- **Hover Effects**: Interactive hover states with glow
-- **Procedural Generation**: Icons generated at runtime
+### Multidimensional Rendering
+- **3D Rendering**: Perspective projection, cubes, lines, and points
+- **4D Rendering**: Hypercube visualization with time animation
+- **5D Rendering**: Depth-aware 3D scenes with layer management
+- **6D Rendering**: Multi-timeline path visualization
+- **Projection System**: Automatic dimension reduction with visual effects
 
 ### Widget System (NEW)
 - **ProgressBar**: Animated progress indicators with gradient fills
@@ -46,25 +57,41 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 
 ## Quick Start
 
-### Basic Window Setup
+### Basic Window with Widgets
 
 ```cpp
 #include "SDK/SDK.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
-    // Initialize SDK
+    // Initialize SDK with inline hooking
     SDK::Initialize();
+    SDK::WindowHook::GetInstance().Initialize(SDK::WindowHook::HookType::INLINE);
     
     // Create window
-    HWND hwnd = CreateWindowEx(WS_EX_LAYERED, L"MyClass", L"5D GUI App",
+    HWND hwnd = CreateWindowEx(WS_EX_LAYERED, L"MyClass", L"Widget App",
         WS_OVERLAPPEDWINDOW, 100, 100, 800, 600,
         nullptr, nullptr, hInstance, nullptr);
     
     // Enhance with SDK
     auto window = SDK::WindowManager::GetInstance().RegisterWindow(hwnd);
-    auto theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateModernTheme());
+    auto theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateDarkTheme());
     window->SetTheme(theme);
-    window->SetDepth(SDK::WindowDepth::FOREGROUND);
+    
+    // Add widgets
+    auto button = std::make_shared<SDK::Button>(L"Click Me");
+    button->SetPosition(50, 50);
+    button->SetSize(150, 40);
+    button->SetEventCallback([](SDK::Widget* w, SDK::WidgetEvent e, void* data) {
+        if (e == SDK::WidgetEvent::CLICK) {
+            MessageBoxW(nullptr, L"Button clicked!", L"Info", MB_OK);
+        }
+    });
+    window->AddWidget(button);
+    
+    auto textBox = std::make_shared<SDK::TextBox>();
+    textBox->SetPosition(50, 100);
+    textBox->SetSize(300, 30);
+    window->AddWidget(textBox);
     
     ShowWindow(hwnd, nCmdShow);
     
@@ -117,6 +144,7 @@ ShowWindow(hwnd, SW_SHOW);
 
 ## Documentation
 
+- **[Widget Guide](WIDGET_GUIDE.md)**: Complete widget system documentation
 - **[API Reference](API.md)**: Complete API documentation with examples
 - **[Widget Guide](WIDGET_GUIDE.md)**: Widget system documentation and usage
 - **[Architecture](ARCHITECTURE.md)**: Technical design and internals

@@ -19,15 +19,21 @@ class WindowManager;
 using CreateWindowCallback = std::function<void(HWND)>;
 
 /**
- * WindowHook - Core hooking system for CreateWindowExW
+ * WindowHook - Enhanced hooking system with inline hooking support
  * Intercepts window creation to enable custom rendering and theming
+ * Supports both IAT hooking and inline code patching
  */
 class WindowHook {
 public:
+    enum class HookType {
+        IAT,        // Import Address Table hooking
+        INLINE      // Inline code patching (trampoline method)
+    };
+    
     static WindowHook& GetInstance();
     
-    // Initialize hooking system
-    bool Initialize();
+    // Initialize hooking system with specified type
+    bool Initialize(HookType type = HookType::INLINE);
     
     // Cleanup hooking system
     void Shutdown();
@@ -56,6 +62,7 @@ public:
     CreateWindowExW_t GetOriginalCreateWindowExW() const { return m_pOriginalCreateWindowExW; }
     
     bool IsHooked() const { return m_bIsHooked; }
+    HookType GetHookType() const { return m_hookType; }
     
 private:
     WindowHook();
@@ -65,11 +72,24 @@ private:
     WindowHook& operator=(const WindowHook&) = delete;
     
     // Install IAT hook
-    bool InstallHook();
-    void RemoveHook();
+    bool InstallIATHook();
+    void RemoveIATHook();
+    
+    // Install inline hook (trampoline method)
+    bool InstallInlineHook();
+    void RemoveInlineHook();
+    
+    // Inline hook helpers
+    bool CreateTrampoline(void* target, void* hook, void** trampoline);
+    void FreeTrampoline();
+    bool WriteMemory(void* address, const void* data, size_t size);
     
     CreateWindowExW_t m_pOriginalCreateWindowExW;
+    void* m_pTrampoline;
+    BYTE m_originalBytes[16];
+    size_t m_originalBytesSize;
     bool m_bIsHooked;
+    HookType m_hookType;
     CreateWindowCallback m_createCallback;
 };
 

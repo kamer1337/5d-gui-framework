@@ -6,6 +6,14 @@
 
 namespace SDK {
 
+// Rendering constants
+namespace {
+    constexpr float CAMERA_DISTANCE = 300.0f;
+    constexpr float MIN_PROJECTION_DISTANCE = 1.0f;
+    constexpr float DEPTH_SCALE_MIN = 0.7f;
+    constexpr float DEPTH_SCALE_FACTOR = 0.06f;
+}
+
 void Renderer::DrawGradient(HDC hdc, const RECT& rect, const Gradient& gradient) {
     switch (gradient.type) {
         case GradientType::VERTICAL:
@@ -321,6 +329,200 @@ HDC Renderer::CreateMemoryDC(int width, int height, HBITMAP* outBitmap) {
 void Renderer::DeleteMemoryDC(HDC hdc, HBITMAP bitmap) {
     DeleteObject(bitmap);
     DeleteDC(hdc);
+}
+
+// Multi-dimensional rendering implementations
+
+// 3D Rendering
+void Renderer::Render3DPoint(HDC hdc, const Vector3D& point, int originX, int originY, Color color, float scale) {
+    int x2D, y2D;
+    Project3Dto2D(point, x2D, y2D, originX, originY, scale);
+    
+    HBRUSH brush = CreateSolidBrush(color.ToCOLORREF());
+    HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, brush);
+    Ellipse(hdc, x2D - 3, y2D - 3, x2D + 3, y2D + 3);
+    SelectObject(hdc, oldBrush);
+    DeleteObject(brush);
+}
+
+void Renderer::Render3DLine(HDC hdc, const Vector3D& start, const Vector3D& end, int originX, int originY, Color color, float scale) {
+    int x1, y1, x2, y2;
+    Project3Dto2D(start, x1, y1, originX, originY, scale);
+    Project3Dto2D(end, x2, y2, originX, originY, scale);
+    
+    HPEN pen = CreatePen(PS_SOLID, 2, color.ToCOLORREF());
+    HPEN oldPen = (HPEN)SelectObject(hdc, pen);
+    
+    MoveToEx(hdc, x1, y1, nullptr);
+    LineTo(hdc, x2, y2);
+    
+    SelectObject(hdc, oldPen);
+    DeleteObject(pen);
+}
+
+void Renderer::Render3DCube(HDC hdc, const Vector3D& center, float size, int originX, int originY, Color color, float rotX, float rotY, float rotZ) {
+    float halfSize = size / 2.0f;
+    
+    // Define cube vertices
+    Vector3D vertices[8] = {
+        Vector3D(center.x - halfSize, center.y - halfSize, center.z - halfSize),
+        Vector3D(center.x + halfSize, center.y - halfSize, center.z - halfSize),
+        Vector3D(center.x + halfSize, center.y + halfSize, center.z - halfSize),
+        Vector3D(center.x - halfSize, center.y + halfSize, center.z - halfSize),
+        Vector3D(center.x - halfSize, center.y - halfSize, center.z + halfSize),
+        Vector3D(center.x + halfSize, center.y - halfSize, center.z + halfSize),
+        Vector3D(center.x + halfSize, center.y + halfSize, center.z + halfSize),
+        Vector3D(center.x - halfSize, center.y + halfSize, center.z + halfSize)
+    };
+    
+    // Apply rotations (simplified)
+    // TODO: Implement proper rotation matrices
+    
+    // Draw cube edges
+    int edges[12][2] = {
+        {0,1}, {1,2}, {2,3}, {3,0},  // Back face
+        {4,5}, {5,6}, {6,7}, {7,4},  // Front face
+        {0,4}, {1,5}, {2,6}, {3,7}   // Connecting edges
+    };
+    
+    for (int i = 0; i < 12; i++) {
+        Render3DLine(hdc, vertices[edges[i][0]], vertices[edges[i][1]], originX, originY, color);
+    }
+}
+
+// 4D Rendering
+void Renderer::Render4DPoint(HDC hdc, const Vector4D& point, float time, int originX, int originY, Color color, float scale) {
+    Vector3D point3D;
+    Project4Dto3D(point, point3D, time);
+    Render3DPoint(hdc, point3D, originX, originY, color, scale);
+}
+
+void Renderer::Render4DHypercube(HDC hdc, const Vector4D& center, float size, float time, int originX, int originY, Color color) {
+    float halfSize = size / 2.0f;
+    
+    // Define hypercube vertices in 4D (16 vertices)
+    Vector4D vertices[16];
+    int idx = 0;
+    for (int w = -1; w <= 1; w += 2) {
+        for (int z = -1; z <= 1; z += 2) {
+            for (int y = -1; y <= 1; y += 2) {
+                for (int x = -1; x <= 1; x += 2) {
+                    vertices[idx++] = Vector4D(
+                        center.x + x * halfSize,
+                        center.y + y * halfSize,
+                        center.z + z * halfSize,
+                        center.w + w * halfSize
+                    );
+                }
+            }
+        }
+    }
+    
+    // Project to 3D and render edges (simplified)
+    for (int i = 0; i < 16; i++) {
+        Vector3D v1;
+        Project4Dto3D(vertices[i], v1, time);
+        
+        for (int j = i + 1; j < 16; j++) {
+            // Check if vertices are connected (differ in only one dimension)
+            int diffCount = 0;
+            if (std::abs(vertices[i].x - vertices[j].x) > 0.1f) diffCount++;
+            if (std::abs(vertices[i].y - vertices[j].y) > 0.1f) diffCount++;
+            if (std::abs(vertices[i].z - vertices[j].z) > 0.1f) diffCount++;
+            if (std::abs(vertices[i].w - vertices[j].w) > 0.1f) diffCount++;
+            
+            if (diffCount == 1) {
+                Vector3D v2;
+                Project4Dto3D(vertices[j], v2, time);
+                Render3DLine(hdc, v1, v2, originX, originY, color);
+            }
+        }
+    }
+}
+
+// 5D Rendering
+void Renderer::Render5DPoint(HDC hdc, const Vector5D& point, float time, int originX, int originY, Color color, float scale) {
+    Vector4D point4D;
+    Project5Dto4D(point, point4D, point.d);
+    Render4DPoint(hdc, point4D, time, originX, originY, color, scale);
+}
+
+void Renderer::Render5DScene(HDC hdc, const std::vector<Vector5D>& points, float time, int originX, int originY, const std::vector<Color>& colors) {
+    for (size_t i = 0; i < points.size(); i++) {
+        Color color = (i < colors.size()) ? colors[i] : Color(255, 255, 255, 255);
+        Render5DPoint(hdc, points[i], time, originX, originY, color);
+    }
+}
+
+// 6D Rendering
+void Renderer::Render6DPoint(HDC hdc, const Vector6D& point, int originX, int originY, Color color, float scale) {
+    Vector5D point5D;
+    Project6Dto5D(point, point5D);
+    Render5DPoint(hdc, point5D, point.t, originX, originY, color, scale);
+}
+
+void Renderer::Render6DPath(HDC hdc, const std::vector<Vector6D>& path, int originX, int originY, Color color) {
+    if (path.size() < 2) return;
+    
+    for (size_t i = 0; i < path.size() - 1; i++) {
+        Vector5D p1, p2;
+        Project6Dto5D(path[i], p1);
+        Project6Dto5D(path[i + 1], p2);
+        
+        Vector4D p4d1, p4d2;
+        Project5Dto4D(p1, p4d1, p1.d);
+        Project5Dto4D(p2, p4d2, p2.d);
+        
+        Vector3D p3d1, p3d2;
+        Project4Dto3D(p4d1, p3d1, path[i].t);
+        Project4Dto3D(p4d2, p3d2, path[i + 1].t);
+        
+        Render3DLine(hdc, p3d1, p3d2, originX, originY, color);
+    }
+}
+
+// Projection helpers
+void Renderer::Project3Dto2D(const Vector3D& point3D, int& x2D, int& y2D, int originX, int originY, float scale) {
+    // Simple perspective projection
+    float fov = 500.0f; // Field of view
+    float distance = point3D.z + CAMERA_DISTANCE;
+    
+    if (distance < MIN_PROJECTION_DISTANCE) distance = MIN_PROJECTION_DISTANCE;
+    
+    float perspectiveScale = fov / distance;
+    
+    x2D = originX + (int)(point3D.x * perspectiveScale * scale);
+    y2D = originY + (int)(point3D.y * perspectiveScale * scale);
+}
+
+void Renderer::Project4Dto3D(const Vector4D& point4D, Vector3D& point3D, float time) {
+    // Project 4D to 3D using time/w-dimension
+    float wScale = std::cos(time + point4D.w * 0.1f) * 0.5f + 0.5f;
+    
+    point3D.x = point4D.x * wScale;
+    point3D.y = point4D.y * wScale;
+    point3D.z = point4D.z * wScale;
+}
+
+void Renderer::Project5Dto4D(const Vector5D& point5D, Vector4D& point4D, float depthScale) {
+    // Project 5D to 4D using depth layer
+    float dScale = DEPTH_SCALE_MIN + depthScale * DEPTH_SCALE_FACTOR; // Scale based on depth (70% to 100%)
+    
+    point4D.x = point5D.x * dScale;
+    point4D.y = point5D.y * dScale;
+    point4D.z = point5D.z * dScale;
+    point4D.w = point5D.w;
+}
+
+void Renderer::Project6Dto5D(const Vector6D& point6D, Vector5D& point5D) {
+    // Project 6D to 5D using time dimension
+    float tScale = std::sin(point6D.t * 0.5f) * 0.2f + 1.0f;
+    
+    point5D.x = point6D.x * tScale;
+    point5D.y = point6D.y * tScale;
+    point5D.z = point6D.z * tScale;
+    point5D.w = point6D.w;
+    point5D.d = point6D.d;
 }
 
 } // namespace SDK
