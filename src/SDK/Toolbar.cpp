@@ -5,6 +5,10 @@
 
 namespace SDK {
 
+// Animation constants
+constexpr float FADE_SPEED = 5.0f;
+constexpr float SLIDE_SPEED = 500.0f;
+
 Toolbar::Toolbar()
     : Widget()
     , m_orientation(Orientation::HORIZONTAL)
@@ -196,33 +200,16 @@ void Toolbar::Render(HDC hdc) {
 }
 
 void Toolbar::RenderHorizontal(HDC hdc) {
-    // Draw background
-    RECT bgRect = {m_x, m_y, m_x + m_width, m_y + m_height};
-    
-    // Apply alpha for auto-hide
-    Color bgColor = m_backgroundColor;
-    if (m_autoHide) {
-        bgColor.a = static_cast<BYTE>(bgColor.a * m_visibilityAlpha);
-    }
-    
-    HBRUSH bgBrush = CreateSolidBrush(RGB(bgColor.r, bgColor.g, bgColor.b));
-    FillRect(hdc, &bgRect, bgBrush);
-    DeleteObject(bgBrush);
-    
-    // Draw items
-    for (auto& layout : m_itemLayouts) {
-        // Create temporary rect with absolute coordinates for rendering
-        ItemLayout tempLayout = layout;
-        tempLayout.rect.left += m_x;
-        tempLayout.rect.right += m_x;
-        tempLayout.rect.top += m_y;
-        tempLayout.rect.bottom += m_y;
-        
-        RenderItem(hdc, tempLayout);
-    }
+    RenderBackground(hdc);
+    RenderItems(hdc);
 }
 
 void Toolbar::RenderVertical(HDC hdc) {
+    RenderBackground(hdc);
+    RenderItems(hdc);
+}
+
+void Toolbar::RenderBackground(HDC hdc) {
     // Draw background
     RECT bgRect = {m_x, m_y, m_x + m_width, m_y + m_height};
     
@@ -235,7 +222,9 @@ void Toolbar::RenderVertical(HDC hdc) {
     HBRUSH bgBrush = CreateSolidBrush(RGB(bgColor.r, bgColor.g, bgColor.b));
     FillRect(hdc, &bgRect, bgBrush);
     DeleteObject(bgBrush);
-    
+}
+
+void Toolbar::RenderItems(HDC hdc) {
     // Draw items
     for (auto& layout : m_itemLayouts) {
         // Create temporary rect with absolute coordinates for rendering
@@ -377,7 +366,7 @@ void Toolbar::UpdateAutoHideState(int mouseX, int mouseY, float deltaTime) {
         
         // Animate in
         if (m_visibilityAlpha < 1.0f) {
-            m_visibilityAlpha += deltaTime * 5.0f;
+            m_visibilityAlpha += deltaTime * FADE_SPEED;
             if (m_visibilityAlpha > 1.0f) {
                 m_visibilityAlpha = 1.0f;
             }
@@ -385,7 +374,7 @@ void Toolbar::UpdateAutoHideState(int mouseX, int mouseY, float deltaTime) {
         
         // Slide in animation (same logic for both orientations)
         if (m_slideOffset != 0.0f) {
-            float slideSpeed = 500.0f * deltaTime;
+            float slideSpeed = SLIDE_SPEED * deltaTime;
             m_slideOffset += slideSpeed;
             if (m_slideOffset > 0.0f) {
                 m_slideOffset = 0.0f;
@@ -401,7 +390,7 @@ void Toolbar::UpdateAutoHideState(int mouseX, int mouseY, float deltaTime) {
             
             // Animate out
             if (m_visibilityAlpha > 0.0f) {
-                m_visibilityAlpha -= deltaTime * 5.0f;
+                m_visibilityAlpha -= deltaTime * FADE_SPEED;
                 if (m_visibilityAlpha < 0.0f) {
                     m_visibilityAlpha = 0.0f;
                 }
@@ -411,7 +400,7 @@ void Toolbar::UpdateAutoHideState(int mouseX, int mouseY, float deltaTime) {
                 static_cast<float>(-m_height) : static_cast<float>(-m_width);
             
             if (m_slideOffset > hideOffset) {
-                float slideSpeed = 500.0f * deltaTime;
+                float slideSpeed = SLIDE_SPEED * deltaTime;
                 m_slideOffset -= slideSpeed;
                 if (m_slideOffset < hideOffset) {
                     m_slideOffset = hideOffset;

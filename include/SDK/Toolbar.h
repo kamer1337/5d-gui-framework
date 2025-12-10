@@ -107,6 +107,8 @@ private:
     void CalculateLayout();
     void RenderHorizontal(HDC hdc);
     void RenderVertical(HDC hdc);
+    void RenderBackground(HDC hdc);
+    void RenderItems(HDC hdc);
     void RenderItem(HDC hdc, const ItemLayout& layout);
     
     bool IsInTriggerZone(int x, int y) const;
