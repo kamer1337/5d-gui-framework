@@ -1,6 +1,7 @@
 #include "../../include/SDK/WindowHook.h"
 #include "../../include/SDK/WindowManager.h"
 #include <psapi.h>
+#include <cstring>
 
 namespace SDK {
 

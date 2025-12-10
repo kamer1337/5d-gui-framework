@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <string>
 #include <memory>
+#include <functional>
+#include <vector>
 #include "Theme.h"
 
 namespace SDK {

@@ -1,6 +1,8 @@
 #include "../../include/SDK/Window.h"
+#include "../../include/SDK/Widget.h"
 #include "../../include/SDK/Renderer.h"
 #include <dwmapi.h>
+#include <algorithm>
 
 #pragma comment(lib, "dwmapi.lib")
 
