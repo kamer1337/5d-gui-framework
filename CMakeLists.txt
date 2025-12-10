@@ -26,6 +26,7 @@ set(SDK_SOURCES
     src/SDK/AdvancedWidgets.cpp
     src/SDK/CameraController.cpp
     src/SDK/Widget3D.cpp
+    src/SDK/Toolbar.cpp
 )
 
 set(SDK_HEADERS
@@ -43,6 +44,7 @@ set(SDK_HEADERS
     include/SDK/AdvancedWidgets.h
     include/SDK/CameraController.h
     include/SDK/Widget3D.h
+    include/SDK/Toolbar.h
 )
 
 # Create static library
@@ -76,27 +78,35 @@ target_link_libraries(Widget_Showcase PRIVATE 5DGUI_SDK)
 add_executable(Camera_Demo examples/camera_demo.cpp)
 target_link_libraries(Camera_Demo PRIVATE 5DGUI_SDK)
 
+# Toolbar demo application
+add_executable(Toolbar_Demo examples/toolbar_demo.cpp)
+target_link_libraries(Toolbar_Demo PRIVATE 5DGUI_SDK)
+
 # Set subsystem to Windows (GUI application)
 if(MSVC)
     set_target_properties(5DGUI_Demo PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
-    set_target_properties(5DGUI_WidgetDemo PROPERTIES
     set_target_properties(Widget_Showcase PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
     set_target_properties(Camera_Demo PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+    )
+    set_target_properties(Toolbar_Demo PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
 else()
     set_target_properties(5DGUI_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
-    set_target_properties(5DGUI_WidgetDemo PROPERTIES
     set_target_properties(Widget_Showcase PROPERTIES
         LINK_FLAGS "-mwindows"
     )
     set_target_properties(Camera_Demo PROPERTIES
+        LINK_FLAGS "-mwindows"
+    )
+    set_target_properties(Toolbar_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
 endif()
@@ -113,9 +123,7 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS 5DGUI_Demo Widget_Showcase Camera_Demo
-install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo
-install(TARGETS 5DGUI_Demo Widget_Showcase
+install(TARGETS 5DGUI_Demo Widget_Showcase Camera_Demo Toolbar_Demo
     RUNTIME DESTINATION bin
 )
 
