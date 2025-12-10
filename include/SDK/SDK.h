@@ -17,6 +17,8 @@
  * - Icon system with depth levels
  * - Multimodal window management
  * - Themed interface system
+ * - Widget system (ProgressBar, Tooltip)
+ * - Prompt-based window generation
  * 
  * No external dependencies - pure Win32 API
  */
@@ -26,6 +28,11 @@
 #include "WindowManager.h"
 #include "Theme.h"
 #include "Renderer.h"
+#include "Widget.h"
+#include "ProgressBar.h"
+#include "Tooltip.h"
+#include "WidgetManager.h"
+#include "PromptWindowBuilder.h"
 
 namespace SDK {
 
