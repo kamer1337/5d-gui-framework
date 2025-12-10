@@ -1,8 +1,141 @@
-# 5D GUI-SDK
+# 5D GUI SDK - Custom Complex C++ GUI System
 
-# Enhanced 5D Rendering - Screenshot Descriptions
+A custom complex C++ GUI SDK for Windows with CreateWindowExW hooking, multimodal window support, and advanced theming capabilities. **Zero external dependencies** - pure Win32 API implementation.
 
-This document describes what the enhanced 5D rendering screenshots would show when the system is running.
+## Overview
+
+The 5D GUI SDK provides an enhanced window rendering system with 5-depth layering, modern visual effects, and comprehensive theming support. Windows are automatically enhanced through CreateWindowExW hooking or explicit registration, enabling advanced features without modifying existing code.
+
+## Features
+
+### Core Capabilities
+- **Window Hooking**: Automatic enhancement via CreateWindowExW interception
+- **Multimodal Window Support**: Advanced window management with modal states
+- **5D Depth System**: 5 distinct depth levels (FAR_BACKGROUND to FOREGROUND)
+- **Layered Windows**: "Book stack" effect with perspective scaling
+- **Zero Dependencies**: Pure Win32 API - no external libraries required
+
+### Visual Effects
+- **Multi-directional Gradients**: Vertical, horizontal, and radial gradients
+- **Alpha Transparency**: Per-window and per-element alpha blending
+- **Rounded Corners**: Anti-aliased rounded rectangles with configurable radius
+- **Depth-Aware Shadows**: Shadow intensity scales with depth level
+- **Particle System**: Physics-based particle effects with emission
+- **Glow Effects**: Expanding glow halos for highlights
+- **Glass Effect**: Translucent window surfaces
+
+### Theming System
+- **Predefined Themes**: Default, Modern, and Aurora themes included
+- **Custom Themes**: Full control over colors, gradients, and effects
+- **Theme Inheritance**: Apply themes to multiple windows
+- **Dynamic Theming**: Change themes at runtime
+
+### Icon System
+- **5 Icon Types**: Circle, Square, Diamond, Folder, Star
+- **Depth Rendering**: Icons at different depth levels with auto-scaling
+- **Hover Effects**: Interactive hover states with glow
+- **Procedural Generation**: Icons generated at runtime
+
+## Quick Start
+
+```cpp
+#include "SDK/SDK.h"
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
+    // Initialize SDK
+    SDK::Initialize();
+    
+    // Create window
+    HWND hwnd = CreateWindowEx(WS_EX_LAYERED, L"MyClass", L"5D GUI App",
+        WS_OVERLAPPEDWINDOW, 100, 100, 800, 600,
+        nullptr, nullptr, hInstance, nullptr);
+    
+    // Enhance with SDK
+    auto window = SDK::WindowManager::GetInstance().RegisterWindow(hwnd);
+    auto theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateModernTheme());
+    window->SetTheme(theme);
+    window->SetDepth(SDK::WindowDepth::FOREGROUND);
+    
+    ShowWindow(hwnd, nCmdShow);
+    
+    // Message loop...
+    
+    SDK::Shutdown();
+    return 0;
+}
+```
+
+## Documentation
+
+- **[API Reference](API.md)**: Complete API documentation with examples
+- **[Architecture](ARCHITECTURE.md)**: Technical design and internals
+- **[Build Guide](BUILD.md)**: Compilation instructions for all platforms
+- **[Usage Guide](USAGE.md)**: Practical examples and patterns
+
+## Building
+
+### CMake (Recommended)
+```cmd
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+```
+
+### Makefile (MinGW)
+```cmd
+mingw32-make all
+```
+
+### Requirements
+- Windows 7 or later
+- C++17 compiler (MSVC, MinGW, Clang)
+- CMake 3.10+ (optional)
+
+## Project Structure
+
+```
+MaterialGameEngine/
+├── include/SDK/          # Public headers
+│   ├── SDK.h            # Main SDK header
+│   ├── Window.h         # Window class
+│   ├── WindowManager.h  # Window management
+│   ├── WindowHook.h     # CreateWindowExW hooking
+│   ├── Theme.h          # Theming system
+│   └── Renderer.h       # Rendering utilities
+├── src/SDK/             # Implementation files
+├── examples/            # Demo application
+├── build/               # Build output (generated)
+├── CMakeLists.txt       # CMake build file
+├── Makefile             # Alternative build system
+└── README.md            # This file
+```
+
+## Platform Support
+
+- **Windows 7**: Full support (requires Platform Update)
+- **Windows 8/8.1**: Full support
+- **Windows 10/11**: Full support with enhanced effects
+- **Architecture**: x86 and x64
+
+## Dependencies
+
+**None!** The SDK uses only:
+- windows.h (Win32 API)
+- dwmapi.lib (Desktop Window Manager)
+- gdi32.lib (Graphics Device Interface)
+- user32.lib (Window management)
+
+All libraries are standard Windows SDK components.
+
+## License
+
+MIT License - See [LICENSE](LICENSE) file for details.
+
+---
+
+# Enhanced 5D Rendering - Visual Specifications
+
+This section describes the visual capabilities of the enhanced 5D rendering system.
 
 ### Visual Description:
 This screenshot demonstrates the improved window rendering with alpha transparency and enhanced shadows.
