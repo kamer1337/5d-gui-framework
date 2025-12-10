@@ -21,8 +21,9 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 
 ### Widget System
 - **Basic Widgets**: Button, Label, TextBox, CheckBox, Separator, Image
-- **Advanced Widgets**: ComboBox, ListBox, ListView (with checkboxes), TabControl
+- **Advanced Widgets**: ComboBox, ListBox, ListView (with checkboxes), TabControl, Toolbar
 - **Complex Widgets**: FileTree, FileExplorer, SyntaxHighlightTextEditor
+- **Toolbar Features**: Horizontal/vertical orientation, auto-hide functionality, customizable items
 - **Event System**: Comprehensive event handling (click, hover, focus, value changes)
 - **Hierarchy Support**: Parent-child widget relationships
 
