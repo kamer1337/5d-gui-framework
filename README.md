@@ -13,6 +13,8 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Multimodal Window Support**: Advanced window management with modal states
 - **5D Depth System**: 5 distinct depth levels (FAR_BACKGROUND to FOREGROUND)
 - **Layered Windows**: "Book stack" effect with perspective scaling
+- **Widget System**: ProgressBar, Tooltip, and extensible widget framework
+- **Prompt Window Builder**: Template-based window generation (extensible for AI)
 - **Zero Dependencies**: Pure Win32 API - no external libraries required
 
 ### Visual Effects
@@ -36,7 +38,15 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Hover Effects**: Interactive hover states with glow
 - **Procedural Generation**: Icons generated at runtime
 
+### Widget System (NEW)
+- **ProgressBar**: Animated progress indicators with gradient fills
+- **Tooltip**: Hover tooltips with fade animations and multi-line support
+- **Widget Manager**: Centralized widget management and event handling
+- **Prompt Builder**: Create windows from text prompts (AI-ready architecture)
+
 ## Quick Start
+
+### Basic Window Setup
 
 ```cpp
 #include "SDK/SDK.h"
@@ -65,9 +75,50 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
 }
 ```
 
+### Using Widgets
+
+```cpp
+#include "SDK/SDK.h"
+
+// Create widget manager
+auto widgetMgr = std::make_shared<SDK::WidgetManager>();
+
+// Add a progress bar
+auto progressBar = std::make_shared<SDK::ProgressBar>();
+progressBar->SetBounds(20, 20, 400, 30);
+progressBar->SetValue(75.0f);
+progressBar->SetAnimated(true);
+widgetMgr->AddWidget(progressBar);
+
+// Add a tooltip
+auto tooltip = std::make_shared<SDK::Tooltip>();
+tooltip->SetText(L"Progress: 75%");
+widgetMgr->AddWidget(tooltip);
+
+// In WM_PAINT: widgetMgr->RenderAll(hdc);
+// In main loop: widgetMgr->UpdateAll(deltaTime);
+```
+
+### Prompt-Based Window Generation
+
+```cpp
+#include "SDK/SDK.h"
+
+SDK::PromptWindowBuilder builder;
+
+// Create window from text prompt
+HWND hwnd = builder.BuildFromPrompt(
+    L"window 600x400 'My App' with progressbar and tooltip",
+    hInstance);
+
+auto widgetMgr = builder.GetLastWidgetManager();
+ShowWindow(hwnd, SW_SHOW);
+```
+
 ## Documentation
 
 - **[API Reference](API.md)**: Complete API documentation with examples
+- **[Widget Guide](WIDGET_GUIDE.md)**: Widget system documentation and usage
 - **[Architecture](ARCHITECTURE.md)**: Technical design and internals
 - **[Build Guide](BUILD.md)**: Compilation instructions for all platforms
 - **[Usage Guide](USAGE.md)**: Practical examples and patterns
@@ -101,9 +152,16 @@ MaterialGameEngine/
 │   ├── WindowManager.h  # Window management
 │   ├── WindowHook.h     # CreateWindowExW hooking
 │   ├── Theme.h          # Theming system
-│   └── Renderer.h       # Rendering utilities
+│   ├── Renderer.h       # Rendering utilities
+│   ├── Widget.h         # Base widget class
+│   ├── ProgressBar.h    # ProgressBar widget
+│   ├── Tooltip.h        # Tooltip widget
+│   ├── WidgetManager.h  # Widget management
+│   └── PromptWindowBuilder.h  # Prompt-based generation
 ├── src/SDK/             # Implementation files
-├── examples/            # Demo application
+├── examples/            # Demo applications
+│   ├── demo.cpp         # Original 5D rendering demo
+│   └── widget_demo.cpp  # Widget system demo
 ├── build/               # Build output (generated)
 ├── CMakeLists.txt       # CMake build file
 ├── Makefile             # Alternative build system

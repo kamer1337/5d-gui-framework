@@ -19,8 +19,44 @@ This document outlines planned features and improvements for the 5D GUI SDK.
 - [x] Zero external dependencies
 - [x] CMake build system
 - [x] Comprehensive documentation
+- [x] Widget system (ProgressBar, Tooltip)
+- [x] Widget Manager for event handling
+- [x] Prompt-based window builder (AI-ready)
 
-## Version 1.1.0 (Planned)
+## Version 1.1.0 (In Progress)
+
+### UI Components (NEW - Partially Complete)
+- [x] **Built-in Widgets**
+  - [x] ProgressBar with gradient fills and animations
+  - [x] Tooltip with fade effects and multi-line support
+  - [x] Base Widget class for extensibility
+  - [x] Widget Manager for centralized management
+  - [ ] Buttons with hover/press states
+  - [ ] Text boxes with custom rendering
+  - [ ] Sliders and progress bars (advanced)
+  - [ ] Dropdown menus
+  - [ ] Tree views
+  - [ ] List views
+
+### Prompt-Based Window Generation (NEW)
+- [x] **Template System**
+  - [x] Text prompt parser for window specifications
+  - [x] Widget factory system
+  - [x] Auto-layout for generated widgets
+  - [x] Subwindow support
+  - [x] Extensible for custom widgets
+  - [ ] Advanced layout algorithms
+  - [ ] Constraint-based positioning
+
+### AI Integration (Foundation Ready)
+- [x] **Architecture for Neural Networks**
+  - [x] Prompt-based interface design
+  - [x] Extensible factory pattern
+  - [x] Window specification format
+  - [ ] Neural network model integration
+  - [ ] Natural language understanding
+  - [ ] Dynamic UI generation at runtime
+  - [ ] Context-aware widget suggestions
 
 ### Enhanced Hooking System
 - [ ] **Production Hook Implementation**
