@@ -222,6 +222,157 @@ float GetOpacity() const;  // Current fade opacity (0.0 - 1.0)
 void AutoSize(HDC hdc);    // Auto-size to fit text
 ```
 
+### Toolbar
+
+A customizable toolbar widget supporting horizontal/vertical orientation and auto-hide functionality.
+
+#### Features
+- Horizontal and vertical orientations
+- Auto-hide capability with trigger zones
+- Customizable toolbar items (buttons)
+- Icon and text support for items
+- Separators between items
+- Hover and pressed states
+- Click callbacks
+- Smooth show/hide animations
+
+#### Basic Usage
+
+```cpp
+#include "SDK/SDK.h"
+
+// Create a horizontal toolbar
+auto toolbar = std::make_shared<SDK::Toolbar>();
+toolbar->SetBounds(0, 0, 800, 50);
+toolbar->SetOrientation(SDK::Toolbar::Orientation::HORIZONTAL);
+
+// Add items
+toolbar->AddItem(1, L"File", L"File operations");
+toolbar->AddItem(2, L"Edit", L"Edit operations");
+toolbar->AddSeparator();
+toolbar->AddItem(3, L"View", L"View options");
+
+// Set click callback
+toolbar->SetItemClickCallback([](int itemId) {
+    // Handle item click
+    switch (itemId) {
+        case 1:
+            // Handle File click
+            break;
+        case 2:
+            // Handle Edit click
+            break;
+    }
+});
+
+// Render in your WM_PAINT handler
+toolbar->Render(hdc);
+
+// Update in your main loop for auto-hide animation
+toolbar->Update(deltaTime);
+```
+
+#### API Reference
+
+**Item Management:**
+```cpp
+void AddItem(int id, const std::wstring& text, const std::wstring& tooltip = L"");
+void AddSeparator();
+void RemoveItem(int id);
+void ClearItems();
+
+void SetItemEnabled(int id, bool enabled);
+void SetItemIcon(int id, HBITMAP icon);
+```
+
+**Orientation:**
+```cpp
+enum class Orientation {
+    HORIZONTAL,
+    VERTICAL
+};
+
+void SetOrientation(Orientation orientation);
+Orientation GetOrientation() const;
+```
+
+**Auto-Hide Functionality:**
+```cpp
+void SetAutoHide(bool autoHide);         // Enable/disable auto-hide
+bool IsAutoHide() const;
+
+void SetAutoHideDelay(float seconds);    // Delay before hiding (default: 0.5s)
+float GetAutoHideDelay() const;
+
+void SetTriggerZoneSize(int pixels);     // Size of trigger zone (default: 3px)
+int GetTriggerZoneSize() const;
+
+bool IsVisible() const;                  // Check if currently visible
+```
+
+**Appearance:**
+```cpp
+void SetItemSize(int width, int height);
+void GetItemSize(int& width, int& height) const;
+
+void SetBackgroundColor(const Color& color);
+void SetItemColor(const Color& color);
+void SetItemHoverColor(const Color& color);
+void SetItemPressedColor(const Color& color);
+void SetTextColor(const Color& color);
+void SetSeparatorColor(const Color& color);
+
+void SetPadding(int padding);
+int GetPadding() const;
+
+void SetItemSpacing(int spacing);
+int GetItemSpacing() const;
+```
+
+**Callbacks:**
+```cpp
+using ItemClickCallback = std::function<void(int itemId)>;
+void SetItemClickCallback(ItemClickCallback callback);
+```
+
+#### Examples
+
+**Horizontal Toolbar at Top:**
+```cpp
+auto topToolbar = std::make_shared<SDK::Toolbar>();
+topToolbar->SetBounds(0, 0, 800, 50);
+topToolbar->SetOrientation(SDK::Toolbar::Orientation::HORIZONTAL);
+topToolbar->AddItem(1, L"New");
+topToolbar->AddItem(2, L"Open");
+topToolbar->AddItem(3, L"Save");
+```
+
+**Vertical Toolbar on Side:**
+```cpp
+auto sideToolbar = std::make_shared<SDK::Toolbar>();
+sideToolbar->SetBounds(0, 0, 80, 600);
+sideToolbar->SetOrientation(SDK::Toolbar::Orientation::VERTICAL);
+sideToolbar->SetItemSize(70, 60);
+sideToolbar->AddItem(10, L"Home");
+sideToolbar->AddItem(11, L"Search");
+sideToolbar->AddItem(12, L"Settings");
+```
+
+**Auto-Hide Toolbar:**
+```cpp
+auto autoHideToolbar = std::make_shared<SDK::Toolbar>();
+autoHideToolbar->SetBounds(750, 0, 50, 600);
+autoHideToolbar->SetOrientation(SDK::Toolbar::Orientation::VERTICAL);
+autoHideToolbar->SetAutoHide(true);
+autoHideToolbar->SetAutoHideDelay(0.5f);
+autoHideToolbar->SetTriggerZoneSize(5);
+autoHideToolbar->AddItem(20, L"Tools");
+autoHideToolbar->AddItem(21, L"Help");
+
+// Toolbar will automatically hide after 0.5 seconds
+// and show when mouse enters 5px trigger zone at edge
+```
+
 ## Widget Manager
 
 The `WidgetManager` class helps manage multiple widgets within a window.

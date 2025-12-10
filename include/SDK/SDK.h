@@ -17,7 +17,7 @@
  * - Icon system with depth levels
  * - Multimodal window management
  * - Themed interface system
- * - Widget system (ProgressBar, Tooltip)
+ * - Widget system (ProgressBar, Tooltip, Toolbar)
  * - Prompt-based window generation
  * 
  * No external dependencies - pure Win32 API
@@ -31,6 +31,7 @@
 #include "Widget.h"
 #include "ProgressBar.h"
 #include "Tooltip.h"
+#include "Toolbar.h"
 #include "WidgetManager.h"
 #include "PromptWindowBuilder.h"
 #include "AdvancedWidgets.h"
