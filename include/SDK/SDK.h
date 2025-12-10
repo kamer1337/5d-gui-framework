@@ -34,6 +34,8 @@
 #include "WidgetManager.h"
 #include "PromptWindowBuilder.h"
 #include "AdvancedWidgets.h"
+#include "CameraController.h"
+#include "Widget3D.h"
 
 namespace SDK {
 

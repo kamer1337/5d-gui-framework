@@ -24,6 +24,8 @@ set(SDK_SOURCES
     src/SDK/WidgetManager.cpp
     src/SDK/PromptWindowBuilder.cpp
     src/SDK/AdvancedWidgets.cpp
+    src/SDK/CameraController.cpp
+    src/SDK/Widget3D.cpp
 )
 
 set(SDK_HEADERS
@@ -39,6 +41,8 @@ set(SDK_HEADERS
     include/SDK/WidgetManager.h
     include/SDK/PromptWindowBuilder.h
     include/SDK/AdvancedWidgets.h
+    include/SDK/CameraController.h
+    include/SDK/Widget3D.h
 )
 
 # Create static library
@@ -68,6 +72,10 @@ target_link_libraries(5DGUI_WidgetDemo PRIVATE 5DGUI_SDK)
 add_executable(Widget_Showcase examples/widget_showcase.cpp)
 target_link_libraries(Widget_Showcase PRIVATE 5DGUI_SDK)
 
+# Camera demo application
+add_executable(Camera_Demo examples/camera_demo.cpp)
+target_link_libraries(Camera_Demo PRIVATE 5DGUI_SDK)
+
 # Set subsystem to Windows (GUI application)
 if(MSVC)
     set_target_properties(5DGUI_Demo PROPERTIES
@@ -77,12 +85,18 @@ if(MSVC)
     set_target_properties(Widget_Showcase PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
+    set_target_properties(Camera_Demo PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+    )
 else()
     set_target_properties(5DGUI_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
     set_target_properties(5DGUI_WidgetDemo PROPERTIES
     set_target_properties(Widget_Showcase PROPERTIES
+        LINK_FLAGS "-mwindows"
+    )
+    set_target_properties(Camera_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
 endif()
@@ -99,6 +113,7 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
+install(TARGETS 5DGUI_Demo Widget_Showcase Camera_Demo
 install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo
 install(TARGETS 5DGUI_Demo Widget_Showcase
     RUNTIME DESTINATION bin
