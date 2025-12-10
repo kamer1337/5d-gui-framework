@@ -1,4 +1,5 @@
 #include "../../include/SDK/PromptWindowBuilder.h"
+#include "../../include/SDK/WindowManager.h"
 #include <algorithm>
 #include <cctype>
 #include <sstream>
@@ -328,6 +329,48 @@ void PromptWindowBuilder::LayoutWidgets(std::vector<std::shared_ptr<Widget>>& wi
         widget->SetBounds(margin, y, widgetWidth, widgetHeight);
         y += widgetHeight + spacing;
     }
+}
+
+HWND PromptWindowBuilder::CreateWidgetsWindow(const WindowConfig& config, HINSTANCE hInstance) {
+    // Create the window
+    HWND hwnd = CreateWindowExW(
+        config.exStyle,
+        config.className.c_str(),
+        config.title.c_str(),
+        config.style,
+        config.x, config.y, config.width, config.height,
+        config.parent, nullptr, hInstance, nullptr
+    );
+    
+    if (!hwnd) {
+        return nullptr;
+    }
+    
+    // Register window with SDK
+    auto window = WindowManager::GetInstance().RegisterWindow(hwnd);
+    if (window) {
+        // Apply theme (use provided or default to ModernTheme)
+        auto theme = config.theme ? config.theme : std::make_shared<Theme>(Theme::CreateModernTheme());
+        window->SetTheme(theme);
+        
+        // Set depth
+        window->SetDepth(config.depth);
+        
+        // Set rounded corners if enabled
+        if (config.roundedCorners) {
+            window->SetRoundedCorners(true, config.cornerRadius);
+        }
+        
+        // Set render callback if provided
+        if (config.renderCallback) {
+            window->SetRenderCallback(config.renderCallback);
+        }
+        
+        // Update appearance
+        window->UpdateAppearance();
+    }
+    
+    return hwnd;
 }
 
 } // namespace SDK
