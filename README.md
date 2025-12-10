@@ -21,7 +21,7 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 
 ### Widget System
 - **Basic Widgets**: Button, Label, TextBox, CheckBox, Separator, Image
-- **Advanced Widgets**: ComboBox, ListBox, ListView (with checkboxes), TabControl, Toolbar
+- **Advanced Widgets**: ComboBox, ListBox, ListView (with checkboxes), TabControl, Toolbar, ProgressBar, Tooltip
 - **Complex Widgets**: FileTree, FileExplorer, SyntaxHighlightTextEditor
 - **Toolbar Features**: Horizontal/vertical orientation, auto-hide functionality, customizable items
 - **Event System**: Comprehensive event handling (click, hover, focus, value changes)
@@ -50,18 +50,13 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **6D Rendering**: Multi-timeline path visualization
 - **Projection System**: Automatic dimension reduction with visual effects
 
-### Camera Controller & 3D Widgets (NEW)
+### Camera Controller & 3D Widgets
 - **3D Camera Controller**: Full mouse and keyboard camera controls
 - **Camera Modes**: Orbit, pan, and zoom with smooth animations
 - **3D Widget Placement**: Place interactive UI widgets in 3D space
 - **Ray Casting**: Automatic 3D mouse picking for widget interaction
 - **Billboard Mode**: Widgets always face camera for optimal visibility
 - **Depth Sorting**: Proper rendering order for 3D widgets
-### Widget System (NEW)
-- **ProgressBar**: Animated progress indicators with gradient fills
-- **Tooltip**: Hover tooltips with fade animations and multi-line support
-- **Widget Manager**: Centralized widget management and event handling
-- **Prompt Builder**: Create windows from text prompts (AI-ready architecture)
 
 ## Quick Start
 
@@ -206,10 +201,9 @@ ShowWindow(hwnd, SW_SHOW);
 
 ## Documentation
 
-- **[Camera Controller Guide](CAMERA_GUIDE.md)**: Camera controls and 3D widget placement (NEW)
+- **[Camera Controller Guide](CAMERA_GUIDE.md)**: Camera controls and 3D widget placement
 - **[Widget Guide](WIDGET_GUIDE.md)**: Complete widget system documentation
 - **[API Reference](API.md)**: Complete API documentation with examples
-- **[Widget Guide](WIDGET_GUIDE.md)**: Widget system documentation and usage
 - **[Architecture](ARCHITECTURE.md)**: Technical design and internals
 - **[Build Guide](BUILD.md)**: Compilation instructions for all platforms
 - **[Usage Guide](USAGE.md)**: Practical examples and patterns
@@ -248,11 +242,18 @@ MaterialGameEngine/
 │   ├── ProgressBar.h    # ProgressBar widget
 │   ├── Tooltip.h        # Tooltip widget
 │   ├── WidgetManager.h  # Widget management
-│   └── PromptWindowBuilder.h  # Prompt-based generation
+│   ├── PromptWindowBuilder.h  # Prompt-based generation
+│   ├── AdvancedWidgets.h     # Advanced widget components
+│   ├── CameraController.h    # 3D camera controls
+│   ├── Widget3D.h            # 3D widget placement
+│   └── Toolbar.h             # Toolbar widget
 ├── src/SDK/             # Implementation files
 ├── examples/            # Demo applications
-│   ├── demo.cpp         # Original 5D rendering demo
-│   └── widget_demo.cpp  # Widget system demo
+│   ├── demo.cpp              # Original 5D rendering demo
+│   ├── widget_demo.cpp       # Widget system demo
+│   ├── widget_showcase.cpp   # Complete widget showcase
+│   ├── camera_demo.cpp       # 3D camera controller demo
+│   └── toolbar_demo.cpp      # Toolbar widget demo
 ├── build/               # Build output (generated)
 ├── CMakeLists.txt       # CMake build file
 ├── Makefile             # Alternative build system

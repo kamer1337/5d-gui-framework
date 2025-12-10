@@ -111,11 +111,15 @@ After successful build:
 ```
 build/
 ├── bin/
-│   ├── lib5DGUI_SDK.a      # SDK static library (MinGW)
-│   ├── 5DGUI_SDK.lib       # SDK static library (MSVC)
-│   └── 5DGUI_Demo.exe      # Demo application
+│   ├── lib5DGUI_SDK.a           # SDK static library (MinGW)
+│   ├── 5DGUI_SDK.lib            # SDK static library (MSVC)
+│   ├── 5DGUI_Demo.exe           # Main demo application
+│   ├── 5DGUI_WidgetDemo.exe     # Widget system demo
+│   ├── Widget_Showcase.exe      # Complete widget showcase
+│   ├── Camera_Demo.exe          # 3D camera controller demo
+│   └── Toolbar_Demo.exe         # Toolbar widget demo
 └── obj/
-    └── *.o                  # Object files
+    └── *.o                       # Object files
 ```
 
 ## Configuration Options
@@ -329,7 +333,12 @@ For faster builds:
 ## Next Steps
 
 After building:
-1. Run the demo: `build/bin/5DGUI_Demo.exe`
+1. Run the demos:
+   - `build/bin/5DGUI_Demo.exe` - Main 5D rendering demo
+   - `build/bin/5DGUI_WidgetDemo.exe` - Widget system demo
+   - `build/bin/Widget_Showcase.exe` - Complete widget showcase
+   - `build/bin/Camera_Demo.exe` - 3D camera controller demo
+   - `build/bin/Toolbar_Demo.exe` - Toolbar widget demo
 2. Read the [API Documentation](API.md)
 3. See [Examples](examples/) for usage patterns
 4. Read [ARCHITECTURE.md](ARCHITECTURE.md) for internals
