@@ -124,16 +124,31 @@ PIMAGE_THUNK_DATA WindowHook::FindIATEntry(HMODULE hModule, const char* dllName,
     PIMAGE_IMPORT_DESCRIPTOR pImportDesc = (PIMAGE_IMPORT_DESCRIPTOR)((BYTE*)hModule + importDirRva);
     
     // Get module information for bounds checking
+    HANDLE hProcess = GetCurrentProcess();
+    if (!hProcess) {
+        return nullptr;
+    }
+    
     MODULEINFO modInfo;
-    if (!GetModuleInformation(GetCurrentProcess(), hModule, &modInfo, sizeof(modInfo))) {
+    if (!GetModuleInformation(hProcess, hModule, &modInfo, sizeof(modInfo))) {
         return nullptr;
     }
     
     BYTE* moduleBase = (BYTE*)hModule;
     BYTE* moduleEnd = moduleBase + modInfo.SizeOfImage;
     
+    // Validate import descriptor is within module bounds
+    if ((BYTE*)pImportDesc < moduleBase || (BYTE*)pImportDesc >= moduleEnd) {
+        return nullptr;
+    }
+    
     // Iterate through import descriptors to find the specified DLL
     for (; pImportDesc->Name != 0; pImportDesc++) {
+        // Validate current pImportDesc is still within bounds
+        if ((BYTE*)pImportDesc >= moduleEnd - sizeof(IMAGE_IMPORT_DESCRIPTOR)) {
+            break;
+        }
+        
         // Validate Name RVA is within module bounds
         BYTE* pszModNameAddr = moduleBase + pImportDesc->Name;
         if (pszModNameAddr < moduleBase || pszModNameAddr >= moduleEnd) {
@@ -147,7 +162,19 @@ PIMAGE_THUNK_DATA WindowHook::FindIATEntry(HMODULE hModule, const char* dllName,
             PIMAGE_THUNK_DATA pThunk = (PIMAGE_THUNK_DATA)(moduleBase + pImportDesc->FirstThunk);
             PIMAGE_THUNK_DATA pOrigThunk = (PIMAGE_THUNK_DATA)(moduleBase + pImportDesc->OriginalFirstThunk);
             
+            // Validate thunk pointers are within bounds
+            if ((BYTE*)pThunk < moduleBase || (BYTE*)pThunk >= moduleEnd ||
+                (BYTE*)pOrigThunk < moduleBase || (BYTE*)pOrigThunk >= moduleEnd) {
+                continue;
+            }
+            
             for (; pOrigThunk->u1.Function != 0; pThunk++, pOrigThunk++) {
+                // Validate thunk pointers are still within bounds
+                if ((BYTE*)pThunk >= moduleEnd - sizeof(IMAGE_THUNK_DATA) ||
+                    (BYTE*)pOrigThunk >= moduleEnd - sizeof(IMAGE_THUNK_DATA)) {
+                    break;
+                }
+                
                 if (pOrigThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) {
                     continue; // Skip ordinal imports
                 }
