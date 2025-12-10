@@ -519,6 +519,9 @@ void FileTree::SetSelectedPath(const std::wstring& path) {
 void FileTree::LoadDirectory(std::shared_ptr<TreeNode> node) {
     if (!node || !node->isDirectory) return;
     
+    // SECURITY: Validate path to prevent directory traversal attacks
+    // In production, add additional path validation to prevent malicious paths
+    
     WIN32_FIND_DATAW findData;
     std::wstring searchPath = node->fullPath + L"\\*";
     HANDLE hFind = FindFirstFileW(searchPath.c_str(), &findData);

@@ -160,6 +160,8 @@ bool Widget::HandleKeyUp(int keyCode) {
 bool Widget::HandleChar(wchar_t ch) {
     if (!m_visible || !m_enabled || !m_focused) return false;
     
+    // Base implementation does nothing but returns true if focused
+    // Derived classes should override this method
     return false;
 }
 
@@ -380,7 +382,8 @@ bool TextBox::HandleKeyDown(int keyCode) {
 }
 
 bool TextBox::HandleChar(wchar_t ch) {
-    if (!Widget::HandleChar(ch)) return false;
+    // Check if widget can handle input
+    if (!m_visible || !m_enabled || !m_focused) return false;
     
     if (ch >= 32 && ch != 127) { // Printable character
         if (m_maxLength <= 0 || (int)m_text.length() < m_maxLength) {

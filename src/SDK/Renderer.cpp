@@ -6,6 +6,14 @@
 
 namespace SDK {
 
+// Rendering constants
+namespace {
+    constexpr float CAMERA_DISTANCE = 300.0f;
+    constexpr float MIN_PROJECTION_DISTANCE = 1.0f;
+    constexpr float DEPTH_SCALE_MIN = 0.7f;
+    constexpr float DEPTH_SCALE_FACTOR = 0.06f;
+}
+
 void Renderer::DrawGradient(HDC hdc, const RECT& rect, const Gradient& gradient) {
     switch (gradient.type) {
         case GradientType::VERTICAL:
@@ -477,9 +485,9 @@ void Renderer::Render6DPath(HDC hdc, const std::vector<Vector6D>& path, int orig
 void Renderer::Project3Dto2D(const Vector3D& point3D, int& x2D, int& y2D, int originX, int originY, float scale) {
     // Simple perspective projection
     float fov = 500.0f; // Field of view
-    float distance = point3D.z + 300.0f; // Distance from camera
+    float distance = point3D.z + CAMERA_DISTANCE;
     
-    if (distance < 1.0f) distance = 1.0f;
+    if (distance < MIN_PROJECTION_DISTANCE) distance = MIN_PROJECTION_DISTANCE;
     
     float perspectiveScale = fov / distance;
     
@@ -498,7 +506,7 @@ void Renderer::Project4Dto3D(const Vector4D& point4D, Vector3D& point3D, float t
 
 void Renderer::Project5Dto4D(const Vector5D& point5D, Vector4D& point4D, float depthScale) {
     // Project 5D to 4D using depth layer
-    float dScale = 0.7f + depthScale * 0.06f; // Scale based on depth (70% to 100%)
+    float dScale = DEPTH_SCALE_MIN + depthScale * DEPTH_SCALE_FACTOR; // Scale based on depth (70% to 100%)
     
     point4D.x = point5D.x * dScale;
     point4D.y = point5D.y * dScale;

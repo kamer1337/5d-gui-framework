@@ -105,6 +105,14 @@ void WindowHook::RemoveIATHook() {
 
 // Inline Hooking implementation
 bool WindowHook::InstallInlineHook() {
+    // SECURITY NOTE: Inline hooking of system APIs may trigger antivirus software
+    // and Windows Defender. This is expected behavior for legitimate hooking.
+    // Ensure proper error handling and consider fallback mechanisms if hooking fails.
+    
+    // THREAD SAFETY NOTE: This implementation is not thread-safe during installation.
+    // Ensure hooks are installed during application initialization before multiple
+    // threads are created, or add synchronization mechanisms.
+    
     // Get the address of CreateWindowExW
     void* targetFunc = (void*)&CreateWindowExW;
     void* hookFunc = (void*)&HookedCreateWindowExW;
@@ -164,8 +172,13 @@ void WindowHook::RemoveInlineHook() {
 }
 
 bool WindowHook::CreateTrampoline(void* target, void* hook, void** trampoline) {
+    // NOTE: This implementation assumes m_originalBytesSize contains complete instructions.
+    // In production code, use a disassembler library to ensure instruction boundaries
+    // are respected when copying bytes. Incomplete instructions can cause crashes.
+    
     // Allocate memory for trampoline near target function
-    *trampoline = VirtualAlloc(nullptr, 256, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    // Initially allocate as read-write for setup
+    *trampoline = VirtualAlloc(nullptr, 256, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     
     if (!*trampoline) {
         return false;
@@ -189,6 +202,14 @@ bool WindowHook::CreateTrampoline(void* target, void* hook, void** trampoline) {
     jumpBackPtr[0] = 0xE9;
     *(INT32*)(jumpBackPtr + 1) = (INT32)((BYTE*)target + m_originalBytesSize - jumpBackPtr - 5);
 #endif
+    
+    // Change protection to execute-read (W^X compliance)
+    DWORD oldProtect;
+    if (!VirtualProtect(*trampoline, 256, PAGE_EXECUTE_READ, &oldProtect)) {
+        VirtualFree(*trampoline, 0, MEM_RELEASE);
+        *trampoline = nullptr;
+        return false;
+    }
     
     return true;
 }
