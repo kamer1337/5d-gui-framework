@@ -28,6 +28,7 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Toolbar Features**: Horizontal/vertical orientation, auto-hide functionality, customizable items
 - **Event System**: Comprehensive event handling (click, hover, focus, value changes)
 - **Hierarchy Support**: Parent-child widget relationships
+- **Rich Properties**: Padding, margin, min/max size, opacity, border radius, font styling, tooltips, z-index, custom cursors
 
 ### Visual Effects
 - **Multi-directional Gradients**: Vertical, horizontal, and radial gradients

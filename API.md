@@ -684,3 +684,310 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     return 0;
 }
 ```
+
+---
+
+## Widget System
+
+### Widget Base Class
+
+Base class for all UI widgets. All widgets inherit from `SDK::Widget`.
+
+#### Position and Size
+
+```cpp
+void SetPosition(int x, int y);
+void GetPosition(int& x, int& y) const;
+
+void SetSize(int width, int height);
+void GetSize(int& width, int& height) const;
+
+void SetBounds(int x, int y, int width, int height);
+void GetBounds(RECT& rect) const;
+```
+
+**Example**:
+```cpp
+auto button = std::make_shared<SDK::Button>(L"Click Me");
+button->SetPosition(50, 50);
+button->SetSize(120, 40);
+// Or use SetBounds to set all at once
+button->SetBounds(50, 50, 120, 40);
+```
+
+#### State Properties
+
+```cpp
+void SetVisible(bool visible);
+bool IsVisible() const;
+
+void SetEnabled(bool enabled);
+bool IsEnabled() const;
+
+void SetFocused(bool focused);
+bool IsFocused() const;
+
+void SetHovered(bool hovered);
+bool IsHovered() const;
+```
+
+#### Layout Properties
+
+```cpp
+// Padding (internal spacing)
+void SetPadding(int padding);  // All sides
+void SetPadding(int left, int top, int right, int bottom);
+void GetPadding(int& left, int& top, int& right, int& bottom) const;
+
+// Margin (external spacing)
+void SetMargin(int margin);  // All sides
+void SetMargin(int left, int top, int right, int bottom);
+void GetMargin(int& left, int& top, int& right, int& bottom) const;
+
+// Size constraints
+void SetMinSize(int minWidth, int minHeight);
+void GetMinSize(int& minWidth, int& minHeight) const;
+void SetMaxSize(int maxWidth, int maxHeight);
+void GetMaxSize(int& maxWidth, int& maxHeight) const;
+```
+
+**Example**:
+```cpp
+auto textBox = std::make_shared<SDK::TextBox>();
+textBox->SetPadding(10);  // 10px padding on all sides
+textBox->SetMargin(5, 10, 5, 10);  // Different margins
+textBox->SetMinSize(100, 30);  // Minimum dimensions
+textBox->SetMaxSize(500, 100);  // Maximum dimensions
+```
+
+#### Visual Properties
+
+```cpp
+// Opacity (0.0 = transparent, 1.0 = opaque)
+void SetOpacity(float opacity);
+float GetOpacity() const;
+
+// Border
+void SetBorderWidth(int width);
+int GetBorderWidth() const;
+void SetBorderRadius(int radius);
+int GetBorderRadius() const;
+```
+
+**Example**:
+```cpp
+auto panel = std::make_shared<SDK::Panel>();
+panel->SetOpacity(0.8f);  // 80% opaque
+panel->SetBorderWidth(2);  // 2px border
+panel->SetBorderRadius(8);  // Rounded corners
+```
+
+#### Font Properties
+
+```cpp
+void SetFontFamily(const std::wstring& family);
+std::wstring GetFontFamily() const;
+
+void SetFontSize(int size);
+int GetFontSize() const;
+
+void SetFontBold(bool bold);
+bool IsFontBold() const;
+
+void SetFontItalic(bool italic);
+bool IsFontItalic() const;
+```
+
+**Example**:
+```cpp
+auto label = std::make_shared<SDK::Label>(L"Important Text");
+label->SetFontFamily(L"Arial");
+label->SetFontSize(16);
+label->SetFontBold(true);
+label->SetFontItalic(false);
+```
+
+#### Interaction Properties
+
+```cpp
+// Tooltip
+void SetTooltipText(const std::wstring& text);
+std::wstring GetTooltipText() const;
+
+// Cursor
+void SetCursor(HCURSOR cursor);
+HCURSOR GetCursor() const;
+```
+
+**Example**:
+```cpp
+auto button = std::make_shared<SDK::Button>(L"Submit");
+button->SetTooltipText(L"Click to submit the form");
+button->SetCursor(LoadCursor(nullptr, IDC_HAND));
+```
+
+#### Identification Properties
+
+```cpp
+// Numeric ID
+void SetId(int id);
+int GetId() const;
+
+// String name
+void SetName(const std::wstring& name);
+std::wstring GetName() const;
+
+// Custom data pointer
+void SetTag(void* tag);
+void* GetTag() const;
+
+// Z-index for layering
+void SetZIndex(int zIndex);
+int GetZIndex() const;
+```
+
+**Example**:
+```cpp
+auto widget = std::make_shared<SDK::Button>(L"OK");
+widget->SetId(1001);
+widget->SetName(L"OkButton");
+widget->SetZIndex(10);  // Higher z-index renders on top
+widget->SetTag(customData);  // Store custom data
+```
+
+#### Event Handling
+
+```cpp
+using EventCallback = std::function<void(Widget*, WidgetEvent, void* data)>;
+void SetEventCallback(EventCallback callback);
+
+// Event types
+enum class WidgetEvent {
+    CLICK,
+    DOUBLE_CLICK,
+    MOUSE_ENTER,
+    MOUSE_LEAVE,
+    MOUSE_MOVE,
+    KEY_PRESS,
+    KEY_RELEASE,
+    TEXT_CHANGED,
+    FOCUS_GAINED,
+    FOCUS_LOST,
+    VALUE_CHANGED
+};
+```
+
+**Example**:
+```cpp
+auto button = std::make_shared<SDK::Button>(L"Click Me");
+button->SetEventCallback([](SDK::Widget* w, SDK::WidgetEvent e, void* data) {
+    if (e == SDK::WidgetEvent::CLICK) {
+        MessageBoxW(nullptr, L"Button clicked!", L"Info", MB_OK);
+    }
+});
+```
+
+#### Hierarchy
+
+```cpp
+void SetParent(Widget* parent);
+Widget* GetParent() const;
+
+void AddChild(std::shared_ptr<Widget> child);
+void RemoveChild(std::shared_ptr<Widget> child);
+const std::vector<std::shared_ptr<Widget>>& GetChildren() const;
+```
+
+**Example**:
+```cpp
+auto panel = std::make_shared<SDK::Panel>();
+auto button1 = std::make_shared<SDK::Button>(L"Button 1");
+auto button2 = std::make_shared<SDK::Button>(L"Button 2");
+
+panel->AddChild(button1);
+panel->AddChild(button2);
+
+// Get all children
+const auto& children = panel->GetChildren();
+```
+
+#### Theme Support
+
+```cpp
+void SetTheme(std::shared_ptr<Theme> theme);
+std::shared_ptr<Theme> GetTheme() const;
+```
+
+**Example**:
+```cpp
+auto theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateDarkTheme());
+button->SetTheme(theme);
+```
+
+### Property Defaults
+
+All widgets are initialized with the following defaults:
+
+- **Position**: (0, 0)
+- **Size**: 100x30
+- **Visible**: true
+- **Enabled**: true
+- **Padding**: 0 on all sides
+- **Margin**: 0 on all sides
+- **Min Size**: 0x0 (no minimum)
+- **Max Size**: INT_MAX x INT_MAX (no maximum)
+- **Opacity**: 1.0 (fully opaque)
+- **Border Width**: 0 (no border)
+- **Border Radius**: 0 (square corners)
+- **Z-Index**: 0
+- **Font Family**: "Segoe UI"
+- **Font Size**: 12pt
+- **Font Bold**: false
+- **Font Italic**: false
+
+### Complete Widget Example
+
+```cpp
+#include "SDK/SDK.h"
+
+// Create and fully configure a widget
+auto createStyledButton() {
+    auto button = std::make_shared<SDK::Button>(L"Styled Button");
+    
+    // Layout
+    button->SetBounds(50, 50, 150, 40);
+    button->SetPadding(12, 8, 12, 8);
+    button->SetMargin(10);
+    button->SetMinSize(100, 30);
+    button->SetMaxSize(200, 50);
+    
+    // Visual
+    button->SetOpacity(0.95f);
+    button->SetBorderWidth(1);
+    button->SetBorderRadius(6);
+    
+    // Font
+    button->SetFontFamily(L"Segoe UI");
+    button->SetFontSize(14);
+    button->SetFontBold(true);
+    
+    // Interaction
+    button->SetTooltipText(L"Click to perform action");
+    button->SetCursor(LoadCursor(nullptr, IDC_HAND));
+    
+    // Identification
+    button->SetName(L"ActionButton");
+    button->SetId(1001);
+    button->SetZIndex(5);
+    
+    // Event handling
+    button->SetEventCallback([](SDK::Widget* w, SDK::WidgetEvent e, void* d) {
+        if (e == SDK::WidgetEvent::CLICK) {
+            // Handle click
+        }
+    });
+    
+    return button;
+}
+```
+

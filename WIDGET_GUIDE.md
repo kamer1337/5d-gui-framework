@@ -10,15 +10,50 @@ The widget system provides reusable UI components that can be easily added to wi
 
 All widgets inherit from `SDK::Widget` which provides:
 
+### Basic Properties
 - **Position and Size**: `SetPosition()`, `SetSize()`, `SetBounds()`, `GetBounds()`
 - **Visibility**: `SetVisible()`, `IsVisible()`
 - **Enabled State**: `SetEnabled()`, `IsEnabled()`
 - **Hover State**: `SetHovered()`, `IsHovered()`
+- **Focus State**: `SetFocused()`, `IsFocused()`
+
+### Layout Properties
+- **Padding**: `SetPadding(int)`, `SetPadding(left, top, right, bottom)`, `GetPadding()`
+- **Margin**: `SetMargin(int)`, `SetMargin(left, top, right, bottom)`, `GetMargin()`
+- **Size Constraints**: `SetMinSize()`, `GetMinSize()`, `SetMaxSize()`, `GetMaxSize()`
+- **Z-Index**: `SetZIndex()`, `GetZIndex()` - Widget stacking order
+
+### Visual Properties
+- **Opacity**: `SetOpacity()`, `GetOpacity()` - Alpha transparency (0.0-1.0)
+- **Border**: `SetBorderWidth()`, `GetBorderWidth()`, `SetBorderRadius()`, `GetBorderRadius()`
+- **Theme**: `SetTheme()`, `GetTheme()` - Apply custom themes
+
+### Font Properties
+- **Font Family**: `SetFontFamily()`, `GetFontFamily()` - Font name (default: "Segoe UI")
+- **Font Size**: `SetFontSize()`, `GetFontSize()` - Font size in points (default: 12)
+- **Font Style**: `SetFontBold()`, `IsFontBold()`, `SetFontItalic()`, `IsFontItalic()`
+
+### Interaction Properties
+- **Tooltip**: `SetTooltipText()`, `GetTooltipText()` - Hover tooltip text
+- **Cursor**: `SetCursor()`, `GetCursor()` - Custom mouse cursor
+
+### Identification
+- **ID**: `SetId()`, `GetId()` - Numeric identifier
+- **Name**: `SetName()`, `GetName()` - String name for identification
+- **Tag**: `SetTag()`, `GetTag()` - Custom data pointer
+
+### Event Handling
 - **Hit Testing**: `HitTest(x, y)` - Check if a point is inside the widget
-- **Rendering**: `Render(HDC)` - Draw the widget (pure virtual)
-- **Animation**: `Update(deltaTime)` - Update widget state for animations
 - **Mouse Events**: `OnMouseEnter()`, `OnMouseLeave()`, `OnMouseMove()`, `OnMouseDown()`, `OnMouseUp()`, `OnClick()`
-- **Identification**: `SetId()`, `GetId()`, `SetTag()`, `GetTag()`
+- **Keyboard Events**: `HandleKeyDown()`, `HandleKeyUp()`, `HandleChar()`
+- **Event Callbacks**: `SetEventCallback()` - Custom event handlers
+
+### Hierarchy
+- **Parent/Child**: `SetParent()`, `GetParent()`, `AddChild()`, `RemoveChild()`, `GetChildren()`
+
+### Rendering
+- **Render**: `Render(HDC)` - Draw the widget (pure virtual)
+- **Update**: `Update(deltaTime)` - Update widget state for animations
 
 ## Available Widgets
 
@@ -591,6 +626,150 @@ builder.RegisterWidgetFactory(L"button", [](const std::wstring& params) {
 
 // Now you can use it in prompts
 HWND hwnd = builder.BuildFromPrompt(L"window with button", hInstance);
+```
+
+## Using Widget Properties
+
+### Layout Properties Example
+
+```cpp
+#include "SDK/SDK.h"
+
+// Create a button with padding and margin
+auto button = std::make_shared<SDK::Button>(L"Submit");
+button->SetPosition(50, 50);
+button->SetSize(120, 40);
+
+// Add padding inside the button
+button->SetPadding(10);  // 10px on all sides
+// Or set individual padding
+button->SetPadding(15, 10, 15, 10);  // left, top, right, bottom
+
+// Add margin around the button
+button->SetMargin(20);  // 20px margin on all sides
+
+// Set size constraints
+button->SetMinSize(80, 30);   // Minimum size
+button->SetMaxSize(200, 60);  // Maximum size
+```
+
+### Visual Properties Example
+
+```cpp
+// Create a semi-transparent panel
+auto panel = std::make_shared<SDK::Panel>();
+panel->SetBounds(100, 100, 300, 200);
+panel->SetOpacity(0.9f);  // 90% opaque
+
+// Add rounded borders
+panel->SetBorderWidth(2);
+panel->SetBorderRadius(12);  // Rounded corners
+
+// Set z-index for layering
+panel->SetZIndex(10);  // Higher z-index = rendered on top
+```
+
+### Font Properties Example
+
+```cpp
+// Create a label with custom font
+auto label = std::make_shared<SDK::Label>(L"Custom Font Text");
+label->SetPosition(50, 150);
+
+// Configure font
+label->SetFontFamily(L"Arial");
+label->SetFontSize(16);
+label->SetFontBold(true);
+label->SetFontItalic(false);
+```
+
+### Interaction Properties Example
+
+```cpp
+// Create a button with tooltip and custom cursor
+auto helpButton = std::make_shared<SDK::Button>(L"?");
+helpButton->SetBounds(10, 10, 30, 30);
+
+// Add tooltip that appears on hover
+helpButton->SetTooltipText(L"Click for help information");
+
+// Set custom cursor (hand pointer)
+helpButton->SetCursor(LoadCursor(nullptr, IDC_HAND));
+
+// Set descriptive name for identification
+helpButton->SetName(L"HelpButton");
+helpButton->SetId(1001);
+```
+
+### Complete Widget Configuration
+
+```cpp
+// Create a fully configured text box
+auto textBox = std::make_shared<SDK::TextBox>();
+
+// Position and size
+textBox->SetBounds(50, 200, 250, 35);
+textBox->SetMinSize(150, 25);
+textBox->SetMaxSize(400, 50);
+
+// Layout
+textBox->SetPadding(8, 5, 8, 5);
+textBox->SetMargin(10);
+
+// Visual
+textBox->SetOpacity(1.0f);
+textBox->SetBorderWidth(1);
+textBox->SetBorderRadius(4);
+
+// Font
+textBox->SetFontFamily(L"Consolas");
+textBox->SetFontSize(11);
+textBox->SetFontBold(false);
+textBox->SetFontItalic(false);
+
+// Interaction
+textBox->SetTooltipText(L"Enter your text here");
+textBox->SetName(L"MainInputBox");
+textBox->SetId(2001);
+textBox->SetZIndex(5);
+
+// Content
+textBox->SetPlaceholder(L"Type something...");
+textBox->SetMaxLength(100);
+```
+
+### Property Getter Example
+
+```cpp
+// Reading widget properties
+auto widget = widgetManager->GetWidgetById(1001);
+if (widget) {
+    // Get layout info
+    int left, top, right, bottom;
+    widget->GetPadding(left, top, right, bottom);
+    widget->GetMargin(left, top, right, bottom);
+    
+    // Get size constraints
+    int minW, minH, maxW, maxH;
+    widget->GetMinSize(minW, minH);
+    widget->GetMaxSize(maxW, maxH);
+    
+    // Get visual properties
+    float opacity = widget->GetOpacity();
+    int borderWidth = widget->GetBorderWidth();
+    int borderRadius = widget->GetBorderRadius();
+    
+    // Get font properties
+    std::wstring fontFamily = widget->GetFontFamily();
+    int fontSize = widget->GetFontSize();
+    bool isBold = widget->IsFontBold();
+    bool isItalic = widget->IsFontItalic();
+    
+    // Get identification
+    std::wstring name = widget->GetName();
+    int zIndex = widget->GetZIndex();
+    std::wstring tooltip = widget->GetTooltipText();
+}
 ```
 
 ## Complete Example
