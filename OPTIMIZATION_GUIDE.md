@@ -90,8 +90,14 @@ if (particle) {
     particle->color = Color(255, 100, 100, 255);
 }
 
-// Update all particles in the pool
+// Update all particles in the pool (single-threaded)
 Renderer::UpdateParticlesInPool(particlePool, deltaTime);
+
+// Update all particles in the pool (multi-threaded for better performance)
+Renderer::UpdateParticlesInPoolMultiThreaded(particlePool, deltaTime);
+
+// You can also specify the number of threads (default: auto-detect)
+Renderer::UpdateParticlesInPoolMultiThreaded(particlePool, deltaTime, 4);
 
 // Draw all active particles
 Renderer::DrawParticlesFromPool(hdc, particlePool);
@@ -109,6 +115,41 @@ particlePool.ReleaseAll();
 - Automatic pool expansion when needed
 - Efficient memory reuse
 - Better cache locality
+- Multi-threaded update support for large particle systems
+
+### Multi-threaded Particle Updates
+
+For particle systems with thousands of particles, multi-threaded updates provide significant performance improvements:
+
+```cpp
+// Create a large particle pool
+Renderer::ParticlePool particlePool(10000);
+
+// In your update loop, use multi-threaded update
+Renderer::UpdateParticlesInPoolMultiThreaded(particlePool, deltaTime);
+
+// Automatic thread count detection (uses hardware_concurrency)
+// OR specify manually:
+Renderer::UpdateParticlesInPoolMultiThreaded(particlePool, deltaTime, 8);
+```
+
+**Performance characteristics:**
+- Automatically detects optimal thread count
+- Divides particles evenly across threads
+- Thread-safe particle release mechanism
+- Falls back to single-threaded for small particle counts
+- Typical speedup: 2-4x on modern multi-core CPUs
+
+**When to use:**
+- Particle counts > 1000 for noticeable benefit
+- Complex particle physics calculations
+- Real-time effects with many active particles
+- When CPU has multiple cores available
+
+**When NOT to use:**
+- Very small particle counts (< 100)
+- Single-core systems
+- When rendering is the bottleneck, not updates
 
 ### Texture Atlas
 

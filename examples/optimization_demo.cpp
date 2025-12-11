@@ -36,12 +36,13 @@ struct DemoState {
     bool showNoise = false;
     bool showParticles = true;
     bool showAnimations = true;
+    bool useMultiThreaded = true;  // Use multi-threaded particle updates by default
     
     // Timing
     std::chrono::steady_clock::time_point lastTime;
     float deltaTime = 0.016f;
     
-    DemoState() : particlePool(500) {
+    DemoState() : particlePool(5000) {  // Increased pool size to benefit from multi-threading
         lastTime = std::chrono::steady_clock::now();
         
         // Initialize animations
@@ -77,7 +78,11 @@ struct DemoState {
         }
         
         if (showParticles) {
-            Renderer::UpdateParticlesInPool(particlePool, deltaTime);
+            if (useMultiThreaded) {
+                Renderer::UpdateParticlesInPoolMultiThreaded(particlePool, deltaTime);
+            } else {
+                Renderer::UpdateParticlesInPool(particlePool, deltaTime);
+            }
         }
     }
 };
@@ -88,7 +93,7 @@ void RenderMainWindow(HDC hdc, Window* window) {
     if (!g_demoState) return;
     
     RECT clientRect;
-    GetClientRect(window->GetHWND(), &clientRect);
+    GetClientRect(window->GetHandle(), &clientRect);
     int width = clientRect.right - clientRect.left;
     int height = clientRect.bottom - clientRect.top;
     
@@ -195,10 +200,10 @@ void RenderMainWindow(HDC hdc, Window* window) {
         // Draw particles
         Renderer::DrawParticlesFromPool(hdc, g_demoState->particlePool);
         
-        // Spawn new particles occasionally
+        // Spawn new particles occasionally - more particles to test multi-threading
         static int frameCount = 0;
-        if (++frameCount % 10 == 0) {
-            for (int i = 0; i < 5; i++) {
+        if (++frameCount % 5 == 0) {  // Spawn more frequently
+            for (int i = 0; i < 10; i++) {  // Spawn more particles per frame
                 Renderer::Particle* p = g_demoState->particlePool.Acquire();
                 if (p) {
                     p->x = (float)(particleX + particleWidth / 2);
@@ -231,6 +236,11 @@ void RenderMainWindow(HDC hdc, Window* window) {
            << L" / " << g_demoState->particlePool.GetTotalCount();
         std::wstring statsStr = ss.str();
         TextOut(hdc, particleX + 5, particleY + 25, statsStr.c_str(), (int)statsStr.length());
+        
+        // Show threading mode
+        std::wstring threadMode = g_demoState->useMultiThreaded ? 
+            L"Mode: Multi-threaded" : L"Mode: Single-threaded";
+        TextOut(hdc, particleX + 5, particleY + 45, threadMode.c_str(), (int)threadMode.length());
         
         SelectObject(hdc, oldFont);
         DeleteObject(hFont);
@@ -276,11 +286,12 @@ void RenderMainWindow(HDC hdc, Window* window) {
                        CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Segoe UI");
     oldFont = (HFONT)SelectObject(hdc, hFont);
     
-    int instructY = height - 100;
+    int instructY = height - 120;
     TextOut(hdc, 20, instructY, L"Controls:", 9);
     TextOut(hdc, 20, instructY + 20, L"B - Toggle Blur Effect", 22);
     TextOut(hdc, 20, instructY + 40, L"L - Toggle Bloom Effect", 23);
     TextOut(hdc, 20, instructY + 60, L"N - Toggle Noise Overlay", 24);
+    TextOut(hdc, 20, instructY + 80, L"T - Toggle Multi-threaded Particles", 35);
     
     SelectObject(hdc, oldFont);
     DeleteObject(hFont);
@@ -330,6 +341,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     break;
                 case 'N':
                     g_demoState->showNoise = !g_demoState->showNoise;
+                    InvalidateRect(hwnd, nullptr, FALSE);
+                    break;
+                case 'T':
+                    g_demoState->useMultiThreaded = !g_demoState->useMultiThreaded;
                     InvalidateRect(hwnd, nullptr, FALSE);
                     break;
             }
