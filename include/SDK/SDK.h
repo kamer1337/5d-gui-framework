@@ -19,6 +19,7 @@
  * - Themed interface system
  * - Widget system (ProgressBar, Tooltip, Toolbar)
  * - Prompt-based window generation
+ * - Neural network for natural language GUI creation
  * - Advanced window features (groups, snapping, animations)
  * 
  * No external dependencies - pure Win32 API
@@ -38,6 +39,8 @@
 #include "Toolbar.h"
 #include "WidgetManager.h"
 #include "PromptWindowBuilder.h"
+#include "NeuralNetwork.h"
+#include "NeuralPromptBuilder.h"
 #include "AdvancedWidgets.h"
 #include "CameraController.h"
 #include "Widget3D.h"
