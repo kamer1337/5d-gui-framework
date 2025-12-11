@@ -9,6 +9,21 @@ Widget::Widget()
     : m_x(0), m_y(0), m_width(100), m_height(30)
     , m_visible(true), m_enabled(true), m_focused(false), m_hovered(false)
     , m_parent(nullptr)
+    , m_name(L"")
+    , m_paddingLeft(0), m_paddingTop(0), m_paddingRight(0), m_paddingBottom(0)
+    , m_marginLeft(0), m_marginTop(0), m_marginRight(0), m_marginBottom(0)
+    , m_minWidth(0), m_minHeight(0)
+    , m_maxWidth(65535), m_maxHeight(65535)
+    , m_opacity(1.0f)
+    , m_borderWidth(0)
+    , m_borderRadius(0)
+    , m_tooltipText(L"")
+    , m_cursor(nullptr)
+    , m_zIndex(0)
+    , m_fontFamily(L"Segoe UI")
+    , m_fontSize(12)
+    , m_fontBold(false)
+    , m_fontItalic(false)
 {
 }
 
@@ -26,6 +41,12 @@ void Widget::GetPosition(int& x, int& y) const {
 }
 
 void Widget::SetSize(int width, int height) {
+    // Apply min/max constraints
+    if (width < m_minWidth) width = m_minWidth;
+    if (height < m_minHeight) height = m_minHeight;
+    if (width > m_maxWidth) width = m_maxWidth;
+    if (height > m_maxHeight) height = m_maxHeight;
+    
     m_width = width;
     m_height = height;
 }
@@ -1097,6 +1118,92 @@ bool SpinBox::HandleKeyDown(int keyCode) {
     }
     
     return false;
+}
+
+// New property implementations
+
+void Widget::SetPadding(int padding) {
+    m_paddingLeft = m_paddingTop = m_paddingRight = m_paddingBottom = padding;
+}
+
+void Widget::SetPadding(int left, int top, int right, int bottom) {
+    m_paddingLeft = left;
+    m_paddingTop = top;
+    m_paddingRight = right;
+    m_paddingBottom = bottom;
+}
+
+void Widget::GetPadding(int& left, int& top, int& right, int& bottom) const {
+    left = m_paddingLeft;
+    top = m_paddingTop;
+    right = m_paddingRight;
+    bottom = m_paddingBottom;
+}
+
+void Widget::SetMargin(int margin) {
+    m_marginLeft = m_marginTop = m_marginRight = m_marginBottom = margin;
+}
+
+void Widget::SetMargin(int left, int top, int right, int bottom) {
+    m_marginLeft = left;
+    m_marginTop = top;
+    m_marginRight = right;
+    m_marginBottom = bottom;
+}
+
+void Widget::GetMargin(int& left, int& top, int& right, int& bottom) const {
+    left = m_marginLeft;
+    top = m_marginTop;
+    right = m_marginRight;
+    bottom = m_marginBottom;
+}
+
+void Widget::SetMinSize(int minWidth, int minHeight) {
+    m_minWidth = minWidth;
+    m_minHeight = minHeight;
+    
+    // Apply constraints to current size
+    if (m_width < m_minWidth) m_width = m_minWidth;
+    if (m_height < m_minHeight) m_height = m_minHeight;
+}
+
+void Widget::GetMinSize(int& minWidth, int& minHeight) const {
+    minWidth = m_minWidth;
+    minHeight = m_minHeight;
+}
+
+void Widget::SetMaxSize(int maxWidth, int maxHeight) {
+    m_maxWidth = maxWidth;
+    m_maxHeight = maxHeight;
+    
+    // Apply constraints to current size
+    if (m_width > m_maxWidth) m_width = m_maxWidth;
+    if (m_height > m_maxHeight) m_height = m_maxHeight;
+}
+
+void Widget::GetMaxSize(int& maxWidth, int& maxHeight) const {
+    maxWidth = m_maxWidth;
+    maxHeight = m_maxHeight;
+}
+
+void Widget::SetOpacity(float opacity) {
+    // Clamp opacity to valid range [0.0, 1.0]
+    m_opacity = std::min(std::max(opacity, 0.0f), 1.0f);
+}
+
+void Widget::SetBorderWidth(int width) {
+    if (width < 0) width = 0;
+    m_borderWidth = width;
+}
+
+void Widget::SetBorderRadius(int radius) {
+    if (radius < 0) radius = 0;
+    m_borderRadius = radius;
+}
+
+void Widget::SetFontSize(int size) {
+    if (size < 1) size = 1;
+    m_fontSize = size;
 }
 
 } // namespace SDK

@@ -93,6 +93,58 @@ public:
     void SetTag(void* tag) { m_tag = tag; }
     void* GetTag() const { return m_tag; }
     
+    // Name for identification
+    void SetName(const std::wstring& name) { m_name = name; }
+    std::wstring GetName() const { return m_name; }
+    
+    // Padding properties
+    void SetPadding(int padding);
+    void SetPadding(int left, int top, int right, int bottom);
+    void GetPadding(int& left, int& top, int& right, int& bottom) const;
+    
+    // Margin properties
+    void SetMargin(int margin);
+    void SetMargin(int left, int top, int right, int bottom);
+    void GetMargin(int& left, int& top, int& right, int& bottom) const;
+    
+    // Size constraints
+    void SetMinSize(int minWidth, int minHeight);
+    void GetMinSize(int& minWidth, int& minHeight) const;
+    void SetMaxSize(int maxWidth, int maxHeight);
+    void GetMaxSize(int& maxWidth, int& maxHeight) const;
+    
+    // Opacity
+    void SetOpacity(float opacity);
+    float GetOpacity() const { return m_opacity; }
+    
+    // Border properties
+    void SetBorderWidth(int width);
+    int GetBorderWidth() const { return m_borderWidth; }
+    void SetBorderRadius(int radius);
+    int GetBorderRadius() const { return m_borderRadius; }
+    
+    // Tooltip
+    void SetTooltipText(const std::wstring& text) { m_tooltipText = text; }
+    std::wstring GetTooltipText() const { return m_tooltipText; }
+    
+    // Cursor
+    void SetCursor(HCURSOR cursor) { m_cursor = cursor; }
+    HCURSOR GetCursor() const { return m_cursor; }
+    
+    // Z-index for layering
+    void SetZIndex(int zIndex) { m_zIndex = zIndex; }
+    int GetZIndex() const { return m_zIndex; }
+    
+    // Font properties
+    void SetFontFamily(const std::wstring& family) { m_fontFamily = family; }
+    std::wstring GetFontFamily() const { return m_fontFamily; }
+    void SetFontSize(int size);
+    int GetFontSize() const { return m_fontSize; }
+    void SetFontBold(bool bold) { m_fontBold = bold; }
+    bool IsFontBold() const { return m_fontBold; }
+    void SetFontItalic(bool italic) { m_fontItalic = italic; }
+    bool IsFontItalic() const { return m_fontItalic; }
+    
 protected:
     int m_x;
     int m_y;
@@ -162,6 +214,23 @@ protected:
     
     EventCallback m_eventCallback;
     std::shared_ptr<Theme> m_theme;
+    
+    // New properties
+    std::wstring m_name;
+    int m_paddingLeft, m_paddingTop, m_paddingRight, m_paddingBottom;
+    int m_marginLeft, m_marginTop, m_marginRight, m_marginBottom;
+    int m_minWidth, m_minHeight;
+    int m_maxWidth, m_maxHeight;
+    float m_opacity;
+    int m_borderWidth;
+    int m_borderRadius;
+    std::wstring m_tooltipText;
+    HCURSOR m_cursor;
+    int m_zIndex;
+    std::wstring m_fontFamily;
+    int m_fontSize;
+    bool m_fontBold;
+    bool m_fontItalic;
 };
 
 // Button widget
