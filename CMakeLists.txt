@@ -93,6 +93,10 @@ target_link_libraries(Toolbar_Demo PRIVATE 5DGUI_SDK)
 add_executable(Advanced_Window_Demo examples/advanced_window_demo.cpp)
 target_link_libraries(Advanced_Window_Demo PRIVATE 5DGUI_SDK)
 
+# Optimization demo application
+add_executable(Optimization_Demo examples/optimization_demo.cpp)
+target_link_libraries(Optimization_Demo PRIVATE 5DGUI_SDK)
+
 # Set subsystem to Windows (GUI application)
 if(MSVC)
     set_target_properties(5DGUI_Demo PROPERTIES
@@ -111,6 +115,9 @@ if(MSVC)
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
     set_target_properties(Advanced_Window_Demo PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+    )
+    set_target_properties(Optimization_Demo PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
 else()
@@ -132,6 +139,9 @@ else()
     set_target_properties(Advanced_Window_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
+    set_target_properties(Optimization_Demo PROPERTIES
+        LINK_FLAGS "-mwindows"
+    )
 endif()
 
 # Installation
@@ -146,7 +156,7 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo
+install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Optimization_Demo
     RUNTIME DESTINATION bin
 )
 
