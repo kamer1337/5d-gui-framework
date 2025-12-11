@@ -9,9 +9,14 @@
 #include <memory>
 #include <unordered_map>
 #include "Window.h"
+#include "WindowGroup.h"
+#include "WindowSnapping.h"
 #include "Theme.h"
 
 namespace SDK {
+
+// Forward declaration
+class WindowAnimation;
 
 /**
  * WindowManager - Manages multiple windows with multimodal support
@@ -52,6 +57,10 @@ public:
     
     void Update(float deltaTime);
     
+    // Advanced window features
+    WindowSnapping& GetSnapping() { return m_snapping; }
+    const WindowSnapping& GetSnapping() const { return m_snapping; }
+    
 private:
     WindowManager();
     ~WindowManager();
@@ -69,6 +78,8 @@ private:
     
     bool m_depthAnimation;
     float m_animationTime;
+    
+    WindowSnapping m_snapping;
 };
 
 } // namespace SDK

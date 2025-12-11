@@ -58,6 +58,12 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Billboard Mode**: Widgets always face camera for optimal visibility
 - **Depth Sorting**: Proper rendering order for 3D widgets
 
+### Advanced Window Features
+- **Window Groups**: Linked window movement and synchronized transformations
+- **Window Snapping**: Edge snapping, grid snapping, and magnetic windows
+- **Window Animations**: Smooth minimize/maximize/restore transitions with multiple animation types
+- **Easing Functions**: Linear, ease-in, ease-out, ease-in-out, and bounce effects
+
 ## Quick Start
 
 ### Basic Window with Widgets (Universal Function)
@@ -201,6 +207,7 @@ ShowWindow(hwnd, SW_SHOW);
 
 ## Documentation
 
+- **[Advanced Window Features](ADVANCED_WINDOW_FEATURES.md)**: Window groups, snapping, and animations
 - **[Camera Controller Guide](CAMERA_GUIDE.md)**: Camera controls and 3D widget placement
 - **[Widget Guide](WIDGET_GUIDE.md)**: Complete widget system documentation
 - **[API Reference](API.md)**: Complete API documentation with examples
@@ -246,14 +253,18 @@ MaterialGameEngine/
 │   ├── AdvancedWidgets.h     # Advanced widget components
 │   ├── CameraController.h    # 3D camera controls
 │   ├── Widget3D.h            # 3D widget placement
-│   └── Toolbar.h             # Toolbar widget
+│   ├── Toolbar.h             # Toolbar widget
+│   ├── WindowGroup.h         # Window grouping
+│   ├── WindowSnapping.h      # Window snapping
+│   └── WindowAnimation.h     # Window animations
 ├── src/SDK/             # Implementation files
 ├── examples/            # Demo applications
 │   ├── demo.cpp              # Original 5D rendering demo
 │   ├── widget_demo.cpp       # Widget system demo
 │   ├── widget_showcase.cpp   # Complete widget showcase
 │   ├── camera_demo.cpp       # 3D camera controller demo
-│   └── toolbar_demo.cpp      # Toolbar widget demo
+│   ├── toolbar_demo.cpp      # Toolbar widget demo
+│   └── advanced_window_demo.cpp  # Advanced window features demo
 ├── build/               # Build output (generated)
 ├── CMakeLists.txt       # CMake build file
 ├── Makefile             # Alternative build system

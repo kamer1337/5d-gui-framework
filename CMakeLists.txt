@@ -16,6 +16,9 @@ set(SDK_SOURCES
     src/SDK/WindowHook.cpp
     src/SDK/Window.cpp
     src/SDK/WindowManager.cpp
+    src/SDK/WindowGroup.cpp
+    src/SDK/WindowSnapping.cpp
+    src/SDK/WindowAnimation.cpp
     src/SDK/Theme.cpp
     src/SDK/Renderer.cpp
     src/SDK/Widget.cpp
@@ -34,6 +37,9 @@ set(SDK_HEADERS
     include/SDK/WindowHook.h
     include/SDK/Window.h
     include/SDK/WindowManager.h
+    include/SDK/WindowGroup.h
+    include/SDK/WindowSnapping.h
+    include/SDK/WindowAnimation.h
     include/SDK/Theme.h
     include/SDK/Renderer.h
     include/SDK/Widget.h
@@ -83,6 +89,10 @@ target_link_libraries(Camera_Demo PRIVATE 5DGUI_SDK)
 add_executable(Toolbar_Demo examples/toolbar_demo.cpp)
 target_link_libraries(Toolbar_Demo PRIVATE 5DGUI_SDK)
 
+# Advanced window features demo application
+add_executable(Advanced_Window_Demo examples/advanced_window_demo.cpp)
+target_link_libraries(Advanced_Window_Demo PRIVATE 5DGUI_SDK)
+
 # Set subsystem to Windows (GUI application)
 if(MSVC)
     set_target_properties(5DGUI_Demo PROPERTIES
@@ -98,6 +108,9 @@ if(MSVC)
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
     set_target_properties(Toolbar_Demo PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+    )
+    set_target_properties(Advanced_Window_Demo PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
 else()
@@ -116,6 +129,9 @@ else()
     set_target_properties(Toolbar_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
+    set_target_properties(Advanced_Window_Demo PROPERTIES
+        LINK_FLAGS "-mwindows"
+    )
 endif()
 
 # Installation
@@ -130,7 +146,7 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo
+install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo
     RUNTIME DESTINATION bin
 )
 

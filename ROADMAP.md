@@ -130,17 +130,17 @@ This document outlines planned features and improvements for the 5D GUI SDK.
   - Icon support in menus
 
 ### Advanced Window Features
-- [ ] **Window Groups**
+- [x] **Window Groups**
   - Linked window movement
   - Synchronized depth changes
   - Group transformations
   
-- [ ] **Snapping**
+- [x] **Snapping**
   - Edge snapping
   - Grid snapping
   - Magnetic windows
   
-- [ ] **Minimize/Maximize Animations**
+- [x] **Minimize/Maximize Animations**
   - Custom minimize effects
   - Smooth maximize transitions
   - Restore animations
