@@ -19,6 +19,7 @@
  * - Themed interface system
  * - Widget system (ProgressBar, Tooltip, Toolbar)
  * - Prompt-based window generation
+ * - Advanced window features (groups, snapping, animations)
  * 
  * No external dependencies - pure Win32 API
  */
@@ -26,6 +27,9 @@
 #include "WindowHook.h"
 #include "Window.h"
 #include "WindowManager.h"
+#include "WindowGroup.h"
+#include "WindowSnapping.h"
+#include "WindowAnimation.h"
 #include "Theme.h"
 #include "Renderer.h"
 #include "Widget.h"
