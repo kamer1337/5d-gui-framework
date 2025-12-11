@@ -185,7 +185,7 @@ Button3D::~Button3D() {
 void Button3D::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT rect = GetBounds();
+    RECT rect; GetBounds(rect);
     
     // Choose color based on state
     Color bgColor = m_pressed ? m_hoverColor : (m_hovered ? m_hoverColor : m_backgroundColor);
@@ -256,7 +256,7 @@ Label3D::~Label3D() {
 void Label3D::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT rect = GetBounds();
+    RECT rect; GetBounds(rect);
     
     // Draw background if not transparent
     if (!m_transparent) {
@@ -297,7 +297,7 @@ Panel3D::~Panel3D() {
 void Panel3D::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT rect = GetBounds();
+    RECT rect; GetBounds(rect);
     
     if (m_rounded) {
         Renderer::DrawRoundedRect(hdc, rect, m_cornerRadius, m_backgroundColor, m_borderColor, m_borderWidth);

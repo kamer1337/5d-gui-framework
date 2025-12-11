@@ -91,13 +91,17 @@ void Widget::SetHovered(bool hovered) {
 
 bool Widget::HitTest(int x, int y) const {
     if (!m_visible) return false;
-    return x >= m_x && x < m_x + m_width &&
-           y >= m_y && y < m_y + m_height;
+    RECT bounds; GetBounds(bounds);
+    return x >= bounds.left && x < bounds.right && y >= bounds.top && y < bounds.bottom;
 }
 
 void Widget::Update(float deltaTime) {
-    // Base implementation does nothing
-    // Derived classes can override for animations
+    if (!m_visible) return;
+    
+    // Update children
+    for (auto& child : m_children) {
+        child->Update(deltaTime);
+    }
 }
 
 void Widget::OnMouseEnter() {
@@ -122,13 +126,6 @@ void Widget::OnMouseUp(int x, int y) {
 
 void Widget::OnClick() {
     // Override in derived classes
-RECT Widget::GetBounds() const {
-    RECT bounds;
-    bounds.left = m_x;
-    bounds.top = m_y;
-    bounds.right = m_x + m_width;
-    bounds.bottom = m_y + m_height;
-    return bounds;
 }
 
 void Widget::SetFocused(bool focused) {
@@ -161,15 +158,6 @@ void Widget::Render(HDC hdc) {
     // Render children
     for (auto& child : m_children) {
         child->Render(hdc);
-    }
-}
-
-void Widget::Update(float deltaTime) {
-    if (!m_visible) return;
-    
-    // Update children
-    for (auto& child : m_children) {
-        child->Update(deltaTime);
     }
 }
 
@@ -252,11 +240,6 @@ bool Widget::HandleChar(wchar_t ch) {
     return false;
 }
 
-bool Widget::HitTest(int x, int y) const {
-    RECT bounds = GetBounds();
-    return x >= bounds.left && x < bounds.right && y >= bounds.top && y < bounds.bottom;
-}
-
 void Widget::TriggerEvent(WidgetEvent event, void* data) {
     if (m_eventCallback) {
         m_eventCallback(this, event, data);
@@ -282,7 +265,7 @@ Button::~Button() {
 void Button::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     // Choose color based on state
     Color bgColor = m_backgroundColor;
@@ -350,7 +333,7 @@ Label::~Label() {
 void Label::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, m_textColor.ToCOLORREF());
@@ -389,7 +372,7 @@ void TextBox::SetText(const std::wstring& text) {
 void TextBox::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     // Draw background and border
     Renderer::DrawRoundedRect(hdc, bounds, 4, m_backgroundColor, m_borderColor, m_focused ? 2 : 1);
@@ -575,7 +558,7 @@ Separator::~Separator() {
 void Separator::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     HBRUSH brush = CreateSolidBrush(m_color.ToCOLORREF());
     FillRect(hdc, &bounds, brush);
@@ -656,7 +639,7 @@ void Image::SetHBITMAP(HBITMAP bitmap) {
 void Image::Render(HDC hdc) {
     if (!m_visible || !m_bitmap) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     HDC memDC = CreateCompatibleDC(hdc);
     HBITMAP oldBitmap = (HBITMAP)SelectObject(memDC, m_bitmap);
@@ -731,7 +714,7 @@ void Slider::GetRange(float& minValue, float& maxValue) const {
 void Slider::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     // Protect against division by zero
     if (m_maxValue == m_minValue) {
@@ -828,7 +811,7 @@ bool Slider::HandleMouseUp(int x, int y, int button) {
 }
 
 void Slider::UpdateValueFromPosition(int x, int y) {
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     if (m_orientation == Orientation::HORIZONTAL) {
         int trackLeft = bounds.left + 10;
@@ -964,7 +947,7 @@ Panel::~Panel() {
 void Panel::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     // Draw border and background
     Renderer::DrawRoundedRect(hdc, bounds, 8, m_backgroundColor, m_borderColor, 2);
@@ -1035,7 +1018,7 @@ void SpinBox::GetRange(int& minValue, int& maxValue) const {
 void SpinBox::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     // Draw background
     int buttonWidth = 20;
@@ -1085,7 +1068,7 @@ bool SpinBox::HandleMouseDown(int x, int y, int button) {
     if (!m_visible || !m_enabled) return false;
     
     if (HitTest(x, y) && button == 0) {
-        RECT bounds = GetBounds();
+        RECT bounds; GetBounds(bounds);
         int buttonWidth = 20;
         
         // Check if clicking up button

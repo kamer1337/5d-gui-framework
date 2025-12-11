@@ -47,6 +47,10 @@
     // Define Windows-like types for Linux
     typedef void* HWND;
     typedef void* HINSTANCE;
+    typedef void* HCURSOR;
+    typedef void* HBITMAP;
+    typedef void* HMENU;
+    typedef void* LPVOID;
     typedef unsigned char BYTE;
     typedef unsigned long DWORD;
     typedef int BOOL;
@@ -54,6 +58,7 @@
     typedef void* HBRUSH;
     typedef void* HPEN;
     typedef unsigned long COLORREF;  // RGB color value
+    typedef const wchar_t* LPCWSTR;
     typedef struct tagRECT {
         long left;
         long top;
