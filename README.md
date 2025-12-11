@@ -265,6 +265,8 @@ ShowWindow(hwnd, SW_SHOW);
 
 ## Documentation
 
+- **[Optimization Guide](OPTIMIZATION_GUIDE.md)**: Rendering and memory optimization features ✅
+- **[Optimizations Completed](OPTIMIZATIONS_COMPLETED.md)**: Complete implementation summary ✅
 - **[Neural Network Guide](NEURAL_NETWORK_GUIDE.md)**: AI-powered GUI creation with natural language
 - **[Advanced Window Features](ADVANCED_WINDOW_FEATURES.md)**: Window groups, snapping, and animations
 - **[Camera Controller Guide](CAMERA_GUIDE.md)**: Camera controls and 3D widget placement

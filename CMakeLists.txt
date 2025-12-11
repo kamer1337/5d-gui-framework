@@ -179,7 +179,7 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo
+install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo
     RUNTIME DESTINATION bin
 )
 
