@@ -90,6 +90,7 @@ void Widget::SetHovered(bool hovered) {
 }
 
 bool Widget::HitTest(int x, int y) const {
+    if (!m_visible) return false;
     RECT bounds; GetBounds(bounds);
     return x >= bounds.left && x < bounds.right && y >= bounds.top && y < bounds.bottom;
 }
