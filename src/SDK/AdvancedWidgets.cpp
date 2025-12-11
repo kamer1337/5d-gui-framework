@@ -55,7 +55,7 @@ std::wstring ComboBox::GetSelectedItem() const {
 void ComboBox::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     // Draw main box
     Renderer::DrawRoundedRect(hdc, bounds, 4, m_backgroundColor, Color(128, 128, 128, 255), 1);
@@ -110,7 +110,7 @@ void ComboBox::Render(HDC hdc) {
 bool ComboBox::HandleMouseDown(int x, int y, int button) {
     if (!m_visible || !m_enabled) return false;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     if (m_dropdownOpen) {
         // Check dropdown items
@@ -175,7 +175,7 @@ void ListBox::SetSelectedIndex(int index) {
 void ListBox::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     // Draw background
     Renderer::DrawRoundedRect(hdc, bounds, 4, Color(255, 255, 255, 255), Color(128, 128, 128, 255), 1);
@@ -216,7 +216,7 @@ bool ListBox::HandleMouseDown(int x, int y, int button) {
     if (!m_visible || !m_enabled) return false;
     
     if (HitTest(x, y)) {
-        RECT bounds = GetBounds();
+        RECT bounds; GetBounds(bounds);
         int itemHeight = 25;
         int relY = y - bounds.top;
         int index = m_scrollOffset + relY / itemHeight;
@@ -294,7 +294,7 @@ std::vector<int> ListView::GetCheckedItems() const {
 void ListView::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     // Draw background
     Renderer::DrawRoundedRect(hdc, bounds, 4, Color(255, 255, 255, 255), Color(128, 128, 128, 255), 1);
@@ -340,7 +340,7 @@ bool ListView::HandleMouseDown(int x, int y, int button) {
     if (!m_visible || !m_enabled) return false;
     
     if (HitTest(x, y)) {
-        RECT bounds = GetBounds();
+        RECT bounds; GetBounds(bounds);
         int relY = y - bounds.top;
         int index = m_scrollOffset + relY / m_itemHeight;
         
@@ -425,7 +425,7 @@ std::shared_ptr<Widget> TabControl::GetTabContent(int index) {
 void TabControl::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     // Draw tab headers
     int tabWidth = m_width / (std::max)(1, (int)m_tabs.size());
@@ -461,7 +461,7 @@ void TabControl::Render(HDC hdc) {
 bool TabControl::HandleMouseDown(int x, int y, int button) {
     if (!m_visible || !m_enabled) return false;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     
     // Check if clicking on tab headers
     if (y >= bounds.top && y < bounds.top + m_tabHeight) {
@@ -547,7 +547,7 @@ void FileTree::LoadDirectory(std::shared_ptr<TreeNode> node) {
 void FileTree::Render(HDC hdc) {
     if (!m_visible || !m_rootNode) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     Renderer::DrawRoundedRect(hdc, bounds, 4, Color(255, 255, 255, 255), Color(128, 128, 128, 255), 1);
     
     int yOffset = bounds.top;
@@ -559,7 +559,7 @@ void FileTree::Render(HDC hdc) {
 void FileTree::RenderNode(HDC hdc, std::shared_ptr<TreeNode> node, int& yOffset) {
     if (!node) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     int indent = node->depth * 15;
     
     RECT nodeRect = {bounds.left + indent, yOffset, bounds.right, yOffset + m_itemHeight};
@@ -590,7 +590,7 @@ void FileTree::RenderNode(HDC hdc, std::shared_ptr<TreeNode> node, int& yOffset)
 std::shared_ptr<FileTree::TreeNode> FileTree::HitTestNode(int x, int y) {
     if (!m_rootNode) return nullptr;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     int yOffset = bounds.top;
     return HitTestNodeRecursive(m_rootNode, x, y, yOffset);
 }
@@ -598,7 +598,7 @@ std::shared_ptr<FileTree::TreeNode> FileTree::HitTestNode(int x, int y) {
 std::shared_ptr<FileTree::TreeNode> FileTree::HitTestNodeRecursive(std::shared_ptr<TreeNode> node, int x, int y, int& yOffset) {
     if (!node) return nullptr;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     int indent = node->depth * 15;
     RECT nodeRect = {bounds.left + indent, yOffset, bounds.right, yOffset + m_itemHeight};
     
@@ -858,7 +858,7 @@ void SyntaxHighlightTextEditor::UpdateSyntaxHighlighting() {
 void SyntaxHighlightTextEditor::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     Renderer::DrawRoundedRect(hdc, bounds, 4, Color(255, 255, 255, 255), Color(128, 128, 128, 255), 1);
     
     SetBkMode(hdc, TRANSPARENT);
@@ -903,7 +903,7 @@ bool SyntaxHighlightTextEditor::HandleMouseDown(int x, int y, int button) {
         SetFocused(true);
         
         // Calculate cursor position from click
-        RECT bounds = GetBounds();
+        RECT bounds; GetBounds(bounds);
         int lineHeight = 18;
         int lineNumberWidth = m_showLineNumbers ? 40 : 0;
         
@@ -1017,7 +1017,7 @@ void FileExplorer::LoadDirectory() {
 void FileExplorer::Render(HDC hdc) {
     if (!m_visible) return;
     
-    RECT bounds = GetBounds();
+    RECT bounds; GetBounds(bounds);
     Renderer::DrawRoundedRect(hdc, bounds, 4, Color(255, 255, 255, 255), Color(128, 128, 128, 255), 1);
     
     RECT addrBarRect = {bounds.left, bounds.top, bounds.right, bounds.top + 30};
@@ -1071,7 +1071,7 @@ bool FileExplorer::HandleMouseDown(int x, int y, int button) {
     if (!m_visible || !m_enabled) return false;
     
     if (HitTest(x, y)) {
-        RECT bounds = GetBounds();
+        RECT bounds; GetBounds(bounds);
         int itemHeight = 25;
         int relY = y - (bounds.top + 30);
         
