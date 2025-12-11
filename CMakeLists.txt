@@ -26,6 +26,8 @@ set(SDK_SOURCES
     src/SDK/Tooltip.cpp
     src/SDK/WidgetManager.cpp
     src/SDK/PromptWindowBuilder.cpp
+    src/SDK/NeuralNetwork.cpp
+    src/SDK/NeuralPromptBuilder.cpp
     src/SDK/AdvancedWidgets.cpp
     src/SDK/CameraController.cpp
     src/SDK/Widget3D.cpp
@@ -47,6 +49,8 @@ set(SDK_HEADERS
     include/SDK/Tooltip.h
     include/SDK/WidgetManager.h
     include/SDK/PromptWindowBuilder.h
+    include/SDK/NeuralNetwork.h
+    include/SDK/NeuralPromptBuilder.h
     include/SDK/AdvancedWidgets.h
     include/SDK/CameraController.h
     include/SDK/Widget3D.h
@@ -93,6 +97,9 @@ target_link_libraries(Toolbar_Demo PRIVATE 5DGUI_SDK)
 add_executable(Advanced_Window_Demo examples/advanced_window_demo.cpp)
 target_link_libraries(Advanced_Window_Demo PRIVATE 5DGUI_SDK)
 
+# Neural network demo application
+add_executable(Neural_Network_Demo examples/neural_network_demo.cpp)
+target_link_libraries(Neural_Network_Demo PRIVATE 5DGUI_SDK)
 # Optimization demo application
 add_executable(Optimization_Demo examples/optimization_demo.cpp)
 target_link_libraries(Optimization_Demo PRIVATE 5DGUI_SDK)
@@ -117,6 +124,7 @@ if(MSVC)
     set_target_properties(Advanced_Window_Demo PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
+    set_target_properties(Neural_Network_Demo PROPERTIES
     set_target_properties(Optimization_Demo PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
@@ -139,6 +147,7 @@ else()
     set_target_properties(Advanced_Window_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
+    set_target_properties(Neural_Network_Demo PROPERTIES
     set_target_properties(Optimization_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
@@ -156,6 +165,7 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
+install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo
 install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Optimization_Demo
     RUNTIME DESTINATION bin
 )
