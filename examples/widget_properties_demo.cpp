@@ -356,14 +356,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     // Message loop with animation support
     MSG msg = {};
     DWORD lastTime = GetTickCount();
+    bool running = true;
     
-    while (true) {
+    while (running) {
         while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
             if (msg.message == WM_QUIT) {
-                goto cleanup;
+                running = false;
+                break;
             }
             TranslateMessage(&msg);
             DispatchMessage(&msg);
+        }
+        
+        if (!running) {
+            break;
         }
         
         // Update animations
@@ -381,7 +387,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
         Sleep(16);  // ~60 FPS
     }
     
-cleanup:
     SDK::Shutdown();
     return (int)msg.wParam;
 }

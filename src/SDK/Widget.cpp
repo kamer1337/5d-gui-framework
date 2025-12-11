@@ -1,7 +1,6 @@
 #include "../../include/SDK/Widget.h"
 #include "../../include/SDK/Renderer.h"
 #include <algorithm>
-#include <climits>
 
 namespace SDK {
 
@@ -14,7 +13,7 @@ Widget::Widget()
     , m_paddingLeft(0), m_paddingTop(0), m_paddingRight(0), m_paddingBottom(0)
     , m_marginLeft(0), m_marginTop(0), m_marginRight(0), m_marginBottom(0)
     , m_minWidth(0), m_minHeight(0)
-    , m_maxWidth(INT_MAX), m_maxHeight(INT_MAX)
+    , m_maxWidth(65535), m_maxHeight(65535)
     , m_opacity(1.0f)
     , m_borderWidth(0)
     , m_borderRadius(0)
@@ -1189,9 +1188,7 @@ void Widget::GetMaxSize(int& maxWidth, int& maxHeight) const {
 
 void Widget::SetOpacity(float opacity) {
     // Clamp opacity to valid range [0.0, 1.0]
-    if (opacity < 0.0f) opacity = 0.0f;
-    if (opacity > 1.0f) opacity = 1.0f;
-    m_opacity = opacity;
+    m_opacity = std::min(std::max(opacity, 0.0f), 1.0f);
 }
 
 void Widget::SetBorderWidth(int width) {
