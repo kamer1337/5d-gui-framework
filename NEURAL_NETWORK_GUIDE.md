@@ -323,14 +323,36 @@ The hybrid approach combines:
 - **Initialization**: < 1ms
 - **Single prompt parsing**: < 5ms
 - **Window creation**: Depends on window complexity
-- **Memory footprint**: ~500KB for network weights and vocabulary
+- **Memory footprint**: ~800KB for network weights and expanded vocabulary (2100+ words)
 
 ### Limitations
 
-1. **Fixed vocabulary**: Unknown words are mapped to `<UNK>` token
+1. **Fixed vocabulary**: Unknown words are mapped to `<UNK>` token (2100+ words supported)
 2. **Simple architecture**: Not suitable for complex semantic understanding
 3. **Limited context**: No conversation history or multi-turn dialogues
 4. **English only**: Currently trained on English GUI terminology
+
+### Recent Enhancements (v1.2.1)
+
+**Expanded Vocabulary**: Added 200+ new GUI-related terms including:
+- Advanced widget types (slider, combobox, listbox, toolbar, etc.)
+- Layout and positioning keywords (left, right, top, bottom, center, horizontal, vertical)
+- State and visibility terms (enabled, disabled, hidden, visible)
+- Common GUI actions (submit, cancel, apply, save, load, search)
+- Neural network-specific terms (neural, network, ai, intelligent, smart)
+
+**Improved Entity Extraction**:
+- Position detection (left, right, top, bottom, center)
+- Alignment recognition (horizontal, vertical)
+- State extraction (visible, hidden, enabled, disabled)
+- Action keywords (submit, cancel, apply, save, load)
+- Support for double quotes in addition to single quotes
+- Enhanced callback type detection (added onChange)
+
+**Better Pattern Matching**:
+- More synonym support for common widgets
+- Improved form/dialog detection
+- Enhanced field/input recognition
 
 ## Best Practices
 
@@ -339,6 +361,9 @@ The hybrid approach combines:
 ```cpp
 // Good: Specific dimensions and widget types
 builder.BuildFromPrompt(L"Create window 800x600 with button and textbox", hInstance);
+
+// Better: Include position information
+builder.BuildFromPrompt(L"Create window 800x600 with button at top and textbox below", hInstance);
 
 // Avoid: Vague or ambiguous
 builder.BuildFromPrompt(L"Make something", hInstance);
@@ -349,6 +374,10 @@ builder.BuildFromPrompt(L"Make something", hInstance);
 ```cpp
 // Good: Uses standard widget names
 builder.BuildFromPrompt(L"Add a progress bar", hInstance);
+
+// Also good: Use synonyms now supported
+builder.BuildFromPrompt(L"Add a slider", hInstance);
+builder.BuildFromPrompt(L"Add a dropdown menu", hInstance);
 
 // Works but less accurate: Non-standard terms
 builder.BuildFromPrompt(L"Add a loading indicator", hInstance);
@@ -465,8 +494,42 @@ The neural network system is designed to be extensible:
 2. **Context awareness**: Remember previous prompts in session
 3. **Multi-language**: Support for non-English prompts
 4. **Advanced callbacks**: Generate more complex event handlers
-5. **UI layout**: Understand spatial relationships and positioning
+5. **UI layout**: Understand spatial relationships and positioning (✅ Partially implemented)
 6. **Style inference**: Infer theme and styling from prompt tone
+
+## Cross-Platform Support
+
+The neural network implementation is **fully cross-platform** and works identically on:
+
+- ✅ **Windows** (7, 8, 10, 11) - Full support
+- ✅ **Linux** (X11/Wayland) - Full support
+- ✅ **macOS** - Experimental support
+
+The neural network uses only standard C++ libraries with no platform-specific dependencies:
+- Pure C++17 implementation
+- No external ML frameworks (TensorFlow, PyTorch, etc.)
+- Platform-independent text processing
+- Works with any windowing system
+
+**Benefits for Linux/Unix Users**:
+- Same natural language GUI creation capabilities
+- Full vocabulary and entity extraction
+- Identical API and usage patterns
+- No need for platform-specific adjustments
+
+**Example Cross-Platform Usage**:
+```cpp
+#include "SDK/SDK.h"
+
+// This code works identically on Windows, Linux, and macOS
+SDK::NeuralPromptBuilder builder;
+auto parsed = builder.ParsePrompt(
+    L"Create window 800x600 with button and textbox"
+);
+
+// The neural network processing is platform-independent
+// Platform-specific rendering happens elsewhere
+```
 
 ## See Also
 
@@ -474,3 +537,4 @@ The neural network system is designed to be extensible:
 - [Widget Guide](WIDGET_GUIDE.md) - Complete widget system documentation
 - [API Reference](API.md) - Full SDK API documentation
 - [Examples](examples/) - Sample applications using neural network
+- [BUILD.md](BUILD.md) - Cross-platform build instructions

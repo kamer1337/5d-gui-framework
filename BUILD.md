@@ -1,10 +1,10 @@
 # Building the 5D GUI SDK
 
-This document provides instructions for building the 5D GUI SDK and demo application on Windows.
+This document provides instructions for building the 5D GUI SDK and demo applications on Windows and Linux.
 
 ## Prerequisites
 
-### Required
+### Windows
 
 - **Operating System**: Windows 7 or later
 - **Compiler**: One of the following:
@@ -16,17 +16,47 @@ This document provides instructions for building the 5D GUI SDK and demo applica
   - CMake 3.10+ (recommended)
   - OR Make (MinGW)
 
-### Windows SDK
+#### Windows SDK
 
 The Windows SDK is required for Win32 API headers and libraries:
 - Usually included with Visual Studio
 - Standalone download: https://developer.microsoft.com/windows/downloads/windows-sdk/
 
+### Linux
+
+- **Operating System**: Any modern Linux distribution with X11
+- **Compiler**: One of the following:
+  - GCC 7.0+ (recommended)
+  - Clang 5.0+
+- **C++ Standard**: C++17 or later
+- **Build Tools**: CMake 3.10+ (required)
+- **Required Libraries**:
+  - X11 development libraries
+  - pthread (usually included)
+
+#### Installing Linux Dependencies
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install build-essential cmake libx11-dev
+```
+
+**Fedora/RHEL:**
+```bash
+sudo dnf install gcc-c++ cmake libX11-devel
+```
+
+**Arch Linux:**
+```bash
+sudo pacman -S base-devel cmake libx11
+```
+
 ## Build Methods
 
 ### Method 1: CMake (Recommended)
 
-#### With Visual Studio
+#### Windows - With Visual Studio
 
 ```cmd
 # Create build directory
@@ -42,7 +72,7 @@ cmake --build . --config Release
 # Or open the generated .sln in Visual Studio
 ```
 
-#### With MinGW
+#### Windows - With MinGW
 
 ```cmd
 # Create build directory
@@ -56,9 +86,27 @@ cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 cmake --build .
 ```
 
-#### With Ninja
+#### Linux - GCC or Clang
 
-```cmd
+```bash
+# Create build directory
+mkdir build
+cd build
+
+# Generate Makefiles
+cmake .. -DCMAKE_BUILD_TYPE=Release
+
+# Build
+make -j$(nproc)
+
+# Or with specific compiler
+cmake .. -DCMAKE_CXX_COMPILER=g++ -DCMAKE_BUILD_TYPE=Release
+make -j$(nproc)
+```
+
+#### With Ninja (Cross-platform)
+
+```bash
 # Create build directory
 mkdir build
 cd build
@@ -70,7 +118,7 @@ cmake .. -G "Ninja" -DCMAKE_BUILD_TYPE=Release
 ninja
 ```
 
-### Method 2: Makefile (MinGW)
+### Method 2: Makefile (MinGW - Windows Only)
 
 ```cmd
 # Build everything
@@ -86,7 +134,7 @@ mingw32-make demo
 mingw32-make clean
 ```
 
-### Method 3: Visual Studio (Manual)
+### Method 3: Visual Studio (Manual - Windows Only)
 
 1. Open Visual Studio
 2. Create New Project → Empty C++ Project
@@ -108,6 +156,7 @@ For the demo:
 
 After successful build:
 
+### Windows
 ```
 build/
 ├── bin/
@@ -124,11 +173,20 @@ build/
     └── *.o                       # Object files
 ```
 
+### Linux
+```
+build/
+├── lib5DGUI_SDK.a               # SDK static library
+└── *.o                          # Object files
+```
+
+**Note**: Demo applications are currently Windows-only. Linux support for demos is planned for future releases.
+
 ## Configuration Options
 
 ### CMake Variables
 
-```cmd
+```bash
 # Build type
 -DCMAKE_BUILD_TYPE=Debug|Release|RelWithDebInfo
 

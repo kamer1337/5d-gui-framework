@@ -48,15 +48,22 @@ This document outlines planned features and improvements for the 5D GUI SDK.
   - [x] Advanced layout algorithms
   - [x] Constraint-based positioning
 
-### AI Integration (Foundation Completed)
+### AI Integration (Enhanced)
 - [x] **Architecture for Neural Networks**
   - [x] Prompt-based interface design
   - [x] Extensible factory pattern
   - [x] Window specification format
-  - [x] Neural network model integration (foundation)
-  - [x] Natural language understanding (foundation)
+  - [x] Neural network model integration
+  - [x] Natural language understanding
   - [x] Dynamic UI generation at runtime
-  - [x] Context-aware widget suggestions (foundation)
+  - [x] Context-aware widget suggestions
+- [x] **Neural Network Enhancements (v1.2.1)** ✅ COMPLETED
+  - [x] Expanded vocabulary (2100+ words)
+  - [x] Advanced widget support (slider, combobox, toolbar, etc.)
+  - [x] Layout and positioning keywords
+  - [x] Enhanced entity extraction
+  - [x] State and visibility detection
+  - [x] Cross-platform support (Windows, Linux, macOS)
 
 ### Enhanced Hooking System
 - [ ] **Production Hook Implementation**
@@ -204,10 +211,14 @@ This document outlines planned features and improvements for the 5D GUI SDK.
 ## Version 3.0.0 (Long-term)
 
 ### Cross-Platform Support
-- [ ] **Linux Support**
-  - X11 backend
-  - Wayland support
-  - GTK integration (optional)
+- [x] **Linux Support (Foundation)** ✅ COMPLETED
+  - [x] Platform abstraction layer
+  - [x] CMake build system for Linux
+  - [x] X11 type definitions
+  - [x] Neural network cross-platform support
+  - [ ] X11 backend implementation
+  - [ ] Wayland support
+  - [ ] GTK integration (optional)
   
 - [ ] **macOS Support**
   - Cocoa backend
