@@ -6,6 +6,8 @@
 
 #include <windows.h>
 #include <vector>
+#include <memory>
+#include <unordered_map>
 #include "Theme.h"
 
 namespace SDK {
@@ -13,6 +15,7 @@ namespace SDK {
 /**
  * Renderer - Advanced rendering utilities for 5D GUI
  * Implements gradients, shadows, rounded corners, and effects
+ * Now with optimizations and advanced visual effects
  */
 class Renderer {
 public:
@@ -21,6 +24,15 @@ public:
     static void DrawVerticalGradient(HDC hdc, const RECT& rect, Color startColor, Color endColor);
     static void DrawHorizontalGradient(HDC hdc, const RECT& rect, Color startColor, Color endColor);
     static void DrawRadialGradient(HDC hdc, const RECT& rect, Color centerColor, Color edgeColor, int cx, int cy);
+    
+    // Advanced gradient types
+    struct GradientStop {
+        float position;  // 0.0 to 1.0
+        Color color;
+    };
+    
+    static void DrawMultiStopGradient(HDC hdc, const RECT& rect, const std::vector<GradientStop>& stops, bool horizontal = true);
+    static void DrawConicalGradient(HDC hdc, const RECT& rect, const std::vector<GradientStop>& stops, int cx, int cy, float startAngle = 0.0f);
     
     // Rounded rectangle with alpha
     static void DrawRoundedRect(HDC hdc, const RECT& rect, int radius, Color fillColor, Color borderColor, int borderWidth);
@@ -31,17 +43,44 @@ public:
     // Glow effect
     static void DrawGlow(HDC hdc, const RECT& rect, int radius, Color glowColor);
     
+    // Advanced visual effects
+    static void ApplyBlur(HDC hdc, const RECT& rect, int blurRadius);
+    static void ApplyBloom(HDC hdc, const RECT& rect, float threshold, float intensity);
+    static void ApplyColorCorrection(HDC hdc, const RECT& rect, float brightness, float contrast, float saturation);
+    static void ApplyNoiseOverlay(HDC hdc, const RECT& rect, float intensity, int seed = 0);
+    
     // Particle system
     struct Particle {
         float x, y;
         float vx, vy;
         float life;
         Color color;
+        bool active;  // For object pooling
+    };
+    
+    // Particle pool for memory optimization
+    class ParticlePool {
+    public:
+        ParticlePool(size_t initialSize = 1000);
+        ~ParticlePool() = default;
+        
+        Particle* Acquire();
+        void Release(Particle* particle);
+        void ReleaseAll();
+        size_t GetActiveCount() const;
+        size_t GetTotalCount() const;
+        
+    private:
+        std::vector<Particle> particles_;
+        std::vector<Particle*> available_;
+        size_t activeCount_;
     };
     
     static void DrawParticles(HDC hdc, const std::vector<Particle>& particles);
     static void UpdateParticles(std::vector<Particle>& particles, float deltaTime);
     static std::vector<Particle> CreateParticleEmission(int x, int y, int count, Color color);
+    static void DrawParticlesFromPool(HDC hdc, ParticlePool& pool);
+    static void UpdateParticlesInPool(ParticlePool& pool, float deltaTime);
     
     // Icon rendering for 5D icon system
     enum class IconType {
@@ -53,6 +92,114 @@ public:
     };
     
     static void DrawIcon(HDC hdc, IconType type, int x, int y, int size, Color color, float alpha = 1.0f);
+    
+    // Texture atlas for icon optimization
+    class TextureAtlas {
+    public:
+        struct AtlasEntry {
+            int x, y, width, height;
+            HBITMAP bitmap;
+        };
+        
+        TextureAtlas(int width, int height);
+        ~TextureAtlas();
+        
+        bool AddTexture(const std::string& name, HBITMAP bitmap, int width, int height);
+        const AtlasEntry* GetTexture(const std::string& name) const;
+        void Clear();
+        
+    private:
+        int atlasWidth_;
+        int atlasHeight_;
+        int currentX_;
+        int currentY_;
+        int rowHeight_;
+        std::unordered_map<std::string, AtlasEntry> textures_;
+    };
+    
+    // Animation system
+    enum class EasingType {
+        LINEAR,
+        EASE_IN_QUAD,
+        EASE_OUT_QUAD,
+        EASE_IN_OUT_QUAD,
+        EASE_IN_CUBIC,
+        EASE_OUT_CUBIC,
+        EASE_IN_OUT_CUBIC,
+        EASE_IN_QUART,
+        EASE_OUT_QUART,
+        EASE_IN_OUT_QUART,
+        EASE_IN_ELASTIC,
+        EASE_OUT_ELASTIC,
+        EASE_IN_OUT_ELASTIC,
+        EASE_IN_BOUNCE,
+        EASE_OUT_BOUNCE,
+        EASE_IN_OUT_BOUNCE
+    };
+    
+    struct Keyframe {
+        float time;      // Time in seconds
+        float value;     // Value at this time
+        EasingType easing;
+    };
+    
+    class Animation {
+    public:
+        Animation() : duration_(1.0f), currentTime_(0.0f), playing_(false), looping_(false) {}
+        
+        void AddKeyframe(float time, float value, EasingType easing = EasingType::LINEAR);
+        void SetDuration(float duration) { duration_ = duration; }
+        void SetLooping(bool loop) { looping_ = loop; }
+        
+        void Play() { playing_ = true; currentTime_ = 0.0f; }
+        void Stop() { playing_ = false; currentTime_ = 0.0f; }
+        void Pause() { playing_ = false; }
+        void Resume() { playing_ = true; }
+        
+        void Update(float deltaTime);
+        float GetValue() const;
+        bool IsPlaying() const { return playing_; }
+        bool IsFinished() const { return currentTime_ >= duration_ && !looping_; }
+        
+    private:
+        std::vector<Keyframe> keyframes_;
+        float duration_;
+        float currentTime_;
+        bool playing_;
+        bool looping_;
+    };
+    
+    static float ApplyEasing(float t, EasingType type);
+    
+    // Rendering optimization
+    struct DirtyRect {
+        RECT rect;
+        bool dirty;
+    };
+    
+    class RenderCache {
+    public:
+        RenderCache(int width, int height);
+        ~RenderCache();
+        
+        void MarkDirty(const RECT& rect);
+        void MarkClean();
+        bool IsDirty(const RECT& rect) const;
+        
+        HDC GetCacheDC() { return cacheDC_; }
+        void CopyToTarget(HDC targetDC, const RECT& srcRect, int destX, int destY);
+        
+    private:
+        HDC cacheDC_;
+        HBITMAP cacheBitmap_;
+        int width_;
+        int height_;
+        std::vector<DirtyRect> dirtyRegions_;
+    };
+    
+    // Occlusion culling helper
+    static bool IsRectOccluded(const RECT& rect, const std::vector<RECT>& occluders);
+    static bool RectsIntersect(const RECT& a, const RECT& b);
     
     // Utility functions
     static Color InterpolateColor(Color c1, Color c2, float t);
