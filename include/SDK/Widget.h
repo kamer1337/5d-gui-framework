@@ -1,10 +1,7 @@
 #pragma once
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
 
-#include <windows.h>
+#include "Platform.h"
 #include <string>
 #include <memory>
 #include <functional>
@@ -93,6 +90,58 @@ public:
     void SetTag(void* tag) { m_tag = tag; }
     void* GetTag() const { return m_tag; }
     
+    // Name for identification
+    void SetName(const std::wstring& name) { m_name = name; }
+    std::wstring GetName() const { return m_name; }
+    
+    // Padding properties
+    void SetPadding(int padding);
+    void SetPadding(int left, int top, int right, int bottom);
+    void GetPadding(int& left, int& top, int& right, int& bottom) const;
+    
+    // Margin properties
+    void SetMargin(int margin);
+    void SetMargin(int left, int top, int right, int bottom);
+    void GetMargin(int& left, int& top, int& right, int& bottom) const;
+    
+    // Size constraints
+    void SetMinSize(int minWidth, int minHeight);
+    void GetMinSize(int& minWidth, int& minHeight) const;
+    void SetMaxSize(int maxWidth, int maxHeight);
+    void GetMaxSize(int& maxWidth, int& maxHeight) const;
+    
+    // Opacity
+    void SetOpacity(float opacity);
+    float GetOpacity() const { return m_opacity; }
+    
+    // Border properties
+    void SetBorderWidth(int width);
+    int GetBorderWidth() const { return m_borderWidth; }
+    void SetBorderRadius(int radius);
+    int GetBorderRadius() const { return m_borderRadius; }
+    
+    // Tooltip
+    void SetTooltipText(const std::wstring& text) { m_tooltipText = text; }
+    std::wstring GetTooltipText() const { return m_tooltipText; }
+    
+    // Cursor
+    void SetCursor(HCURSOR cursor) { m_cursor = cursor; }
+    HCURSOR GetCursor() const { return m_cursor; }
+    
+    // Z-index for layering
+    void SetZIndex(int zIndex) { m_zIndex = zIndex; }
+    int GetZIndex() const { return m_zIndex; }
+    
+    // Font properties
+    void SetFontFamily(const std::wstring& family) { m_fontFamily = family; }
+    std::wstring GetFontFamily() const { return m_fontFamily; }
+    void SetFontSize(int size);
+    int GetFontSize() const { return m_fontSize; }
+    void SetFontBold(bool bold) { m_fontBold = bold; }
+    bool IsFontBold() const { return m_fontBold; }
+    void SetFontItalic(bool italic) { m_fontItalic = italic; }
+    bool IsFontItalic() const { return m_fontItalic; }
+    
 protected:
     int m_x;
     int m_y;
@@ -162,6 +211,23 @@ protected:
     
     EventCallback m_eventCallback;
     std::shared_ptr<Theme> m_theme;
+    
+    // New properties
+    std::wstring m_name;
+    int m_paddingLeft, m_paddingTop, m_paddingRight, m_paddingBottom;
+    int m_marginLeft, m_marginTop, m_marginRight, m_marginBottom;
+    int m_minWidth, m_minHeight;
+    int m_maxWidth, m_maxHeight;
+    float m_opacity;
+    int m_borderWidth;
+    int m_borderRadius;
+    std::wstring m_tooltipText;
+    HCURSOR m_cursor;
+    int m_zIndex;
+    std::wstring m_fontFamily;
+    int m_fontSize;
+    bool m_fontBold;
+    bool m_fontItalic;
 };
 
 // Button widget
@@ -310,6 +376,127 @@ private:
     bool m_stretch;
     int m_imageWidth;
     int m_imageHeight;
+};
+
+// Slider widget
+class Slider : public Widget {
+public:
+    enum class Orientation {
+        HORIZONTAL,
+        VERTICAL
+    };
+    
+    Slider(Orientation orientation = Orientation::HORIZONTAL);
+    virtual ~Slider();
+    
+    void SetValue(float value);
+    float GetValue() const { return m_value; }
+    
+    void SetRange(float minValue, float maxValue);
+    void GetRange(float& minValue, float& maxValue) const;
+    
+    void SetOrientation(Orientation orientation) { m_orientation = orientation; }
+    Orientation GetOrientation() const { return m_orientation; }
+    
+    void SetTrackColor(const Color& color) { m_trackColor = color; }
+    void SetThumbColor(const Color& color) { m_thumbColor = color; }
+    void SetFillColor(const Color& color) { m_fillColor = color; }
+    
+    void Render(HDC hdc) override;
+    bool HandleMouseDown(int x, int y, int button) override;
+    bool HandleMouseMove(int x, int y) override;
+    bool HandleMouseUp(int x, int y, int button) override;
+    
+private:
+    void UpdateValueFromPosition(int x, int y);
+    
+    Orientation m_orientation;
+    float m_value;
+    float m_minValue;
+    float m_maxValue;
+    bool m_dragging;
+    
+    Color m_trackColor;
+    Color m_thumbColor;
+    Color m_fillColor;
+};
+
+// RadioButton widget
+class RadioButton : public Widget {
+public:
+    RadioButton(const std::wstring& text = L"", int groupId = 0);
+    virtual ~RadioButton();
+    
+    void SetText(const std::wstring& text) { m_text = text; }
+    std::wstring GetText() const { return m_text; }
+    
+    void SetChecked(bool checked);
+    bool IsChecked() const { return m_checked; }
+    
+    void SetGroupId(int groupId) { m_groupId = groupId; }
+    int GetGroupId() const { return m_groupId; }
+    
+    void Render(HDC hdc) override;
+    bool HandleMouseDown(int x, int y, int button) override;
+    
+private:
+    std::wstring m_text;
+    bool m_checked;
+    int m_groupId;
+    Color m_checkColor;
+    Color m_circleColor;
+};
+
+// Panel widget (container for grouping widgets)
+class Panel : public Widget {
+public:
+    Panel();
+    virtual ~Panel();
+    
+    void SetTitle(const std::wstring& title) { m_title = title; }
+    std::wstring GetTitle() const { return m_title; }
+    
+    void SetBackgroundColor(const Color& color) { m_backgroundColor = color; }
+    void SetBorderColor(const Color& color) { m_borderColor = color; }
+    void SetTitleBarColor(const Color& color) { m_titleBarColor = color; }
+    
+    void Render(HDC hdc) override;
+    
+private:
+    std::wstring m_title;
+    Color m_backgroundColor;
+    Color m_borderColor;
+    Color m_titleBarColor;
+    int m_titleBarHeight;
+};
+
+// SpinBox widget (numeric input with up/down buttons)
+class SpinBox : public Widget {
+public:
+    SpinBox();
+    virtual ~SpinBox();
+    
+    void SetValue(int value);
+    int GetValue() const { return m_value; }
+    
+    void SetRange(int minValue, int maxValue);
+    void GetRange(int& minValue, int& maxValue) const;
+    
+    void SetStep(int step) { m_step = step; }
+    int GetStep() const { return m_step; }
+    
+    void Render(HDC hdc) override;
+    bool HandleMouseDown(int x, int y, int button) override;
+    bool HandleKeyDown(int keyCode) override;
+    
+private:
+    int m_value;
+    int m_minValue;
+    int m_maxValue;
+    int m_step;
+    Color m_backgroundColor;
+    Color m_textColor;
+    Color m_buttonColor;
 };
 
 } // namespace SDK

@@ -15,17 +15,20 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **5D Depth System**: 5 distinct depth levels (FAR_BACKGROUND to FOREGROUND)
 - **Layered Windows**: "Book stack" effect with perspective scaling
 - **Widget System**: ProgressBar, Tooltip, and extensible widget framework
+- **Neural Network GUI Creation**: AI-powered natural language window/widget generation
 - **Prompt Window Builder**: Template-based window generation (extensible for AI)
 - **Multidimensional Rendering**: 3D/4D/5D/6D rendering with software projection
 - **Zero Dependencies**: Pure Win32 API - no external libraries required
 
 ### Widget System
-- **Basic Widgets**: Button, Label, TextBox, CheckBox, Separator, Image
+- **Basic Widgets**: Button, Label, TextBox, CheckBox, Separator, Image, Slider, RadioButton, SpinBox
+- **Container Widgets**: Panel (grouping with optional title bar)
 - **Advanced Widgets**: ComboBox, ListBox, ListView (with checkboxes), TabControl, Toolbar, ProgressBar, Tooltip
-- **Complex Widgets**: FileTree, FileExplorer, SyntaxHighlightTextEditor
+- **Complex Widgets**: FileTree, FileExplorer, SyntaxHighlightTextEditor (with C++ syntax highlighting)
 - **Toolbar Features**: Horizontal/vertical orientation, auto-hide functionality, customizable items
 - **Event System**: Comprehensive event handling (click, hover, focus, value changes)
 - **Hierarchy Support**: Parent-child widget relationships
+- **Rich Properties**: Padding, margin, min/max size, opacity, border radius, font styling, tooltips, z-index, custom cursors
 
 ### Visual Effects
 - **Multi-directional Gradients**: Vertical, horizontal, and radial gradients
@@ -118,6 +121,62 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
 }
 ```
 
+### Neural Network GUI Creation (New!)
+
+Create windows and widgets using natural language prompts:
+
+```cpp
+#include "SDK/SDK.h"
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
+    // Initialize SDK
+    SDK::Initialize();
+    
+    // Create neural prompt builder
+    SDK::NeuralPromptBuilder builder;
+    
+    // Create window from natural language prompt
+    HWND hwnd = builder.BuildFromPrompt(
+        L"Create a window 800x600 called 'My App' with a button and textbox",
+        hInstance
+    );
+    
+    // Register with SDK and apply theme
+    auto window = SDK::WindowManager::GetInstance().RegisterWindow(hwnd);
+    auto theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateModernTheme());
+    window->SetTheme(theme);
+    window->UpdateAppearance();
+    
+    ShowWindow(hwnd, nCmdShow);
+    
+    // Message loop...
+    
+    SDK::Shutdown();
+    return 0;
+}
+```
+
+More examples:
+```cpp
+// Login window
+builder.BuildFromPrompt(
+    L"Create window 400x300 'Login' with textbox for username, textbox for password, and button 'Sign In'",
+    hInstance
+);
+
+// Settings dialog
+builder.BuildFromPrompt(
+    L"Create dialog 500x400 'Settings' with checkbox 'Enable notifications' and button 'Apply'",
+    hInstance
+);
+
+// Generate callback from description
+auto callback = builder.GenerateCallback(L"Show message on click");
+button->SetEventCallback(callback);
+```
+
+See [Neural Network Guide](NEURAL_NETWORK_GUIDE.md) for complete documentation.
+
 ### Basic Window with Widgets (Manual Registration)
 
 You can also create windows manually if you need more control:
@@ -207,6 +266,9 @@ ShowWindow(hwnd, SW_SHOW);
 
 ## Documentation
 
+- **[Optimization Guide](OPTIMIZATION_GUIDE.md)**: Rendering and memory optimization features ✅
+- **[Optimizations Completed](OPTIMIZATIONS_COMPLETED.md)**: Complete implementation summary ✅
+- **[Neural Network Guide](NEURAL_NETWORK_GUIDE.md)**: AI-powered GUI creation with natural language
 - **[Advanced Window Features](ADVANCED_WINDOW_FEATURES.md)**: Window groups, snapping, and animations
 - **[Camera Controller Guide](CAMERA_GUIDE.md)**: Camera controls and 3D widget placement
 - **[Widget Guide](WIDGET_GUIDE.md)**: Complete widget system documentation
@@ -218,21 +280,42 @@ ShowWindow(hwnd, SW_SHOW);
 ## Building
 
 ### CMake (Recommended)
+
+#### Windows
 ```cmd
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build .
 ```
 
-### Makefile (MinGW)
+#### Linux
+```bash
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+```
+
+**Linux Requirements:**
+- X11 development libraries: `sudo apt-get install libx11-dev`
+- C++17 compiler (GCC 7+, Clang)
+
+### Makefile (MinGW - Windows only)
 ```cmd
 mingw32-make all
 ```
 
 ### Requirements
+
+#### Windows
 - Windows 7 or later
 - C++17 compiler (MSVC, MinGW, Clang)
 - CMake 3.10+ (optional)
+
+#### Linux
+- Linux with X11 or Wayland
+- C++17 compiler (GCC 7+, Clang)
+- CMake 3.10+ (required)
+- X11 development libraries (`libx11-dev` on Ubuntu/Debian)
 
 ## Project Structure
 
@@ -250,6 +333,8 @@ MaterialGameEngine/
 │   ├── Tooltip.h        # Tooltip widget
 │   ├── WidgetManager.h  # Widget management
 │   ├── PromptWindowBuilder.h  # Prompt-based generation
+│   ├── NeuralNetwork.h        # Neural network for NLP
+│   ├── NeuralPromptBuilder.h  # AI-powered window generation
 │   ├── AdvancedWidgets.h     # Advanced widget components
 │   ├── CameraController.h    # 3D camera controls
 │   ├── Widget3D.h            # 3D widget placement
@@ -262,6 +347,7 @@ MaterialGameEngine/
 │   ├── demo.cpp              # Original 5D rendering demo
 │   ├── widget_demo.cpp       # Widget system demo
 │   ├── widget_showcase.cpp   # Complete widget showcase
+│   ├── neural_network_demo.cpp  # Neural network GUI creation demo
 │   ├── camera_demo.cpp       # 3D camera controller demo
 │   ├── toolbar_demo.cpp      # Toolbar widget demo
 │   └── advanced_window_demo.cpp  # Advanced window features demo
@@ -273,13 +359,30 @@ MaterialGameEngine/
 
 ## Platform Support
 
+### Windows
 - **Windows 7**: Full support (requires Platform Update)
 - **Windows 8/8.1**: Full support
 - **Windows 10/11**: Full support with enhanced effects
 - **Architecture**: x86 and x64
+- **Features**: All features fully supported including window hooking, layered windows, and advanced effects
+
+### Linux
+- **Linux**: Basic support (Foundation)
+- **Display Servers**: X11 (primary), Wayland (experimental)
+- **Architecture**: x86_64, ARM64
+- **Features**: 
+  - ✅ Core SDK compilation
+  - ✅ Neural network support (platform-independent)
+  - ✅ Widget system (platform-independent)
+  - ⚠️ Window rendering (basic X11 implementation)
+  - ⚠️ Window hooking (not available on Linux)
+  - ⚠️ Demo applications (Windows only for now)
+
+**Note**: Linux support is currently in foundation stage. The SDK compiles and neural network features work cross-platform, but full GUI rendering requires platform-specific implementation.
 
 ## Dependencies
 
+### Windows
 **None!** The SDK uses only:
 - windows.h (Win32 API)
 - dwmapi.lib (Desktop Window Manager)
@@ -287,6 +390,11 @@ MaterialGameEngine/
 - user32.lib (Window management)
 
 All libraries are standard Windows SDK components.
+
+### Linux
+- X11 libraries (libX11)
+- pthread (threading support)
+- Standard C++ library
 
 ## License
 

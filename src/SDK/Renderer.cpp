@@ -939,6 +939,64 @@ void Renderer::UpdateParticlesInPool(ParticlePool& pool, float deltaTime) {
     }
 }
 
+void Renderer::UpdateParticlesInPoolMultiThreaded(ParticlePool& pool, float deltaTime, int numThreads) {
+    // Determine number of threads to use
+    if (numThreads <= 0) {
+        numThreads = std::thread::hardware_concurrency();
+        if (numThreads <= 0) numThreads = 4;  // Default fallback
+    }
+    
+    size_t totalParticles = pool.particles_.size();
+    if (totalParticles == 0) return;
+    
+    // Calculate particles per thread
+    size_t particlesPerThread = totalParticles / numThreads;
+    if (particlesPerThread == 0) {
+        // Too few particles, just use single-threaded version
+        UpdateParticlesInPool(pool, deltaTime);
+        return;
+    }
+    
+    std::vector<std::thread> threads;
+    std::mutex releaseMutex;  // Protect Release() calls
+    
+    // Lambda function to update a range of particles
+    auto updateRange = [&](size_t start, size_t end) {
+        for (size_t i = start; i < end && i < totalParticles; ++i) {
+            Particle& particle = pool.particles_[i];
+            if (!particle.active) continue;
+            
+            // Update particle physics
+            particle.x += particle.vx * deltaTime;
+            particle.y += particle.vy * deltaTime;
+            particle.life -= deltaTime;
+            particle.vy += 50.0f * deltaTime;  // Gravity
+            
+            // Check if particle should be released
+            if (particle.life <= 0.0f) {
+                // Lock when calling Release to avoid race conditions
+                std::lock_guard<std::mutex> lock(releaseMutex);
+                pool.Release(&particle);
+            }
+        }
+    };
+    
+    // Create threads
+    for (int i = 0; i < numThreads; ++i) {
+        size_t start = i * particlesPerThread;
+        size_t end = (i == numThreads - 1) ? totalParticles : (i + 1) * particlesPerThread;
+        threads.emplace_back(updateRange, start, end);
+    }
+    
+    // Wait for all threads to complete
+    for (auto& thread : threads) {
+        if (thread.joinable()) {
+            thread.join();
+        }
+    }
+}
+
+
 // ==================== TEXTURE ATLAS IMPLEMENTATION ====================
 
 Renderer::TextureAtlas::TextureAtlas(int width, int height) 

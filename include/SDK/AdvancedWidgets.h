@@ -1,10 +1,7 @@
 #pragma once
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
 
-#include <windows.h>
+#include "Platform.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -162,6 +159,8 @@ private:
     void LoadDirectory(std::shared_ptr<TreeNode> node);
     void RenderNode(HDC hdc, std::shared_ptr<TreeNode> node, int& yOffset);
     std::shared_ptr<TreeNode> HitTestNode(int x, int y);
+    std::shared_ptr<TreeNode> HitTestNodeRecursive(std::shared_ptr<TreeNode> node, int x, int y, int& yOffset);
+    std::shared_ptr<TreeNode> FindNodeByPath(std::shared_ptr<TreeNode> node, const std::wstring& path);
     
     std::wstring m_rootPath;
     std::shared_ptr<TreeNode> m_rootNode;
