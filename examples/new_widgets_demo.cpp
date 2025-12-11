@@ -121,12 +121,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
     g_window->AddWidget(panel2);
     
     // Radio buttons (same group)
+    // Note: AddChild() is needed for group management (mutual exclusion)
+    // AddWidget() to window is needed for rendering and event handling
     auto radio1 = std::make_shared<SDK::RadioButton>(L"Option 1", 0);
     radio1->SetPosition(420, 60);
     radio1->SetSize(200, 20);
     radio1->SetChecked(true);
-    panel2->AddChild(radio1);
-    g_window->AddWidget(radio1);
+    panel2->AddChild(radio1);  // For group management
+    g_window->AddWidget(radio1);  // For rendering
     
     auto radio2 = std::make_shared<SDK::RadioButton>(L"Option 2", 0);
     radio2->SetPosition(420, 90);

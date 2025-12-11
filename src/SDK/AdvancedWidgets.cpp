@@ -756,7 +756,7 @@ std::vector<SyntaxHighlightTextEditor::SyntaxToken> SyntaxHighlightTextEditor::T
             }
             
             // Numbers
-            if (iswdigit(ch) || (ch == L'-' && pos + 1 < line.length() && iswdigit(line[pos + 1]))) {
+            if (iswdigit(ch)) {
                 size_t end = pos + 1;
                 while (end < line.length() && (iswdigit(line[end]) || line[end] == L'.' || 
                        line[end] == L'f' || line[end] == L'F' || line[end] == L'x' || line[end] == L'X')) {

@@ -689,6 +689,13 @@ void Slider::SetValue(float value) {
 }
 
 void Slider::SetRange(float minValue, float maxValue) {
+    // Validate and swap if necessary
+    if (minValue > maxValue) {
+        float temp = minValue;
+        minValue = maxValue;
+        maxValue = temp;
+    }
+    
     m_minValue = minValue;
     m_maxValue = maxValue;
     if (m_value < m_minValue) m_value = m_minValue;
@@ -789,7 +796,7 @@ void Slider::UpdateValueFromPosition(int x, int y) {
         int trackRight = bounds.right - 10;
         int trackWidth = trackRight - trackLeft;
         
-        if (trackWidth <= 0) return;
+        if (trackWidth <= 0 || m_maxValue == m_minValue) return;
         
         int relX = x - trackLeft;
         if (relX < 0) relX = 0;
@@ -802,7 +809,7 @@ void Slider::UpdateValueFromPosition(int x, int y) {
         int trackBottom = bounds.bottom - 10;
         int trackHeight = trackBottom - trackTop;
         
-        if (trackHeight <= 0) return;
+        if (trackHeight <= 0 || m_maxValue == m_minValue) return;
         
         int relY = trackBottom - y;
         if (relY < 0) relY = 0;
