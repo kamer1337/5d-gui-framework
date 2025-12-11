@@ -15,6 +15,7 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **5D Depth System**: 5 distinct depth levels (FAR_BACKGROUND to FOREGROUND)
 - **Layered Windows**: "Book stack" effect with perspective scaling
 - **Widget System**: ProgressBar, Tooltip, and extensible widget framework
+- **Neural Network GUI Creation**: AI-powered natural language window/widget generation
 - **Prompt Window Builder**: Template-based window generation (extensible for AI)
 - **Multidimensional Rendering**: 3D/4D/5D/6D rendering with software projection
 - **Zero Dependencies**: Pure Win32 API - no external libraries required
@@ -118,6 +119,62 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
 }
 ```
 
+### Neural Network GUI Creation (New!)
+
+Create windows and widgets using natural language prompts:
+
+```cpp
+#include "SDK/SDK.h"
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
+    // Initialize SDK
+    SDK::Initialize();
+    
+    // Create neural prompt builder
+    SDK::NeuralPromptBuilder builder;
+    
+    // Create window from natural language prompt
+    HWND hwnd = builder.BuildFromPrompt(
+        L"Create a window 800x600 called 'My App' with a button and textbox",
+        hInstance
+    );
+    
+    // Register with SDK and apply theme
+    auto window = SDK::WindowManager::GetInstance().RegisterWindow(hwnd);
+    auto theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateModernTheme());
+    window->SetTheme(theme);
+    window->UpdateAppearance();
+    
+    ShowWindow(hwnd, nCmdShow);
+    
+    // Message loop...
+    
+    SDK::Shutdown();
+    return 0;
+}
+```
+
+More examples:
+```cpp
+// Login window
+builder.BuildFromPrompt(
+    L"Create window 400x300 'Login' with textbox for username, textbox for password, and button 'Sign In'",
+    hInstance
+);
+
+// Settings dialog
+builder.BuildFromPrompt(
+    L"Create dialog 500x400 'Settings' with checkbox 'Enable notifications' and button 'Apply'",
+    hInstance
+);
+
+// Generate callback from description
+auto callback = builder.GenerateCallback(L"Show message on click");
+button->SetEventCallback(callback);
+```
+
+See [Neural Network Guide](NEURAL_NETWORK_GUIDE.md) for complete documentation.
+
 ### Basic Window with Widgets (Manual Registration)
 
 You can also create windows manually if you need more control:
@@ -207,6 +264,7 @@ ShowWindow(hwnd, SW_SHOW);
 
 ## Documentation
 
+- **[Neural Network Guide](NEURAL_NETWORK_GUIDE.md)**: AI-powered GUI creation with natural language
 - **[Advanced Window Features](ADVANCED_WINDOW_FEATURES.md)**: Window groups, snapping, and animations
 - **[Camera Controller Guide](CAMERA_GUIDE.md)**: Camera controls and 3D widget placement
 - **[Widget Guide](WIDGET_GUIDE.md)**: Complete widget system documentation
@@ -250,6 +308,8 @@ MaterialGameEngine/
 │   ├── Tooltip.h        # Tooltip widget
 │   ├── WidgetManager.h  # Widget management
 │   ├── PromptWindowBuilder.h  # Prompt-based generation
+│   ├── NeuralNetwork.h        # Neural network for NLP
+│   ├── NeuralPromptBuilder.h  # AI-powered window generation
 │   ├── AdvancedWidgets.h     # Advanced widget components
 │   ├── CameraController.h    # 3D camera controls
 │   ├── Widget3D.h            # 3D widget placement
@@ -262,6 +322,7 @@ MaterialGameEngine/
 │   ├── demo.cpp              # Original 5D rendering demo
 │   ├── widget_demo.cpp       # Widget system demo
 │   ├── widget_showcase.cpp   # Complete widget showcase
+│   ├── neural_network_demo.cpp  # Neural network GUI creation demo
 │   ├── camera_demo.cpp       # 3D camera controller demo
 │   ├── toolbar_demo.cpp      # Toolbar widget demo
 │   └── advanced_window_demo.cpp  # Advanced window features demo

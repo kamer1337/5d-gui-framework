@@ -116,8 +116,10 @@ build/
 │   ├── 5DGUI_Demo.exe           # Main demo application
 │   ├── 5DGUI_WidgetDemo.exe     # Widget system demo
 │   ├── Widget_Showcase.exe      # Complete widget showcase
+│   ├── Neural_Network_Demo.exe  # Neural network GUI creation demo
 │   ├── Camera_Demo.exe          # 3D camera controller demo
-│   └── Toolbar_Demo.exe         # Toolbar widget demo
+│   ├── Toolbar_Demo.exe         # Toolbar widget demo
+│   └── Advanced_Window_Demo.exe # Advanced window features demo
 └── obj/
     └── *.o                       # Object files
 ```
@@ -337,8 +339,10 @@ After building:
    - `build/bin/5DGUI_Demo.exe` - Main 5D rendering demo
    - `build/bin/5DGUI_WidgetDemo.exe` - Widget system demo
    - `build/bin/Widget_Showcase.exe` - Complete widget showcase
+   - `build/bin/Neural_Network_Demo.exe` - Neural network GUI creation demo
    - `build/bin/Camera_Demo.exe` - 3D camera controller demo
    - `build/bin/Toolbar_Demo.exe` - Toolbar widget demo
+   - `build/bin/Advanced_Window_Demo.exe` - Advanced window features demo
 2. Read the [API Documentation](API.md)
 3. See [Examples](examples/) for usage patterns
 4. Read [ARCHITECTURE.md](ARCHITECTURE.md) for internals
