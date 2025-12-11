@@ -125,6 +125,8 @@ if(MSVC)
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
     set_target_properties(Neural_Network_Demo PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+    )
     set_target_properties(Optimization_Demo PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
@@ -148,6 +150,8 @@ else()
         LINK_FLAGS "-mwindows"
     )
     set_target_properties(Neural_Network_Demo PROPERTIES
+        LINK_FLAGS "-mwindows"
+    )
     set_target_properties(Optimization_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
@@ -165,8 +169,7 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo
-install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Optimization_Demo
+install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo
     RUNTIME DESTINATION bin
 )
 

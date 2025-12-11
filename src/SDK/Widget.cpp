@@ -654,4 +654,417 @@ void Image::Render(HDC hdc) {
     Widget::Render(hdc);
 }
 
+// Slider implementation
+Slider::Slider(Orientation orientation)
+    : Widget()
+    , m_orientation(orientation)
+    , m_value(0.0f)
+    , m_minValue(0.0f)
+    , m_maxValue(100.0f)
+    , m_dragging(false)
+    , m_trackColor(200, 200, 200, 255)
+    , m_thumbColor(100, 149, 237, 255)
+    , m_fillColor(135, 206, 250, 255)
+{
+    if (orientation == Orientation::HORIZONTAL) {
+        m_width = 200;
+        m_height = 30;
+    } else {
+        m_width = 30;
+        m_height = 200;
+    }
+}
+
+Slider::~Slider() {
+}
+
+void Slider::SetValue(float value) {
+    if (value < m_minValue) value = m_minValue;
+    if (value > m_maxValue) value = m_maxValue;
+    
+    if (m_value != value) {
+        m_value = value;
+        TriggerEvent(WidgetEvent::VALUE_CHANGED, &m_value);
+    }
+}
+
+void Slider::SetRange(float minValue, float maxValue) {
+    m_minValue = minValue;
+    m_maxValue = maxValue;
+    if (m_value < m_minValue) m_value = m_minValue;
+    if (m_value > m_maxValue) m_value = m_maxValue;
+}
+
+void Slider::GetRange(float& minValue, float& maxValue) const {
+    minValue = m_minValue;
+    maxValue = m_maxValue;
+}
+
+void Slider::Render(HDC hdc) {
+    if (!m_visible) return;
+    
+    RECT bounds = GetBounds();
+    
+    if (m_orientation == Orientation::HORIZONTAL) {
+        // Draw track
+        int trackHeight = 4;
+        int trackY = (bounds.top + bounds.bottom) / 2 - trackHeight / 2;
+        RECT trackRect = {bounds.left + 10, trackY, bounds.right - 10, trackY + trackHeight};
+        Renderer::DrawRoundedRect(hdc, trackRect, 2, m_trackColor, m_trackColor, 0);
+        
+        // Draw filled portion
+        float ratio = (m_value - m_minValue) / (m_maxValue - m_minValue);
+        int fillWidth = (int)((bounds.right - bounds.left - 20) * ratio);
+        RECT fillRect = {bounds.left + 10, trackY, bounds.left + 10 + fillWidth, trackY + trackHeight};
+        Renderer::DrawRoundedRect(hdc, fillRect, 2, m_fillColor, m_fillColor, 0);
+        
+        // Draw thumb
+        int thumbX = bounds.left + 10 + fillWidth - 8;
+        int thumbY = (bounds.top + bounds.bottom) / 2 - 8;
+        RECT thumbRect = {thumbX, thumbY, thumbX + 16, thumbY + 16};
+        Renderer::DrawRoundedRect(hdc, thumbRect, 8, m_thumbColor, Color(50, 50, 50, 255), 1);
+    } else {
+        // Vertical slider
+        int trackWidth = 4;
+        int trackX = (bounds.left + bounds.right) / 2 - trackWidth / 2;
+        RECT trackRect = {trackX, bounds.top + 10, trackX + trackWidth, bounds.bottom - 10};
+        Renderer::DrawRoundedRect(hdc, trackRect, 2, m_trackColor, m_trackColor, 0);
+        
+        // Draw filled portion
+        float ratio = (m_value - m_minValue) / (m_maxValue - m_minValue);
+        int fillHeight = (int)((bounds.bottom - bounds.top - 20) * ratio);
+        RECT fillRect = {trackX, bounds.bottom - 10 - fillHeight, trackX + trackWidth, bounds.bottom - 10};
+        Renderer::DrawRoundedRect(hdc, fillRect, 2, m_fillColor, m_fillColor, 0);
+        
+        // Draw thumb
+        int thumbX = (bounds.left + bounds.right) / 2 - 8;
+        int thumbY = bounds.bottom - 10 - fillHeight - 8;
+        RECT thumbRect = {thumbX, thumbY, thumbX + 16, thumbY + 16};
+        Renderer::DrawRoundedRect(hdc, thumbRect, 8, m_thumbColor, Color(50, 50, 50, 255), 1);
+    }
+    
+    Widget::Render(hdc);
+}
+
+bool Slider::HandleMouseDown(int x, int y, int button) {
+    if (!m_visible || !m_enabled) return false;
+    
+    if (HitTest(x, y) && button == 0) {
+        m_dragging = true;
+        UpdateValueFromPosition(x, y);
+        return true;
+    }
+    
+    return false;
+}
+
+bool Slider::HandleMouseMove(int x, int y) {
+    if (!m_visible || !m_enabled) return false;
+    
+    bool result = Widget::HandleMouseMove(x, y);
+    
+    if (m_dragging) {
+        UpdateValueFromPosition(x, y);
+    }
+    
+    return result || m_dragging;
+}
+
+bool Slider::HandleMouseUp(int x, int y, int button) {
+    if (!m_visible || !m_enabled) return false;
+    
+    if (m_dragging && button == 0) {
+        m_dragging = false;
+        return true;
+    }
+    
+    return false;
+}
+
+void Slider::UpdateValueFromPosition(int x, int y) {
+    RECT bounds = GetBounds();
+    
+    if (m_orientation == Orientation::HORIZONTAL) {
+        int trackLeft = bounds.left + 10;
+        int trackRight = bounds.right - 10;
+        int trackWidth = trackRight - trackLeft;
+        
+        if (trackWidth <= 0) return;
+        
+        int relX = x - trackLeft;
+        if (relX < 0) relX = 0;
+        if (relX > trackWidth) relX = trackWidth;
+        
+        float ratio = (float)relX / trackWidth;
+        SetValue(m_minValue + ratio * (m_maxValue - m_minValue));
+    } else {
+        int trackTop = bounds.top + 10;
+        int trackBottom = bounds.bottom - 10;
+        int trackHeight = trackBottom - trackTop;
+        
+        if (trackHeight <= 0) return;
+        
+        int relY = trackBottom - y;
+        if (relY < 0) relY = 0;
+        if (relY > trackHeight) relY = trackHeight;
+        
+        float ratio = (float)relY / trackHeight;
+        SetValue(m_minValue + ratio * (m_maxValue - m_minValue));
+    }
+}
+
+// RadioButton implementation
+RadioButton::RadioButton(const std::wstring& text, int groupId)
+    : Widget()
+    , m_text(text)
+    , m_checked(false)
+    , m_groupId(groupId)
+    , m_checkColor(100, 149, 237, 255)
+    , m_circleColor(200, 200, 200, 255)
+{
+    m_height = 20;
+    m_width = 20;
+}
+
+RadioButton::~RadioButton() {
+}
+
+void RadioButton::SetChecked(bool checked) {
+    if (m_checked != checked) {
+        m_checked = checked;
+        
+        // Uncheck other radio buttons in the same group
+        if (checked && m_parent) {
+            for (auto& child : m_parent->GetChildren()) {
+                RadioButton* radio = dynamic_cast<RadioButton*>(child.get());
+                if (radio && radio != this && radio->GetGroupId() == m_groupId) {
+                    radio->SetChecked(false);
+                }
+            }
+        }
+        
+        TriggerEvent(WidgetEvent::VALUE_CHANGED, &m_checked);
+    }
+}
+
+void RadioButton::Render(HDC hdc) {
+    if (!m_visible) return;
+    
+    int radius = 10;
+    RECT circleRect = {m_x, m_y, m_x + 20, m_y + 20};
+    
+    // Draw outer circle
+    HBRUSH outerBrush = CreateSolidBrush(RGB(255, 255, 255));
+    HPEN outerPen = CreatePen(PS_SOLID, 2, m_circleColor.ToCOLORREF());
+    HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, outerBrush);
+    HPEN oldPen = (HPEN)SelectObject(hdc, outerPen);
+    
+    Ellipse(hdc, circleRect.left, circleRect.top, circleRect.right, circleRect.bottom);
+    
+    // Draw inner circle if checked
+    if (m_checked) {
+        RECT innerCircleRect = {m_x + 5, m_y + 5, m_x + 15, m_y + 15};
+        HBRUSH innerBrush = CreateSolidBrush(m_checkColor.ToCOLORREF());
+        SelectObject(hdc, innerBrush);
+        SelectObject(hdc, GetStockObject(NULL_PEN));
+        
+        Ellipse(hdc, innerCircleRect.left, innerCircleRect.top, innerCircleRect.right, innerCircleRect.bottom);
+        
+        DeleteObject(innerBrush);
+    }
+    
+    SelectObject(hdc, oldBrush);
+    SelectObject(hdc, oldPen);
+    DeleteObject(outerBrush);
+    DeleteObject(outerPen);
+    
+    // Draw label
+    if (!m_text.empty()) {
+        RECT textRect = {m_x + 25, m_y, m_x + m_width, m_y + m_height};
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, RGB(50, 50, 50));
+        DrawTextW(hdc, m_text.c_str(), -1, &textRect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+    }
+    
+    Widget::Render(hdc);
+}
+
+bool RadioButton::HandleMouseDown(int x, int y, int button) {
+    if (!m_visible || !m_enabled) return false;
+    
+    if (HitTest(x, y) && button == 0) {
+        SetChecked(true);
+        return true;
+    }
+    
+    return false;
+}
+
+// Panel implementation
+Panel::Panel()
+    : Widget()
+    , m_backgroundColor(240, 240, 240, 255)
+    , m_borderColor(180, 180, 180, 255)
+    , m_titleBarColor(200, 200, 200, 255)
+    , m_titleBarHeight(25)
+{
+    m_width = 200;
+    m_height = 150;
+}
+
+Panel::~Panel() {
+}
+
+void Panel::Render(HDC hdc) {
+    if (!m_visible) return;
+    
+    RECT bounds = GetBounds();
+    
+    // Draw border and background
+    Renderer::DrawRoundedRect(hdc, bounds, 8, m_backgroundColor, m_borderColor, 2);
+    
+    // Draw title bar if title is set
+    if (!m_title.empty()) {
+        RECT titleBarRect = {bounds.left, bounds.top, bounds.right, bounds.top + m_titleBarHeight};
+        Renderer::DrawRoundedRect(hdc, titleBarRect, 8, m_titleBarColor, m_titleBarColor, 0);
+        
+        // Draw title text
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, RGB(50, 50, 50));
+        RECT titleTextRect = titleBarRect;
+        titleTextRect.left += 10;
+        DrawTextW(hdc, m_title.c_str(), -1, &titleTextRect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+    }
+    
+    Widget::Render(hdc);
+}
+
+// SpinBox implementation
+SpinBox::SpinBox()
+    : Widget()
+    , m_value(0)
+    , m_minValue(0)
+    , m_maxValue(100)
+    , m_step(1)
+    , m_backgroundColor(255, 255, 255, 255)
+    , m_textColor(0, 0, 0, 255)
+    , m_buttonColor(220, 220, 220, 255)
+{
+    m_width = 120;
+    m_height = 30;
+}
+
+SpinBox::~SpinBox() {
+}
+
+void SpinBox::SetValue(int value) {
+    if (value < m_minValue) value = m_minValue;
+    if (value > m_maxValue) value = m_maxValue;
+    
+    if (m_value != value) {
+        m_value = value;
+        TriggerEvent(WidgetEvent::VALUE_CHANGED, &m_value);
+    }
+}
+
+void SpinBox::SetRange(int minValue, int maxValue) {
+    m_minValue = minValue;
+    m_maxValue = maxValue;
+    if (m_value < m_minValue) m_value = m_minValue;
+    if (m_value > m_maxValue) m_value = m_maxValue;
+}
+
+void SpinBox::GetRange(int& minValue, int& maxValue) const {
+    minValue = m_minValue;
+    maxValue = m_maxValue;
+}
+
+void SpinBox::Render(HDC hdc) {
+    if (!m_visible) return;
+    
+    RECT bounds = GetBounds();
+    
+    // Draw background
+    int buttonWidth = 20;
+    RECT textRect = {bounds.left, bounds.top, bounds.right - buttonWidth, bounds.bottom};
+    Renderer::DrawRoundedRect(hdc, textRect, 4, m_backgroundColor, Color(128, 128, 128, 255), 1);
+    
+    // Draw value text
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, m_textColor.ToCOLORREF());
+    std::wstring valueText = std::to_wstring(m_value);
+    RECT valueTextRect = textRect;
+    valueTextRect.left += 5;
+    DrawTextW(hdc, valueText.c_str(), -1, &valueTextRect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+    
+    // Draw up button
+    RECT upButtonRect = {bounds.right - buttonWidth, bounds.top, bounds.right, bounds.top + m_height / 2};
+    Renderer::DrawRoundedRect(hdc, upButtonRect, 4, m_buttonColor, Color(128, 128, 128, 255), 1);
+    
+    // Draw up arrow
+    int arrowCenterX = upButtonRect.left + buttonWidth / 2;
+    int arrowCenterY = upButtonRect.top + (upButtonRect.bottom - upButtonRect.top) / 2;
+    HPEN arrowPen = CreatePen(PS_SOLID, 2, RGB(50, 50, 50));
+    HPEN oldPen = (HPEN)SelectObject(hdc, arrowPen);
+    
+    MoveToEx(hdc, arrowCenterX - 4, arrowCenterY + 2, nullptr);
+    LineTo(hdc, arrowCenterX, arrowCenterY - 2);
+    LineTo(hdc, arrowCenterX + 4, arrowCenterY + 2);
+    
+    // Draw down button
+    RECT downButtonRect = {bounds.right - buttonWidth, bounds.top + m_height / 2, bounds.right, bounds.bottom};
+    Renderer::DrawRoundedRect(hdc, downButtonRect, 4, m_buttonColor, Color(128, 128, 128, 255), 1);
+    
+    // Draw down arrow
+    arrowCenterY = downButtonRect.top + (downButtonRect.bottom - downButtonRect.top) / 2;
+    
+    MoveToEx(hdc, arrowCenterX - 4, arrowCenterY - 2, nullptr);
+    LineTo(hdc, arrowCenterX, arrowCenterY + 2);
+    LineTo(hdc, arrowCenterX + 4, arrowCenterY - 2);
+    
+    SelectObject(hdc, oldPen);
+    DeleteObject(arrowPen);
+    
+    Widget::Render(hdc);
+}
+
+bool SpinBox::HandleMouseDown(int x, int y, int button) {
+    if (!m_visible || !m_enabled) return false;
+    
+    if (HitTest(x, y) && button == 0) {
+        RECT bounds = GetBounds();
+        int buttonWidth = 20;
+        
+        // Check if clicking up button
+        if (x >= bounds.right - buttonWidth && y < bounds.top + m_height / 2) {
+            SetValue(m_value + m_step);
+            return true;
+        }
+        // Check if clicking down button
+        else if (x >= bounds.right - buttonWidth && y >= bounds.top + m_height / 2) {
+            SetValue(m_value - m_step);
+            return true;
+        }
+        
+        SetFocused(true);
+        return true;
+    }
+    
+    return false;
+}
+
+bool SpinBox::HandleKeyDown(int keyCode) {
+    if (!Widget::HandleKeyDown(keyCode)) return false;
+    
+    if (keyCode == VK_UP) {
+        SetValue(m_value + m_step);
+        return true;
+    } else if (keyCode == VK_DOWN) {
+        SetValue(m_value - m_step);
+        return true;
+    }
+    
+    return false;
+}
+
 } // namespace SDK

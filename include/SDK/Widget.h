@@ -312,4 +312,125 @@ private:
     int m_imageHeight;
 };
 
+// Slider widget
+class Slider : public Widget {
+public:
+    enum class Orientation {
+        HORIZONTAL,
+        VERTICAL
+    };
+    
+    Slider(Orientation orientation = Orientation::HORIZONTAL);
+    virtual ~Slider();
+    
+    void SetValue(float value);
+    float GetValue() const { return m_value; }
+    
+    void SetRange(float minValue, float maxValue);
+    void GetRange(float& minValue, float& maxValue) const;
+    
+    void SetOrientation(Orientation orientation) { m_orientation = orientation; }
+    Orientation GetOrientation() const { return m_orientation; }
+    
+    void SetTrackColor(const Color& color) { m_trackColor = color; }
+    void SetThumbColor(const Color& color) { m_thumbColor = color; }
+    void SetFillColor(const Color& color) { m_fillColor = color; }
+    
+    void Render(HDC hdc) override;
+    bool HandleMouseDown(int x, int y, int button) override;
+    bool HandleMouseMove(int x, int y) override;
+    bool HandleMouseUp(int x, int y, int button) override;
+    
+private:
+    void UpdateValueFromPosition(int x, int y);
+    
+    Orientation m_orientation;
+    float m_value;
+    float m_minValue;
+    float m_maxValue;
+    bool m_dragging;
+    
+    Color m_trackColor;
+    Color m_thumbColor;
+    Color m_fillColor;
+};
+
+// RadioButton widget
+class RadioButton : public Widget {
+public:
+    RadioButton(const std::wstring& text = L"", int groupId = 0);
+    virtual ~RadioButton();
+    
+    void SetText(const std::wstring& text) { m_text = text; }
+    std::wstring GetText() const { return m_text; }
+    
+    void SetChecked(bool checked);
+    bool IsChecked() const { return m_checked; }
+    
+    void SetGroupId(int groupId) { m_groupId = groupId; }
+    int GetGroupId() const { return m_groupId; }
+    
+    void Render(HDC hdc) override;
+    bool HandleMouseDown(int x, int y, int button) override;
+    
+private:
+    std::wstring m_text;
+    bool m_checked;
+    int m_groupId;
+    Color m_checkColor;
+    Color m_circleColor;
+};
+
+// Panel widget (container for grouping widgets)
+class Panel : public Widget {
+public:
+    Panel();
+    virtual ~Panel();
+    
+    void SetTitle(const std::wstring& title) { m_title = title; }
+    std::wstring GetTitle() const { return m_title; }
+    
+    void SetBackgroundColor(const Color& color) { m_backgroundColor = color; }
+    void SetBorderColor(const Color& color) { m_borderColor = color; }
+    void SetTitleBarColor(const Color& color) { m_titleBarColor = color; }
+    
+    void Render(HDC hdc) override;
+    
+private:
+    std::wstring m_title;
+    Color m_backgroundColor;
+    Color m_borderColor;
+    Color m_titleBarColor;
+    int m_titleBarHeight;
+};
+
+// SpinBox widget (numeric input with up/down buttons)
+class SpinBox : public Widget {
+public:
+    SpinBox();
+    virtual ~SpinBox();
+    
+    void SetValue(int value);
+    int GetValue() const { return m_value; }
+    
+    void SetRange(int minValue, int maxValue);
+    void GetRange(int& minValue, int& maxValue) const;
+    
+    void SetStep(int step) { m_step = step; }
+    int GetStep() const { return m_step; }
+    
+    void Render(HDC hdc) override;
+    bool HandleMouseDown(int x, int y, int button) override;
+    bool HandleKeyDown(int keyCode) override;
+    
+private:
+    int m_value;
+    int m_minValue;
+    int m_maxValue;
+    int m_step;
+    Color m_backgroundColor;
+    Color m_textColor;
+    Color m_buttonColor;
+};
+
 } // namespace SDK
