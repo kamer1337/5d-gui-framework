@@ -8,6 +8,8 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+#include <thread>
+#include <mutex>
 #include "Theme.h"
 
 namespace SDK {
@@ -81,6 +83,7 @@ public:
     static std::vector<Particle> CreateParticleEmission(int x, int y, int count, Color color);
     static void DrawParticlesFromPool(HDC hdc, ParticlePool& pool);
     static void UpdateParticlesInPool(ParticlePool& pool, float deltaTime);
+    static void UpdateParticlesInPoolMultiThreaded(ParticlePool& pool, float deltaTime, int numThreads = 0);
     
     // Icon rendering for 5D icon system
     enum class IconType {
