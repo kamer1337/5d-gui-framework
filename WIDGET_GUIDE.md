@@ -1089,8 +1089,272 @@ The build will generate:
 ## Future Enhancements
 
 See ROADMAP.md for planned features including:
-- More widget types (sliders, spinners, date pickers)
 - Advanced text editor features (code completion, find/replace)
 - Hardware-accelerated 3D/4D rendering
 - Network-enabled widgets
 - Plugin system for custom widgets
+
+---
+
+## New Widgets (v1.2.0)
+
+### Slider
+
+A widget for selecting a numeric value by dragging a thumb along a track.
+
+#### Features
+- Horizontal and vertical orientations
+- Customizable value range
+- Smooth dragging interaction
+- Visual feedback with filled track
+- Color customization for track, thumb, and fill
+
+#### Basic Usage
+
+```cpp
+#include "SDK/SDK.h"
+
+// Create horizontal slider
+auto slider = std::make_shared<SDK::Slider>(SDK::Slider::Orientation::HORIZONTAL);
+slider->SetBounds(50, 50, 200, 30);
+slider->SetRange(0.0f, 100.0f);
+slider->SetValue(50.0f);
+
+// Set callback for value changes
+slider->SetEventCallback([](SDK::Widget* w, SDK::WidgetEvent e, void* data) {
+    if (e == SDK::WidgetEvent::VALUE_CHANGED && data) {
+        float value = *(float*)data;
+        // Use the value...
+    }
+});
+
+window->AddWidget(slider);
+```
+
+#### API Reference
+
+```cpp
+// Constructor
+Slider(Orientation orientation = Orientation::HORIZONTAL);
+
+// Value management
+void SetValue(float value);
+float GetValue() const;
+void SetRange(float minValue, float maxValue);
+void GetRange(float& minValue, float& maxValue) const;
+
+// Orientation
+void SetOrientation(Orientation orientation);
+Orientation GetOrientation() const;
+
+// Colors
+void SetTrackColor(const Color& color);
+void SetThumbColor(const Color& color);
+void SetFillColor(const Color& color);
+```
+
+### RadioButton
+
+A widget for selecting one option from a group of mutually exclusive choices.
+
+#### Features
+- Group support (radio buttons in the same group are mutually exclusive)
+- Visual indication of selected state
+- Customizable colors
+- Text labels
+
+#### Basic Usage
+
+```cpp
+#include "SDK/SDK.h"
+
+// Create radio button group (group ID = 0)
+auto radio1 = std::make_shared<SDK::RadioButton>(L"Option 1", 0);
+radio1->SetBounds(50, 50, 200, 20);
+radio1->SetChecked(true);
+
+auto radio2 = std::make_shared<SDK::RadioButton>(L"Option 2", 0);
+radio2->SetBounds(50, 80, 200, 20);
+
+auto radio3 = std::make_shared<SDK::RadioButton>(L"Option 3", 0);
+radio3->SetBounds(50, 110, 200, 20);
+
+// Add to parent so group management works
+panel->AddChild(radio1);
+panel->AddChild(radio2);
+panel->AddChild(radio3);
+
+window->AddWidget(radio1);
+window->AddWidget(radio2);
+window->AddWidget(radio3);
+```
+
+#### API Reference
+
+```cpp
+// Constructor
+RadioButton(const std::wstring& text = L"", int groupId = 0);
+
+// Text management
+void SetText(const std::wstring& text);
+std::wstring GetText() const;
+
+// State management
+void SetChecked(bool checked);
+bool IsChecked() const;
+
+// Group management
+void SetGroupId(int groupId);
+int GetGroupId() const;
+```
+
+### Panel
+
+A container widget for visually grouping related widgets with an optional title bar.
+
+#### Features
+- Optional title bar
+- Rounded corners and borders
+- Customizable colors
+- Can contain child widgets
+
+#### Basic Usage
+
+```cpp
+#include "SDK/SDK.h"
+
+// Create panel
+auto panel = std::make_shared<SDK::Panel>();
+panel->SetBounds(50, 50, 300, 200);
+panel->SetTitle(L"Settings");
+panel->SetBackgroundColor(SDK::Color(245, 245, 245, 255));
+
+// Add widgets to panel
+auto label = std::make_shared<SDK::Label>(L"Volume:");
+label->SetPosition(70, 90);
+panel->AddChild(label);
+
+window->AddWidget(panel);
+window->AddWidget(label);
+```
+
+#### API Reference
+
+```cpp
+// Constructor
+Panel();
+
+// Title management
+void SetTitle(const std::wstring& title);
+std::wstring GetTitle() const;
+
+// Colors
+void SetBackgroundColor(const Color& color);
+void SetBorderColor(const Color& color);
+void SetTitleBarColor(const Color& color);
+```
+
+### SpinBox
+
+A widget for entering numeric values with increment/decrement buttons.
+
+#### Features
+- Up/down buttons for value adjustment
+- Keyboard support (arrow keys)
+- Customizable value range and step
+- Visual feedback on button press
+
+#### Basic Usage
+
+```cpp
+#include "SDK/SDK.h"
+
+// Create spinbox
+auto spinBox = std::make_shared<SDK::SpinBox>();
+spinBox->SetBounds(50, 50, 120, 30);
+spinBox->SetRange(0, 100);
+spinBox->SetStep(5);
+spinBox->SetValue(50);
+
+// Set callback for value changes
+spinBox->SetEventCallback([](SDK::Widget* w, SDK::WidgetEvent e, void* data) {
+    if (e == SDK::WidgetEvent::VALUE_CHANGED && data) {
+        int value = *(int*)data;
+        // Use the value...
+    }
+});
+
+window->AddWidget(spinBox);
+```
+
+#### API Reference
+
+```cpp
+// Constructor
+SpinBox();
+
+// Value management
+void SetValue(int value);
+int GetValue() const;
+void SetRange(int minValue, int maxValue);
+void GetRange(int& minValue, int& maxValue) const;
+
+// Step management
+void SetStep(int step);
+int GetStep() const;
+```
+
+### Example: Complete Form with New Widgets
+
+```cpp
+#include "SDK/SDK.h"
+
+// Create a settings form
+auto panel = std::make_shared<SDK::Panel>();
+panel->SetBounds(20, 20, 400, 300);
+panel->SetTitle(L"Application Settings");
+
+// Volume slider
+auto volumeLabel = std::make_shared<SDK::Label>(L"Volume:");
+volumeLabel->SetPosition(40, 70);
+auto volumeSlider = std::make_shared<SDK::Slider>();
+volumeSlider->SetBounds(120, 65, 250, 30);
+volumeSlider->SetRange(0.0f, 100.0f);
+
+// Quality radio buttons
+auto qualityLabel = std::make_shared<SDK::Label>(L"Quality:");
+qualityLabel->SetPosition(40, 120);
+
+auto lowQuality = std::make_shared<SDK::RadioButton>(L"Low", 0);
+lowQuality->SetBounds(120, 120, 100, 20);
+auto medQuality = std::make_shared<SDK::RadioButton>(L"Medium", 0);
+medQuality->SetBounds(220, 120, 100, 20);
+auto highQuality = std::make_shared<SDK::RadioButton>(L"High", 0);
+highQuality->SetBounds(320, 120, 100, 20);
+highQuality->SetChecked(true);
+
+panel->AddChild(lowQuality);
+panel->AddChild(medQuality);
+panel->AddChild(highQuality);
+
+// Max connections spinbox
+auto connectLabel = std::make_shared<SDK::Label>(L"Max Connections:");
+connectLabel->SetPosition(40, 170);
+auto connectSpin = std::make_shared<SDK::SpinBox>();
+connectSpin->SetBounds(180, 165, 120, 30);
+connectSpin->SetRange(1, 100);
+connectSpin->SetValue(10);
+
+// Add all to window
+window->AddWidget(panel);
+window->AddWidget(volumeLabel);
+window->AddWidget(volumeSlider);
+window->AddWidget(qualityLabel);
+window->AddWidget(lowQuality);
+window->AddWidget(medQuality);
+window->AddWidget(highQuality);
+window->AddWidget(connectLabel);
+window->AddWidget(connectSpin);
+```
+
+See `examples/new_widgets_demo.cpp` for a complete working example.

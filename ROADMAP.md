@@ -106,16 +106,20 @@ This document outlines planned features and improvements for the 5D GUI SDK.
   - Pattern fills
   - Texture gradients
 
-## Version 1.2.0 (In Progress)
+## Version 1.2.0 (In Progress - Partially Complete)
 
-### UI Components
-- [ ] **Built-in Controls**
-  - Buttons with hover/press states
-  - Text boxes with custom rendering
-  - Sliders and progress bars
-  - Dropdown menus
-  - Tree views
-  - List views
+### UI Components (Partially Complete)
+- [x] **Built-in Controls**
+  - [x] Buttons with hover/press states
+  - [x] Text boxes with custom rendering
+  - [x] Sliders (horizontal and vertical)
+  - [x] Radio buttons with group support
+  - [x] SpinBox for numeric input
+  - [x] Panel widget for grouping
+  - [x] Progress bars
+  - [x] Dropdown menus (ComboBox)
+  - [x] Tree views (FileTree)
+  - [x] List views (ListBox, ListView)
   
 - [ ] **Layout System**
   - Automatic window arrangement
