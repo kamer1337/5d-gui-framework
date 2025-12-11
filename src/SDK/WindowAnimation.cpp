@@ -50,11 +50,18 @@ float WindowAnimation::ApplyEasing(float t) const {
             return (t < 0.5f) ? (2.0f * t * t) : (-1.0f + (4.0f - 2.0f * t) * t);
             
         case EasingType::BOUNCE: {
-            if (t < 0.5f) {
-                return 0.5f * (1.0f - std::cos(t * static_cast<float>(M_PI) * 2.0f));
+            // Bounce out effect - simulates a ball bouncing with decreasing amplitude
+            if (t < (1.0f / 2.75f)) {
+                return 7.5625f * t * t;
+            } else if (t < (2.0f / 2.75f)) {
+                float t2 = t - (1.5f / 2.75f);
+                return 7.5625f * t2 * t2 + 0.75f;
+            } else if (t < (2.5f / 2.75f)) {
+                float t2 = t - (2.25f / 2.75f);
+                return 7.5625f * t2 * t2 + 0.9375f;
             } else {
-                float t2 = (t - 0.5f) * 2.0f;
-                return 0.5f + 0.5f * (1.0f - std::cos(t2 * static_cast<float>(M_PI)));
+                float t2 = t - (2.625f / 2.75f);
+                return 7.5625f * t2 * t2 + 0.984375f;
             }
         }
         
