@@ -712,6 +712,24 @@ void Slider::Render(HDC hdc) {
     
     RECT bounds = GetBounds();
     
+    // Protect against division by zero
+    if (m_maxValue == m_minValue) {
+        // Draw track only
+        if (m_orientation == Orientation::HORIZONTAL) {
+            int trackHeight = 4;
+            int trackY = (bounds.top + bounds.bottom) / 2 - trackHeight / 2;
+            RECT trackRect = {bounds.left + 10, trackY, bounds.right - 10, trackY + trackHeight};
+            Renderer::DrawRoundedRect(hdc, trackRect, 2, m_trackColor, m_trackColor, 0);
+        } else {
+            int trackWidth = 4;
+            int trackX = (bounds.left + bounds.right) / 2 - trackWidth / 2;
+            RECT trackRect = {trackX, bounds.top + 10, trackX + trackWidth, bounds.bottom - 10};
+            Renderer::DrawRoundedRect(hdc, trackRect, 2, m_trackColor, m_trackColor, 0);
+        }
+        Widget::Render(hdc);
+        return;
+    }
+    
     if (m_orientation == Orientation::HORIZONTAL) {
         // Draw track
         int trackHeight = 4;
@@ -975,6 +993,13 @@ void SpinBox::SetValue(int value) {
 }
 
 void SpinBox::SetRange(int minValue, int maxValue) {
+    // Validate and swap if necessary
+    if (minValue > maxValue) {
+        int temp = minValue;
+        minValue = maxValue;
+        maxValue = temp;
+    }
+    
     m_minValue = minValue;
     m_maxValue = maxValue;
     if (m_value < m_minValue) m_value = m_minValue;

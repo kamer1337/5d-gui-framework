@@ -758,8 +758,37 @@ std::vector<SyntaxHighlightTextEditor::SyntaxToken> SyntaxHighlightTextEditor::T
             // Numbers
             if (iswdigit(ch)) {
                 size_t end = pos + 1;
-                while (end < line.length() && (iswdigit(line[end]) || line[end] == L'.' || 
-                       line[end] == L'f' || line[end] == L'F' || line[end] == L'x' || line[end] == L'X')) {
+                bool hasDot = false;
+                bool isHex = false;
+                
+                // Check for hex prefix (0x or 0X)
+                if (ch == L'0' && end < line.length() && (line[end] == L'x' || line[end] == L'X')) {
+                    isHex = true;
+                    end++; // Skip 'x' or 'X'
+                }
+                
+                while (end < line.length()) {
+                    wchar_t c = line[end];
+                    
+                    if (isHex) {
+                        // Hex digits: 0-9, a-f, A-F
+                        if (!iswdigit(c) && !(c >= L'a' && c <= L'f') && !(c >= L'A' && c <= L'F')) {
+                            break;
+                        }
+                    } else {
+                        // Decimal: digits, one decimal point, f/F suffix
+                        if (iswdigit(c)) {
+                            // Continue
+                        } else if (c == L'.' && !hasDot) {
+                            hasDot = true;
+                        } else if ((c == L'f' || c == L'F') && end + 1 == line.length()) {
+                            // f/F suffix only at end
+                            end++;
+                            break;
+                        } else {
+                            break;
+                        }
+                    }
                     end++;
                 }
                 
