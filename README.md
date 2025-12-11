@@ -265,7 +265,6 @@ MaterialGameEngine/
 │   ├── camera_demo.cpp       # 3D camera controller demo
 │   ├── toolbar_demo.cpp      # Toolbar widget demo
 │   └── advanced_window_demo.cpp  # Advanced window features demo
-│   └── toolbar_demo.cpp      # Toolbar widget demo
 ├── build/               # Build output (generated)
 ├── CMakeLists.txt       # CMake build file
 ├── Makefile             # Alternative build system

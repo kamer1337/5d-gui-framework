@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <functional>
 #include "Window.h"
 
 namespace SDK {

@@ -1,6 +1,10 @@
 #include "../../include/SDK/WindowAnimation.h"
 #include <cmath>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 namespace SDK {
 
 WindowAnimation::WindowAnimation(HWND hwnd)
@@ -47,10 +51,10 @@ float WindowAnimation::ApplyEasing(float t) const {
             
         case EasingType::BOUNCE: {
             if (t < 0.5f) {
-                return 0.5f * (1.0f - std::cos(t * 3.14159f * 2.0f));
+                return 0.5f * (1.0f - std::cos(t * static_cast<float>(M_PI) * 2.0f));
             } else {
                 float t2 = (t - 0.5f) * 2.0f;
-                return 0.5f + 0.5f * (1.0f - std::cos(t2 * 3.14159f));
+                return 0.5f + 0.5f * (1.0f - std::cos(t2 * static_cast<float>(M_PI)));
             }
         }
         

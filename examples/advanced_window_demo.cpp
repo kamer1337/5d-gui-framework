@@ -4,7 +4,6 @@
  */
 
 #include "SDK/SDK.h"
-#include <string>
 
 // Global variables
 HINSTANCE g_hInstance;
