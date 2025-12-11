@@ -5,9 +5,23 @@ project(MaterialGameEngine_5DGUI VERSION 1.2.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Platform check
-if(NOT WIN32)
-    message(FATAL_ERROR "This SDK is designed for Windows only (Win32 API)")
+# Platform detection and configuration
+if(WIN32)
+    message(STATUS "Building for Windows platform")
+    set(PLATFORM_WINDOWS TRUE)
+elseif(UNIX AND NOT APPLE)
+    message(STATUS "Building for Linux platform")
+    set(PLATFORM_LINUX TRUE)
+    # Find X11 libraries for Linux
+    find_package(X11 REQUIRED)
+    if(NOT X11_FOUND)
+        message(FATAL_ERROR "X11 not found. Please install libx11-dev")
+    endif()
+elseif(APPLE)
+    message(WARNING "macOS support is experimental")
+    set(PLATFORM_MACOS TRUE)
+else()
+    message(FATAL_ERROR "Unsupported platform")
 endif()
 
 # SDK Library
@@ -36,6 +50,7 @@ set(SDK_SOURCES
 
 set(SDK_HEADERS
     include/SDK/SDK.h
+    include/SDK/Platform.h
     include/SDK/WindowHook.h
     include/SDK/Window.h
     include/SDK/WindowManager.h
@@ -65,116 +80,132 @@ target_include_directories(5DGUI_SDK PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-# Link Windows libraries
-target_link_libraries(5DGUI_SDK PUBLIC
-    dwmapi
-    gdi32
-    user32
-    kernel32
-)
+# Link platform-specific libraries
+if(PLATFORM_WINDOWS)
+    target_link_libraries(5DGUI_SDK PUBLIC
+        dwmapi
+        gdi32
+        user32
+        kernel32
+    )
+elseif(PLATFORM_LINUX)
+    target_link_libraries(5DGUI_SDK PUBLIC
+        ${X11_LIBRARIES}
+        pthread
+    )
+    target_include_directories(5DGUI_SDK PUBLIC
+        ${X11_INCLUDE_DIR}
+    )
+endif()
 
-# Demo application
-add_executable(5DGUI_Demo examples/demo.cpp)
-target_link_libraries(5DGUI_Demo PRIVATE 5DGUI_SDK)
+# Demo applications (Windows only for now)
+if(PLATFORM_WINDOWS)
+    # Demo application
+    add_executable(5DGUI_Demo examples/demo.cpp)
+    target_link_libraries(5DGUI_Demo PRIVATE 5DGUI_SDK)
+    
+    # Widget demo application
+    add_executable(5DGUI_WidgetDemo examples/widget_demo.cpp)
+    target_link_libraries(5DGUI_WidgetDemo PRIVATE 5DGUI_SDK)
+    
+    # Widget showcase application
+    add_executable(Widget_Showcase examples/widget_showcase.cpp)
+    target_link_libraries(Widget_Showcase PRIVATE 5DGUI_SDK)
+    
+    # Camera demo application
+    add_executable(Camera_Demo examples/camera_demo.cpp)
+    target_link_libraries(Camera_Demo PRIVATE 5DGUI_SDK)
+    
+    # Toolbar demo application
+    add_executable(Toolbar_Demo examples/toolbar_demo.cpp)
+    target_link_libraries(Toolbar_Demo PRIVATE 5DGUI_SDK)
+    
+    # Advanced window features demo application
+    add_executable(Advanced_Window_Demo examples/advanced_window_demo.cpp)
+    target_link_libraries(Advanced_Window_Demo PRIVATE 5DGUI_SDK)
+    
+    # Neural network demo application
+    add_executable(Neural_Network_Demo examples/neural_network_demo.cpp)
+    target_link_libraries(Neural_Network_Demo PRIVATE 5DGUI_SDK)
+    
+    # Optimization demo application
+    add_executable(Optimization_Demo examples/optimization_demo.cpp)
+    target_link_libraries(Optimization_Demo PRIVATE 5DGUI_SDK)
+    
+    # New widgets demo application
+    add_executable(New_Widgets_Demo examples/new_widgets_demo.cpp)
+    target_link_libraries(New_Widgets_Demo PRIVATE 5DGUI_SDK)
+    
+    # Widget properties demo application
+    add_executable(Widget_Properties_Demo examples/widget_properties_demo.cpp)
+    target_link_libraries(Widget_Properties_Demo PRIVATE 5DGUI_SDK)
+endif()
 
-# Widget demo application
-add_executable(5DGUI_WidgetDemo examples/widget_demo.cpp)
-target_link_libraries(5DGUI_WidgetDemo PRIVATE 5DGUI_SDK)
-
-# Widget showcase application
-add_executable(Widget_Showcase examples/widget_showcase.cpp)
-target_link_libraries(Widget_Showcase PRIVATE 5DGUI_SDK)
-
-# Camera demo application
-add_executable(Camera_Demo examples/camera_demo.cpp)
-target_link_libraries(Camera_Demo PRIVATE 5DGUI_SDK)
-
-# Toolbar demo application
-add_executable(Toolbar_Demo examples/toolbar_demo.cpp)
-target_link_libraries(Toolbar_Demo PRIVATE 5DGUI_SDK)
-
-# Advanced window features demo application
-add_executable(Advanced_Window_Demo examples/advanced_window_demo.cpp)
-target_link_libraries(Advanced_Window_Demo PRIVATE 5DGUI_SDK)
-
-# Neural network demo application
-add_executable(Neural_Network_Demo examples/neural_network_demo.cpp)
-target_link_libraries(Neural_Network_Demo PRIVATE 5DGUI_SDK)
-# Optimization demo application
-add_executable(Optimization_Demo examples/optimization_demo.cpp)
-target_link_libraries(Optimization_Demo PRIVATE 5DGUI_SDK)
-
-# New widgets demo application
-add_executable(New_Widgets_Demo examples/new_widgets_demo.cpp)
-target_link_libraries(New_Widgets_Demo PRIVATE 5DGUI_SDK)
-
-# Widget properties demo application
-add_executable(Widget_Properties_Demo examples/widget_properties_demo.cpp)
-target_link_libraries(Widget_Properties_Demo PRIVATE 5DGUI_SDK)
-
-# Set subsystem to Windows (GUI application)
-if(MSVC)
-    set_target_properties(5DGUI_Demo PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
-    )
-    set_target_properties(5DGUI_WidgetDemo PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
-    )
-    set_target_properties(Widget_Showcase PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
-    )
-    set_target_properties(Camera_Demo PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
-    )
-    set_target_properties(Toolbar_Demo PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
-    )
-    set_target_properties(Advanced_Window_Demo PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
-    )
-    set_target_properties(Neural_Network_Demo PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
-    )
-    set_target_properties(Optimization_Demo PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
-    )
-    set_target_properties(New_Widgets_Demo PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
-    )
-    set_target_properties(Widget_Properties_Demo PROPERTIES
-        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
-    )
-else()
-    set_target_properties(5DGUI_Demo PROPERTIES
-        LINK_FLAGS "-mwindows"
-    )
-    set_target_properties(5DGUI_WidgetDemo PROPERTIES
-        LINK_FLAGS "-mwindows"
-    )
-    set_target_properties(Widget_Showcase PROPERTIES
-        LINK_FLAGS "-mwindows"
-    )
-    set_target_properties(Camera_Demo PROPERTIES
-        LINK_FLAGS "-mwindows"
-    )
-    set_target_properties(Toolbar_Demo PROPERTIES
-        LINK_FLAGS "-mwindows"
-    )
-    set_target_properties(Advanced_Window_Demo PROPERTIES
-        LINK_FLAGS "-mwindows"
-    )
-    set_target_properties(Neural_Network_Demo PROPERTIES
-        LINK_FLAGS "-mwindows"
-    )
-    set_target_properties(Optimization_Demo PROPERTIES
-        LINK_FLAGS "-mwindows"
-    )
-    set_target_properties(New_Widgets_Demo PROPERTIES
-        LINK_FLAGS "-mwindows"
-    )
-    set_target_properties(Widget_Properties_Demo PROPERTIES
-        LINK_FLAGS "-mwindows"
-    )
+# Set subsystem to Windows (GUI application) - Windows only
+if(PLATFORM_WINDOWS)
+    if(MSVC)
+        set_target_properties(5DGUI_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(5DGUI_WidgetDemo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(Widget_Showcase PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(Camera_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(Toolbar_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(Advanced_Window_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(Neural_Network_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(Optimization_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(New_Widgets_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(Widget_Properties_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+    else()
+        set_target_properties(5DGUI_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(5DGUI_WidgetDemo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(Widget_Showcase PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(Camera_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(Toolbar_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(Advanced_Window_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(Neural_Network_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(Optimization_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(New_Widgets_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(Widget_Properties_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+    endif()
 endif()
 
 # Installation
@@ -189,9 +220,11 @@ install(DIRECTORY include/SDK
     FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo
-    RUNTIME DESTINATION bin
-)
+if(PLATFORM_WINDOWS)
+    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo
+        RUNTIME DESTINATION bin
+    )
+endif()
 
 # Documentation
 install(FILES README.md

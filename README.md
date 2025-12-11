@@ -280,21 +280,42 @@ ShowWindow(hwnd, SW_SHOW);
 ## Building
 
 ### CMake (Recommended)
+
+#### Windows
 ```cmd
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build .
 ```
 
-### Makefile (MinGW)
+#### Linux
+```bash
+mkdir build && cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+```
+
+**Linux Requirements:**
+- X11 development libraries: `sudo apt-get install libx11-dev`
+- C++17 compiler (GCC 7+, Clang)
+
+### Makefile (MinGW - Windows only)
 ```cmd
 mingw32-make all
 ```
 
 ### Requirements
+
+#### Windows
 - Windows 7 or later
 - C++17 compiler (MSVC, MinGW, Clang)
 - CMake 3.10+ (optional)
+
+#### Linux
+- Linux with X11 or Wayland
+- C++17 compiler (GCC 7+, Clang)
+- CMake 3.10+ (required)
+- X11 development libraries (`libx11-dev` on Ubuntu/Debian)
 
 ## Project Structure
 
@@ -338,13 +359,30 @@ MaterialGameEngine/
 
 ## Platform Support
 
+### Windows
 - **Windows 7**: Full support (requires Platform Update)
 - **Windows 8/8.1**: Full support
 - **Windows 10/11**: Full support with enhanced effects
 - **Architecture**: x86 and x64
+- **Features**: All features fully supported including window hooking, layered windows, and advanced effects
+
+### Linux
+- **Linux**: Basic support (Foundation)
+- **Display Servers**: X11 (primary), Wayland (experimental)
+- **Architecture**: x86_64, ARM64
+- **Features**: 
+  - ✅ Core SDK compilation
+  - ✅ Neural network support (platform-independent)
+  - ✅ Widget system (platform-independent)
+  - ⚠️ Window rendering (basic X11 implementation)
+  - ⚠️ Window hooking (not available on Linux)
+  - ⚠️ Demo applications (Windows only for now)
+
+**Note**: Linux support is currently in foundation stage. The SDK compiles and neural network features work cross-platform, but full GUI rendering requires platform-specific implementation.
 
 ## Dependencies
 
+### Windows
 **None!** The SDK uses only:
 - windows.h (Win32 API)
 - dwmapi.lib (Desktop Window Manager)
@@ -352,6 +390,11 @@ MaterialGameEngine/
 - user32.lib (Window management)
 
 All libraries are standard Windows SDK components.
+
+### Linux
+- X11 libraries (libX11)
+- pthread (threading support)
+- Standard C++ library
 
 ## License
 

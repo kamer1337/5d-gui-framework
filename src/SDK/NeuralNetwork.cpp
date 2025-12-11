@@ -67,21 +67,70 @@ void NeuralNetwork::Initialize() {
 void NeuralNetwork::InitializeVocabulary() {
     // Build vocabulary from common GUI-related words
     std::vector<std::wstring> words = {
-        L"create", L"make", L"add", L"new", L"build",
-        L"window", L"dialog", L"frame", L"form",
-        L"button", L"label", L"text", L"textbox", L"input",
-        L"checkbox", L"check", L"box",
-        L"progressbar", L"progress", L"bar",
-        L"tooltip", L"tip", L"hint",
-        L"click", L"hover", L"focus", L"blur", L"press",
-        L"callback", L"handler", L"event", L"action",
-        L"width", L"height", L"size", L"dimension",
-        L"title", L"name", L"caption", L"heading",
-        L"theme", L"style", L"color", L"appearance",
-        L"with", L"and", L"at", L"to", L"for",
-        L"set", L"apply", L"configure", L"setup",
-        L"show", L"display", L"render", L"draw",
-        L"x", L"pixels", L"px"
+        // Window/container creation
+        L"create", L"make", L"add", L"new", L"build", L"open", L"spawn",
+        L"window", L"dialog", L"frame", L"form", L"panel", L"container",
+        
+        // Basic widgets
+        L"button", L"label", L"text", L"textbox", L"input", L"field",
+        L"checkbox", L"check", L"box", L"radio", L"radiobutton",
+        
+        // Advanced widgets
+        L"progressbar", L"progress", L"bar", L"slider", L"scroll",
+        L"tooltip", L"tip", L"hint", L"popup",
+        L"combobox", L"combo", L"dropdown", L"select", L"menu",
+        L"listbox", L"list", L"listview", L"tree", L"treeview",
+        L"tabcontrol", L"tab", L"tabs", L"toolbar", L"statusbar",
+        L"spinbox", L"spin", L"numeric", L"updown",
+        L"image", L"picture", L"icon", L"bitmap",
+        L"separator", L"divider", L"line", L"spacer",
+        
+        // Layout and positioning
+        L"left", L"right", L"top", L"bottom", L"center", L"middle",
+        L"above", L"below", L"next", L"beside", L"adjacent",
+        L"horizontal", L"vertical", L"align", L"position",
+        L"layout", L"grid", L"flow", L"stack",
+        
+        // Events and callbacks
+        L"click", L"hover", L"focus", L"blur", L"press", L"release",
+        L"callback", L"handler", L"event", L"action", L"trigger",
+        L"on", L"when", L"if", L"then",
+        L"change", L"update", L"modify", L"select",
+        
+        // Properties
+        L"width", L"height", L"size", L"dimension", L"bounds",
+        L"title", L"name", L"caption", L"heading", L"label",
+        L"theme", L"style", L"color", L"appearance", L"look",
+        L"font", L"bold", L"italic", L"underline",
+        L"visible", L"hidden", L"enabled", L"disabled",
+        L"border", L"padding", L"margin", L"spacing",
+        L"background", L"foreground", L"opacity", L"alpha",
+        
+        // Actions
+        L"set", L"apply", L"configure", L"setup", L"initialize",
+        L"show", L"display", L"render", L"draw", L"paint",
+        L"hide", L"close", L"minimize", L"maximize", L"restore",
+        L"update", L"refresh", L"redraw", L"repaint",
+        
+        // Common terms
+        L"with", L"and", L"at", L"to", L"for", L"in", L"from", L"by",
+        L"the", L"a", L"an", L"is", L"are", L"be", L"have", L"has",
+        L"called", L"named", L"titled", L"labeled",
+        
+        // Values and units
+        L"x", L"pixels", L"px", L"percent", L"em", L"pt",
+        L"true", L"false", L"yes", L"no", L"on", L"off",
+        
+        // GUI-specific terms
+        L"file", L"edit", L"view", L"help", L"tools", L"options",
+        L"ok", L"cancel", L"apply", L"save", L"load", L"open",
+        L"submit", L"reset", L"clear", L"search", L"find",
+        L"username", L"password", L"email", L"login", L"logout",
+        L"settings", L"preferences", L"configuration", L"properties",
+        
+        // Neural network enhancements
+        L"neural", L"network", L"ai", L"intelligent", L"smart",
+        L"learn", L"train", L"predict", L"generate", L"auto"
     };
     
     // Add numbers 0-1000 to vocabulary
@@ -151,21 +200,37 @@ void NeuralNetwork::InitializeWeights() {
 }
 
 void NeuralNetwork::InitializePatterns() {
-    // Initialize intent keywords
+    // Initialize intent keywords with enhanced widget support
     m_intentKeywords[L"window"] = Intent::CREATE_WINDOW;
     m_intentKeywords[L"dialog"] = Intent::CREATE_WINDOW;
     m_intentKeywords[L"frame"] = Intent::CREATE_WINDOW;
+    m_intentKeywords[L"form"] = Intent::CREATE_WINDOW;
+    
     m_intentKeywords[L"button"] = Intent::ADD_BUTTON;
     m_intentKeywords[L"label"] = Intent::ADD_LABEL;
+    
     m_intentKeywords[L"textbox"] = Intent::ADD_TEXTBOX;
     m_intentKeywords[L"input"] = Intent::ADD_TEXTBOX;
+    m_intentKeywords[L"field"] = Intent::ADD_TEXTBOX;
+    m_intentKeywords[L"text"] = Intent::ADD_TEXTBOX;
+    
     m_intentKeywords[L"checkbox"] = Intent::ADD_CHECKBOX;
+    m_intentKeywords[L"check"] = Intent::ADD_CHECKBOX;
+    
     m_intentKeywords[L"progressbar"] = Intent::ADD_PROGRESSBAR;
     m_intentKeywords[L"progress"] = Intent::ADD_PROGRESSBAR;
+    m_intentKeywords[L"bar"] = Intent::ADD_PROGRESSBAR;
+    
     m_intentKeywords[L"tooltip"] = Intent::ADD_TOOLTIP;
+    m_intentKeywords[L"tip"] = Intent::ADD_TOOLTIP;
+    m_intentKeywords[L"hint"] = Intent::ADD_TOOLTIP;
+    
     m_intentKeywords[L"callback"] = Intent::SET_CALLBACK;
     m_intentKeywords[L"handler"] = Intent::SET_CALLBACK;
+    m_intentKeywords[L"event"] = Intent::SET_CALLBACK;
+    
     m_intentKeywords[L"theme"] = Intent::SET_THEME;
+    m_intentKeywords[L"style"] = Intent::SET_THEME;
 }
 
 std::vector<std::wstring> NeuralNetwork::Tokenize(const std::wstring& text) {
@@ -360,12 +425,29 @@ std::map<std::wstring, std::wstring> NeuralNetwork::ExtractEntities(const std::w
             }
         }
         
+        // Extract position keywords (left, right, top, bottom, center)
+        if (token == L"left" || token == L"right" || token == L"top" || 
+            token == L"bottom" || token == L"center" || token == L"middle") {
+            entities[L"position"] = token;
+        }
+        
+        // Extract alignment (horizontal, vertical)
+        if (token == L"horizontal" || token == L"vertical") {
+            entities[L"alignment"] = token;
+        }
+        
         // Extract text in quotes (titles, labels)
-        if (i + 1 < tokens.size() && (token == L"title" || token == L"text" || token == L"label")) {
+        if (i + 1 < tokens.size() && (token == L"title" || token == L"text" || 
+            token == L"label" || token == L"named" || token == L"called")) {
             // Look for the next non-keyword token as the title
             if (tokens[i + 1] != L"with" && tokens[i + 1] != L"and") {
                 entities[L"text"] = tokens[i + 1];
             }
+        }
+        
+        // Extract visibility states
+        if (token == L"visible" || token == L"hidden" || token == L"enabled" || token == L"disabled") {
+            entities[L"state"] = token;
         }
         
         // Extract callback types
@@ -375,6 +457,14 @@ std::map<std::wstring, std::wstring> NeuralNetwork::ExtractEntities(const std::w
             entities[L"callback"] = L"hover";
         } else if (token == L"onfocus" || (token == L"on" && i + 1 < tokens.size() && tokens[i + 1] == L"focus")) {
             entities[L"callback"] = L"focus";
+        } else if (token == L"onchange" || (token == L"on" && i + 1 < tokens.size() && tokens[i + 1] == L"change")) {
+            entities[L"callback"] = L"change";
+        }
+        
+        // Extract common actions
+        if (token == L"submit" || token == L"cancel" || token == L"apply" || 
+            token == L"save" || token == L"load" || token == L"close") {
+            entities[L"action"] = token;
         }
     }
     
@@ -384,6 +474,17 @@ std::map<std::wstring, std::wstring> NeuralNetwork::ExtractEntities(const std::w
         size_t quoteEnd = prompt.find(L'\'', quoteStart + 1);
         if (quoteEnd != std::wstring::npos) {
             entities[L"title"] = prompt.substr(quoteStart + 1, quoteEnd - quoteStart - 1);
+        }
+    }
+    
+    // Also try double quotes
+    if (entities.find(L"title") == entities.end()) {
+        quoteStart = prompt.find(L'"');
+        if (quoteStart != std::wstring::npos) {
+            size_t quoteEnd = prompt.find(L'"', quoteStart + 1);
+            if (quoteEnd != std::wstring::npos) {
+                entities[L"title"] = prompt.substr(quoteStart + 1, quoteEnd - quoteStart - 1);
+            }
         }
     }
     

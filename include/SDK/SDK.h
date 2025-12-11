@@ -7,7 +7,8 @@
  * Optimized for multimodal windows with advanced theming
  * 
  * Features:
- * - Window creation hooking via CreateWindowExW
+ * - Cross-platform support (Windows, Linux)
+ * - Window creation hooking via CreateWindowExW (Windows)
  * - 5D depth rendering system (5 depth levels)
  * - Multi-directional gradients (vertical, horizontal, radial)
  * - Layered window support with alpha transparency
@@ -22,9 +23,10 @@
  * - Neural network for natural language GUI creation
  * - Advanced window features (groups, snapping, animations)
  * 
- * No external dependencies - pure Win32 API
+ * No external dependencies - pure Win32 API (Windows) or X11 (Linux)
  */
 
+#include "Platform.h"
 #include "WindowHook.h"
 #include "Window.h"
 #include "WindowManager.h"
