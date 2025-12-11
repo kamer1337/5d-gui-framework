@@ -29,8 +29,20 @@
     #endif
     #include <windows.h>
 #elif SDK_PLATFORM_LINUX
-    #include <X11/Xlib.h>
-    #include <X11/Xutil.h>
+    // Only include X11 headers if available
+    #ifdef __has_include
+        #if __has_include(<X11/Xlib.h>)
+            #include <X11/Xlib.h>
+            #include <X11/Xutil.h>
+            #define SDK_HAS_X11 1
+        #else
+            #define SDK_HAS_X11 0
+        #endif
+    #else
+        // Older compilers without __has_include
+        #define SDK_HAS_X11 0
+    #endif
+    
     #include <cstdint>
     // Define Windows-like types for Linux
     typedef void* HWND;
@@ -41,6 +53,7 @@
     typedef void* HDC;
     typedef void* HBRUSH;
     typedef void* HPEN;
+    typedef unsigned long COLORREF;  // RGB color value
     typedef struct tagRECT {
         long left;
         long top;
@@ -57,6 +70,9 @@
     typedef long long LONGLONG;
     #define TRUE 1
     #define FALSE 0
+    
+    // RGB macro for Linux
+    #define RGB(r,g,b) ((COLORREF)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
 #endif
 
 namespace SDK {

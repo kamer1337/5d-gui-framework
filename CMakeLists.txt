@@ -12,10 +12,13 @@ if(WIN32)
 elseif(UNIX AND NOT APPLE)
     message(STATUS "Building for Linux platform")
     set(PLATFORM_LINUX TRUE)
-    # Find X11 libraries for Linux
-    find_package(X11 REQUIRED)
-    if(NOT X11_FOUND)
-        message(FATAL_ERROR "X11 not found. Please install libx11-dev")
+    # Find X11 libraries for Linux (optional for now)
+    find_package(X11)
+    if(X11_FOUND)
+        message(STATUS "X11 found: ${X11_LIBRARIES}")
+    else()
+        message(WARNING "X11 not found. Library will build but window features will be limited.")
+        message(WARNING "Install X11 development libraries: sudo apt-get install libx11-dev")
     endif()
 elseif(APPLE)
     message(WARNING "macOS support is experimental")
@@ -24,29 +27,42 @@ else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
 
-# SDK Library
-set(SDK_SOURCES
-    src/SDK/SDK.cpp
-    src/SDK/WindowHook.cpp
-    src/SDK/Window.cpp
-    src/SDK/WindowManager.cpp
-    src/SDK/WindowGroup.cpp
-    src/SDK/WindowSnapping.cpp
-    src/SDK/WindowAnimation.cpp
-    src/SDK/Theme.cpp
-    src/SDK/Renderer.cpp
-    src/SDK/Widget.cpp
-    src/SDK/ProgressBar.cpp
-    src/SDK/Tooltip.cpp
-    src/SDK/WidgetManager.cpp
-    src/SDK/PromptWindowBuilder.cpp
+# SDK Library - Platform-independent sources
+set(SDK_COMMON_SOURCES
     src/SDK/NeuralNetwork.cpp
-    src/SDK/NeuralPromptBuilder.cpp
-    src/SDK/AdvancedWidgets.cpp
-    src/SDK/CameraController.cpp
-    src/SDK/Widget3D.cpp
-    src/SDK/Toolbar.cpp
+    src/SDK/Theme.cpp
 )
+
+# Platform-specific sources
+if(PLATFORM_WINDOWS)
+    set(SDK_PLATFORM_SOURCES
+        src/SDK/SDK.cpp
+        src/SDK/WindowHook.cpp
+        src/SDK/Window.cpp
+        src/SDK/WindowManager.cpp
+        src/SDK/WindowGroup.cpp
+        src/SDK/WindowSnapping.cpp
+        src/SDK/WindowAnimation.cpp
+        src/SDK/Renderer.cpp
+        src/SDK/Widget.cpp
+        src/SDK/ProgressBar.cpp
+        src/SDK/Tooltip.cpp
+        src/SDK/WidgetManager.cpp
+        src/SDK/PromptWindowBuilder.cpp
+        src/SDK/NeuralPromptBuilder.cpp
+        src/SDK/AdvancedWidgets.cpp
+        src/SDK/CameraController.cpp
+        src/SDK/Widget3D.cpp
+        src/SDK/Toolbar.cpp
+    )
+elseif(PLATFORM_LINUX)
+    # Linux: Only platform-independent components for now
+    set(SDK_PLATFORM_SOURCES
+        # Future: Linux window implementation
+    )
+endif()
+
+set(SDK_SOURCES ${SDK_COMMON_SOURCES} ${SDK_PLATFORM_SOURCES})
 
 set(SDK_HEADERS
     include/SDK/SDK.h
@@ -89,13 +105,15 @@ if(PLATFORM_WINDOWS)
         kernel32
     )
 elseif(PLATFORM_LINUX)
+    # Link pthread (always available)
     target_link_libraries(5DGUI_SDK PUBLIC
-        ${X11_LIBRARIES}
         pthread
     )
-    target_include_directories(5DGUI_SDK PUBLIC
-        ${X11_INCLUDE_DIR}
-    )
+    # Link X11 if available
+    if(X11_FOUND)
+        target_link_libraries(5DGUI_SDK PUBLIC ${X11_LIBRARIES})
+        target_include_directories(5DGUI_SDK PUBLIC ${X11_INCLUDE_DIR})
+    endif()
 endif()
 
 # Demo applications (Windows only for now)
