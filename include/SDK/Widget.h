@@ -10,16 +10,6 @@
 
 namespace SDK {
 
-/**
- * Widget - Base class for UI components
- * Provides common functionality for all widgets like position, size, visibility, etc.
- */
-class Widget {
-public:
-    Widget();
-    virtual ~Widget() = default;
-    
-    // Position and size
 // Forward declarations
 class Window;
 
@@ -38,7 +28,10 @@ enum class WidgetEvent {
     VALUE_CHANGED
 };
 
-// Widget base class
+/**
+ * Widget - Base class for UI components
+ * Provides common functionality for all widgets like position, size, visibility, etc.
+ */
 class Widget {
 public:
     Widget();
@@ -142,25 +135,6 @@ public:
     void SetFontItalic(bool italic) { m_fontItalic = italic; }
     bool IsFontItalic() const { return m_fontItalic; }
     
-protected:
-    int m_x;
-    int m_y;
-    int m_width;
-    int m_height;
-    bool m_visible;
-    bool m_enabled;
-    bool m_hovered;
-    int m_id;
-    void* m_tag;
-    RECT GetBounds() const;
-    
-    // Visibility and state
-    void SetVisible(bool visible) { m_visible = visible; }
-    bool IsVisible() const { return m_visible; }
-    
-    void SetEnabled(bool enabled) { m_enabled = enabled; }
-    bool IsEnabled() const { return m_enabled; }
-    
     // Focus management
     void SetFocused(bool focused);
     bool IsFocused() const { return m_focused; }
@@ -177,10 +151,6 @@ protected:
     using EventCallback = std::function<void(Widget*, WidgetEvent, void* data)>;
     void SetEventCallback(EventCallback callback) { m_eventCallback = callback; }
     
-    // Rendering
-    virtual void Render(HDC hdc);
-    virtual void Update(float deltaTime);
-    
     // Input handling
     virtual bool HandleMouseMove(int x, int y);
     virtual bool HandleMouseDown(int x, int y, int button);
@@ -188,9 +158,6 @@ protected:
     virtual bool HandleKeyDown(int keyCode);
     virtual bool HandleKeyUp(int keyCode);
     virtual bool HandleChar(wchar_t ch);
-    
-    // Hit testing
-    virtual bool HitTest(int x, int y) const;
     
     // Theme support
     void SetTheme(std::shared_ptr<Theme> theme) { m_theme = theme; }
@@ -205,6 +172,8 @@ protected:
     bool m_enabled;
     bool m_focused;
     bool m_hovered;
+    int m_id;
+    void* m_tag;
     
     Widget* m_parent;
     std::vector<std::shared_ptr<Widget>> m_children;
