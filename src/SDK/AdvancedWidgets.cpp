@@ -513,7 +513,9 @@ std::wstring FileTree::GetSelectedPath() const {
 }
 
 void FileTree::SetSelectedPath(const std::wstring& path) {
-    // Would need to search tree and select node
+    if (!m_rootNode) return;
+    
+    m_selectedNode = FindNodeByPath(m_rootNode, path);
 }
 
 void FileTree::LoadDirectory(std::shared_ptr<TreeNode> node) {
@@ -586,7 +588,48 @@ void FileTree::RenderNode(HDC hdc, std::shared_ptr<TreeNode> node, int& yOffset)
 }
 
 std::shared_ptr<FileTree::TreeNode> FileTree::HitTestNode(int x, int y) {
-    // Would need to implement node hit testing
+    if (!m_rootNode) return nullptr;
+    
+    RECT bounds = GetBounds();
+    int yOffset = bounds.top;
+    return HitTestNodeRecursive(m_rootNode, x, y, yOffset);
+}
+
+std::shared_ptr<FileTree::TreeNode> FileTree::HitTestNodeRecursive(std::shared_ptr<TreeNode> node, int x, int y, int& yOffset) {
+    if (!node) return nullptr;
+    
+    RECT bounds = GetBounds();
+    int indent = node->depth * 15;
+    RECT nodeRect = {bounds.left + indent, yOffset, bounds.right, yOffset + m_itemHeight};
+    
+    if (x >= nodeRect.left && x < nodeRect.right && y >= nodeRect.top && y < nodeRect.bottom) {
+        return node;
+    }
+    
+    yOffset += m_itemHeight;
+    
+    if (node->expanded && node->isDirectory) {
+        for (auto& child : node->children) {
+            auto result = HitTestNodeRecursive(child, x, y, yOffset);
+            if (result) return result;
+        }
+    }
+    
+    return nullptr;
+}
+
+std::shared_ptr<FileTree::TreeNode> FileTree::FindNodeByPath(std::shared_ptr<TreeNode> node, const std::wstring& path) {
+    if (!node) return nullptr;
+    
+    if (node->fullPath == path) {
+        return node;
+    }
+    
+    for (auto& child : node->children) {
+        auto result = FindNodeByPath(child, path);
+        if (result) return result;
+    }
+    
     return nullptr;
 }
 
@@ -653,16 +696,163 @@ void SyntaxHighlightTextEditor::SetText(const std::wstring& text) {
 
 std::vector<SyntaxHighlightTextEditor::SyntaxToken> SyntaxHighlightTextEditor::TokenizeLine(const std::wstring& line) {
     std::vector<SyntaxToken> tokens;
-    // Basic tokenization - would need more sophisticated implementation
-    SyntaxToken token;
-    token.text = line;
-    token.color = Color(0, 0, 0, 255);
-    tokens.push_back(token);
+    
+    if (m_language == Language::PLAIN_TEXT || line.empty()) {
+        SyntaxToken token;
+        token.text = line;
+        token.color = Color(0, 0, 0, 255);
+        tokens.push_back(token);
+        return tokens;
+    }
+    
+    // Simple tokenization for C++
+    if (m_language == Language::CPP) {
+        static const std::vector<std::wstring> keywords = {
+            L"int", L"float", L"double", L"char", L"bool", L"void",
+            L"if", L"else", L"for", L"while", L"do", L"switch", L"case", L"break", L"continue",
+            L"return", L"class", L"struct", L"namespace", L"public", L"private", L"protected",
+            L"const", L"static", L"virtual", L"override", L"new", L"delete", L"this",
+            L"true", L"false", L"nullptr", L"auto", L"typedef", L"using", L"template"
+        };
+        
+        size_t pos = 0;
+        while (pos < line.length()) {
+            wchar_t ch = line[pos];
+            
+            // Skip whitespace
+            if (iswspace(ch)) {
+                pos++;
+                continue;
+            }
+            
+            // Comments
+            if (pos + 1 < line.length() && line[pos] == L'/' && line[pos + 1] == L'/') {
+                SyntaxToken token;
+                token.text = line.substr(pos);
+                token.color = m_commentColor;
+                tokens.push_back(token);
+                break;
+            }
+            
+            // String literals
+            if (ch == L'"' || ch == L'\'') {
+                size_t end = pos + 1;
+                wchar_t quote = ch;
+                while (end < line.length() && line[end] != quote) {
+                    if (line[end] == L'\\' && end + 1 < line.length()) {
+                        end += 2;
+                    } else {
+                        end++;
+                    }
+                }
+                if (end < line.length()) end++;
+                
+                SyntaxToken token;
+                token.text = line.substr(pos, end - pos);
+                token.color = m_stringColor;
+                tokens.push_back(token);
+                pos = end;
+                continue;
+            }
+            
+            // Numbers
+            if (iswdigit(ch)) {
+                size_t end = pos + 1;
+                bool hasDot = false;
+                bool isHex = false;
+                
+                // Check for hex prefix (0x or 0X)
+                if (ch == L'0' && end < line.length() && (line[end] == L'x' || line[end] == L'X')) {
+                    isHex = true;
+                    end++; // Skip 'x' or 'X'
+                }
+                
+                while (end < line.length()) {
+                    wchar_t c = line[end];
+                    
+                    if (isHex) {
+                        // Hex digits: 0-9, a-f, A-F
+                        if (!iswdigit(c) && !(c >= L'a' && c <= L'f') && !(c >= L'A' && c <= L'F')) {
+                            break;
+                        }
+                    } else {
+                        // Decimal: digits, one decimal point, f/F suffix
+                        if (iswdigit(c)) {
+                            // Continue
+                        } else if (c == L'.' && !hasDot) {
+                            hasDot = true;
+                        } else if ((c == L'f' || c == L'F') && end + 1 == line.length()) {
+                            // f/F suffix only at end
+                            end++;
+                            break;
+                        } else {
+                            break;
+                        }
+                    }
+                    end++;
+                }
+                
+                SyntaxToken token;
+                token.text = line.substr(pos, end - pos);
+                token.color = m_numberColor;
+                tokens.push_back(token);
+                pos = end;
+                continue;
+            }
+            
+            // Identifiers and keywords
+            if (iswalpha(ch) || ch == L'_') {
+                size_t end = pos + 1;
+                while (end < line.length() && (iswalnum(line[end]) || line[end] == L'_')) {
+                    end++;
+                }
+                
+                std::wstring word = line.substr(pos, end - pos);
+                SyntaxToken token;
+                token.text = word;
+                
+                // Check if keyword
+                bool isKeyword = false;
+                for (const auto& keyword : keywords) {
+                    if (word == keyword) {
+                        token.color = m_keywordColor;
+                        isKeyword = true;
+                        break;
+                    }
+                }
+                
+                if (!isKeyword) {
+                    token.color = Color(0, 0, 0, 255);
+                }
+                
+                tokens.push_back(token);
+                pos = end;
+                continue;
+            }
+            
+            // Operators and punctuation
+            SyntaxToken token;
+            token.text = std::wstring(1, ch);
+            token.color = m_operatorColor;
+            tokens.push_back(token);
+            pos++;
+        }
+    }
+    
+    if (tokens.empty()) {
+        SyntaxToken token;
+        token.text = line;
+        token.color = Color(0, 0, 0, 255);
+        tokens.push_back(token);
+    }
+    
     return tokens;
 }
 
 void SyntaxHighlightTextEditor::UpdateSyntaxHighlighting() {
-    // Would implement syntax highlighting based on language
+    // Tokenize all lines for syntax highlighting
+    // This method is called when text or language changes
+    // In a real implementation, this would build a token cache for faster rendering
 }
 
 void SyntaxHighlightTextEditor::Render(HDC hdc) {
@@ -687,10 +877,20 @@ void SyntaxHighlightTextEditor::Render(HDC hdc) {
             DrawTextW(hdc, lineNum.c_str(), -1, &lineNumRect, DT_RIGHT | DT_VCENTER | DT_SINGLELINE);
         }
         
-        // Draw line text
-        RECT textRect = {bounds.left + lineNumberWidth + 5, yPos, bounds.right, yPos + lineHeight};
-        SetTextColor(hdc, RGB(0, 0, 0));
-        DrawTextW(hdc, m_lines[i].c_str(), -1, &textRect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+        // Draw line text with syntax highlighting
+        int xPos = bounds.left + lineNumberWidth + 5;
+        auto tokens = TokenizeLine(m_lines[i]);
+        
+        for (const auto& token : tokens) {
+            RECT textRect = {xPos, yPos, bounds.right, yPos + lineHeight};
+            SetTextColor(hdc, token.color.ToCOLORREF());
+            DrawTextW(hdc, token.text.c_str(), -1, &textRect, DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_NOCLIP);
+            
+            // Calculate width of token for next position
+            SIZE tokenSize;
+            GetTextExtentPoint32W(hdc, token.text.c_str(), (int)token.text.length(), &tokenSize);
+            xPos += tokenSize.cx;
+        }
     }
     
     Widget::Render(hdc);
@@ -701,7 +901,40 @@ bool SyntaxHighlightTextEditor::HandleMouseDown(int x, int y, int button) {
     
     if (HitTest(x, y)) {
         SetFocused(true);
+        
         // Calculate cursor position from click
+        RECT bounds = GetBounds();
+        int lineHeight = 18;
+        int lineNumberWidth = m_showLineNumbers ? 40 : 0;
+        
+        // Calculate clicked line
+        int relY = y - bounds.top;
+        int clickedLine = m_scrollOffsetY + relY / lineHeight;
+        
+        if (clickedLine >= 0 && clickedLine < (int)m_lines.size()) {
+            m_cursorLine = clickedLine;
+            
+            // Calculate column position (approximate)
+            int relX = x - (bounds.left + lineNumberWidth + 5);
+            if (relX < 0) {
+                m_cursorColumn = 0;
+            } else {
+                // Use average character width for approximation
+                HDC hdc = GetDC(nullptr);
+                SIZE charSize;
+                GetTextExtentPoint32W(hdc, L"W", 1, &charSize);
+                ReleaseDC(nullptr, hdc);
+                
+                int charWidth = charSize.cx;
+                m_cursorColumn = relX / charWidth;
+                
+                // Clamp to line length
+                if (m_cursorColumn > (int)m_lines[m_cursorLine].length()) {
+                    m_cursorColumn = (int)m_lines[m_cursorLine].length();
+                }
+            }
+        }
+        
         return true;
     }
     

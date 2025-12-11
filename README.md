@@ -21,9 +21,10 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Zero Dependencies**: Pure Win32 API - no external libraries required
 
 ### Widget System
-- **Basic Widgets**: Button, Label, TextBox, CheckBox, Separator, Image
+- **Basic Widgets**: Button, Label, TextBox, CheckBox, Separator, Image, Slider, RadioButton, SpinBox
+- **Container Widgets**: Panel (grouping with optional title bar)
 - **Advanced Widgets**: ComboBox, ListBox, ListView (with checkboxes), TabControl, Toolbar, ProgressBar, Tooltip
-- **Complex Widgets**: FileTree, FileExplorer, SyntaxHighlightTextEditor
+- **Complex Widgets**: FileTree, FileExplorer, SyntaxHighlightTextEditor (with C++ syntax highlighting)
 - **Toolbar Features**: Horizontal/vertical orientation, auto-hide functionality, customizable items
 - **Event System**: Comprehensive event handling (click, hover, focus, value changes)
 - **Hierarchy Support**: Parent-child widget relationships

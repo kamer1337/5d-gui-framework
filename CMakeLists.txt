@@ -104,6 +104,10 @@ target_link_libraries(Neural_Network_Demo PRIVATE 5DGUI_SDK)
 add_executable(Optimization_Demo examples/optimization_demo.cpp)
 target_link_libraries(Optimization_Demo PRIVATE 5DGUI_SDK)
 
+# New widgets demo application
+add_executable(New_Widgets_Demo examples/new_widgets_demo.cpp)
+target_link_libraries(New_Widgets_Demo PRIVATE 5DGUI_SDK)
+
 # Set subsystem to Windows (GUI application)
 if(MSVC)
     set_target_properties(5DGUI_Demo PROPERTIES
@@ -130,6 +134,9 @@ if(MSVC)
     set_target_properties(Optimization_Demo PROPERTIES
         LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
     )
+    set_target_properties(New_Widgets_Demo PROPERTIES
+        LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+    )
 else()
     set_target_properties(5DGUI_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
@@ -153,6 +160,9 @@ else()
         LINK_FLAGS "-mwindows"
     )
     set_target_properties(Optimization_Demo PROPERTIES
+        LINK_FLAGS "-mwindows"
+    )
+    set_target_properties(New_Widgets_Demo PROPERTIES
         LINK_FLAGS "-mwindows"
     )
 endif()
