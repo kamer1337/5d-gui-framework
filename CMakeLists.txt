@@ -165,6 +165,10 @@ if(PLATFORM_WINDOWS)
     # Widget properties demo application
     add_executable(Widget_Properties_Demo examples/widget_properties_demo.cpp)
     target_link_libraries(Widget_Properties_Demo PRIVATE 5DGUI_SDK)
+    
+    # Hardware acceleration demo application
+    add_executable(Hardware_Accel_Demo examples/hardware_accel_demo.cpp)
+    target_link_libraries(Hardware_Accel_Demo PRIVATE 5DGUI_SDK)
 endif()
 
 # Set subsystem to Windows (GUI application) - Windows only
@@ -200,6 +204,9 @@ if(PLATFORM_WINDOWS)
         set_target_properties(Widget_Properties_Demo PROPERTIES
             LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
         )
+        set_target_properties(Hardware_Accel_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
     else()
         set_target_properties(5DGUI_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
@@ -231,6 +238,9 @@ if(PLATFORM_WINDOWS)
         set_target_properties(Widget_Properties_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
         )
+        set_target_properties(Hardware_Accel_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
     endif()
 endif()
 
@@ -247,7 +257,7 @@ install(DIRECTORY include/SDK
 )
 
 if(PLATFORM_WINDOWS)
-    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo
+    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo
         RUNTIME DESTINATION bin
     )
 endif()
