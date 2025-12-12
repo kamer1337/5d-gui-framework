@@ -6,6 +6,12 @@
 
 namespace SDK {
 
+// Bloom effect constants
+namespace {
+    constexpr float BLOOM_BASE_BLUR = 3.0f;      // Base blur radius for bloom
+    constexpr float BLOOM_INTENSITY_SCALE = 2.0f; // Multiplier for intensity-based blur
+}
+
 D2DRenderBackend::D2DRenderBackend()
     : m_hwnd(nullptr)
     , m_pD2DFactory(nullptr)
@@ -491,8 +497,9 @@ void D2DRenderBackend::ApplyBlur(const RECT& rect, int blurRadius) {
     ID2D1DeviceContext* pDeviceContext = nullptr;
     HRESULT hr = m_pRenderTarget->QueryInterface(&pDeviceContext);
     
-    if (FAILED(hr) || !pDeviceContext || !m_pBlurEffect) {
-        // Fallback to software blur using Renderer
+    // Check if D2D1.1 device context is available
+    if (FAILED(hr) || !pDeviceContext) {
+        // Fallback to software blur - D2D1.1 not available
         HDC hdc = nullptr;
         ID2D1GdiInteropRenderTarget* pGdiInterop = nullptr;
         hr = m_pRenderTarget->QueryInterface(&pGdiInterop);
@@ -504,6 +511,24 @@ void D2DRenderBackend::ApplyBlur(const RECT& rect, int blurRadius) {
             }
             pGdiInterop->Release();
         }
+        return;
+    }
+    
+    // Check if blur effect is available (created during initialization)
+    if (!m_pBlurEffect) {
+        // Fallback to software blur - blur effect not available
+        HDC hdc = nullptr;
+        ID2D1GdiInteropRenderTarget* pGdiInterop = nullptr;
+        hr = m_pRenderTarget->QueryInterface(&pGdiInterop);
+        if (SUCCEEDED(hr) && pGdiInterop) {
+            hr = pGdiInterop->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &hdc);
+            if (SUCCEEDED(hr) && hdc) {
+                Renderer::ApplyBlur(hdc, rect, blurRadius);
+                pGdiInterop->ReleaseDC(nullptr);
+            }
+            pGdiInterop->Release();
+        }
+        pDeviceContext->Release();
         return;
     }
     
@@ -612,27 +637,28 @@ void D2DRenderBackend::ApplyBloom(const RECT& rect, float threshold, float inten
                 pThresholdEffect->SetInput(0, pBitmap);
                 
                 // Create a color matrix that extracts bright pixels
-                // Scale by intensity and subtract threshold to isolate bright areas
-                // This approximates: output = max(0, input * intensity - threshold)
+                // The threshold parameter (0-1) is scaled to 0-255 and negated for subtraction
+                // Matrix applies: output = max(0, input * intensity - threshold_255)
+                // This isolates pixels brighter than the threshold value
                 float scale = intensity;
-                float offset = -threshold * 255.0f;  // Adjust threshold to 0-255 range
+                float offset = -threshold * 255.0f;  // Negative offset for threshold subtraction
                 D2D1_MATRIX_5X4_F matrix = D2D1::Matrix5x4F(
                     scale, 0, 0, 0,      // Red channel
                     0, scale, 0, 0,      // Green channel  
                     0, 0, scale, 0,      // Blue channel
                     0, 0, 0, 1,          // Alpha channel
-                    offset, offset, offset, 0  // Offset to create threshold
+                    offset, offset, offset, 0  // Negative offset to create threshold cutoff
                 );
                 pThresholdEffect->SetValue(D2D1_COLORMATRIX_PROP_COLOR_MATRIX, matrix);
                 
-                // 2. Create blur effect for the bright areas
+                // 2. Create blur effect for the bright areas (created on-demand, not cached)
                 ID2D1Effect* pBlurEffect = nullptr;
                 hr = pDeviceContext->CreateEffect(CLSID_D2D1GaussianBlur, &pBlurEffect);
                 
                 if (SUCCEEDED(hr) && pBlurEffect) {
                     pBlurEffect->SetInputEffect(0, pThresholdEffect);
-                    // Use configurable blur radius based on intensity
-                    float blurRadius = 3.0f + (intensity * 2.0f);
+                    // Calculate blur radius: base + (intensity scaling)
+                    float blurRadius = BLOOM_BASE_BLUR + (intensity * BLOOM_INTENSITY_SCALE);
                     pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, blurRadius);
                     pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, D2D1_BORDER_MODE_SOFT);
                     
