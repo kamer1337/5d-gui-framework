@@ -28,6 +28,20 @@ enum class WidgetEvent {
     VALUE_CHANGED
 };
 
+// Widget alignment types
+enum class WidgetAlignment {
+    NONE,
+    LEFT,
+    RIGHT,
+    TOP,
+    BOTTOM,
+    CENTER,
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT
+};
+
 /**
  * Widget - Base class for UI components
  * Provides common functionality for all widgets like position, size, visibility, etc.
@@ -163,6 +177,17 @@ public:
     void SetTheme(std::shared_ptr<Theme> theme) { m_theme = theme; }
     std::shared_ptr<Theme> GetTheme() const { return m_theme; }
     
+    // Alignment properties
+    void SetAlignment(WidgetAlignment alignment) { m_alignment = alignment; }
+    WidgetAlignment GetAlignment() const { return m_alignment; }
+    void AlignToWidget(Widget* target, WidgetAlignment alignment, int spacing = 0);
+    void AlignToParent(WidgetAlignment alignment, int margin = 0);
+    
+    // Overlap detection
+    bool CheckOverlap(const Widget* other) const;
+    bool CheckOverlap(int x, int y, int width, int height) const;
+    void ResolveOverlap(Widget* other, int spacing = 5);
+    
 protected:
     void TriggerEvent(WidgetEvent event, void* data = nullptr);
     
@@ -197,6 +222,7 @@ protected:
     int m_fontSize;
     bool m_fontBold;
     bool m_fontItalic;
+    WidgetAlignment m_alignment;
 };
 
 // Button widget
@@ -419,6 +445,11 @@ private:
 // Panel widget (container for grouping widgets)
 class Panel : public Widget {
 public:
+    enum class CollapseOrientation {
+        VERTICAL,
+        HORIZONTAL
+    };
+    
     Panel();
     virtual ~Panel();
     
@@ -429,14 +460,45 @@ public:
     void SetBorderColor(const Color& color) { m_borderColor = color; }
     void SetTitleBarColor(const Color& color) { m_titleBarColor = color; }
     
+    // Collapse/expand functionality
+    void SetCollapsible(bool collapsible) { m_collapsible = collapsible; }
+    bool IsCollapsible() const { return m_collapsible; }
+    void SetCollapsed(bool collapsed);
+    bool IsCollapsed() const { return m_collapsed; }
+    void ToggleCollapsed();
+    void SetCollapseOrientation(CollapseOrientation orientation) { m_collapseOrientation = orientation; }
+    CollapseOrientation GetCollapseOrientation() const { return m_collapseOrientation; }
+    
+    // Boundary constraints
+    void SetConstrainChildren(bool constrain) { m_constrainChildren = constrain; }
+    bool IsConstrainChildren() const { return m_constrainChildren; }
+    void ClampChildPosition(Widget* child);
+    
     void Render(HDC hdc) override;
+    bool HandleMouseDown(int x, int y, int button) override;
+    
+    // Override to enforce boundaries on child widgets
+    void AddChild(std::shared_ptr<Widget> child);
     
 private:
+    void RenderCollapseButton(HDC hdc, const RECT& buttonRect);
+    RECT GetCollapseButtonRect() const;
+    int GetCollapsedSize() const;
+    
     std::wstring m_title;
     Color m_backgroundColor;
     Color m_borderColor;
     Color m_titleBarColor;
     int m_titleBarHeight;
+    
+    // New collapse/expand properties
+    bool m_collapsible;
+    bool m_collapsed;
+    CollapseOrientation m_collapseOrientation;
+    int m_expandedSize;  // Store original size when collapsed
+    
+    // Boundary constraint properties
+    bool m_constrainChildren;
 };
 
 // SpinBox widget (numeric input with up/down buttons)

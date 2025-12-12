@@ -131,6 +131,11 @@ private:
 // FileTree widget
 class FileTree : public Widget {
 public:
+    enum class Orientation {
+        VERTICAL,
+        HORIZONTAL
+    };
+    
     struct TreeNode {
         std::wstring name;
         std::wstring fullPath;
@@ -152,21 +157,37 @@ public:
     void SetSelectedPath(const std::wstring& path);
     std::wstring GetSelectedPath() const;
     
+    // Orientation support
+    void SetOrientation(Orientation orientation) { m_orientation = orientation; }
+    Orientation GetOrientation() const { return m_orientation; }
+    
+    // Expand all/collapse all
+    void ExpandAll();
+    void CollapseAll();
+    void ExpandNode(const std::wstring& path);
+    void CollapseNode(const std::wstring& path);
+    
     void Render(HDC hdc) override;
     bool HandleMouseDown(int x, int y, int button) override;
     
 private:
     void LoadDirectory(std::shared_ptr<TreeNode> node);
-    void RenderNode(HDC hdc, std::shared_ptr<TreeNode> node, int& yOffset);
+    void RenderNode(HDC hdc, std::shared_ptr<TreeNode> node, int& offset);
+    void RenderNodeVertical(HDC hdc, std::shared_ptr<TreeNode> node, int& yOffset);
+    void RenderNodeHorizontal(HDC hdc, std::shared_ptr<TreeNode> node, int& xOffset);
+    void RenderExpandIndicator(HDC hdc, std::shared_ptr<TreeNode> node, int x, int y);
     std::shared_ptr<TreeNode> HitTestNode(int x, int y);
-    std::shared_ptr<TreeNode> HitTestNodeRecursive(std::shared_ptr<TreeNode> node, int x, int y, int& yOffset);
+    std::shared_ptr<TreeNode> HitTestNodeRecursive(std::shared_ptr<TreeNode> node, int x, int y, int& offset);
     std::shared_ptr<TreeNode> FindNodeByPath(std::shared_ptr<TreeNode> node, const std::wstring& path);
+    void ExpandAllRecursive(std::shared_ptr<TreeNode> node);
+    void CollapseAllRecursive(std::shared_ptr<TreeNode> node);
     
     std::wstring m_rootPath;
     std::shared_ptr<TreeNode> m_rootNode;
     std::shared_ptr<TreeNode> m_selectedNode;
     int m_scrollOffset;
     int m_itemHeight;
+    Orientation m_orientation;
 };
 
 // SyntaxHighlightTextEditor widget

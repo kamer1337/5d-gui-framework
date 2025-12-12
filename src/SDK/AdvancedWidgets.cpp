@@ -492,6 +492,7 @@ FileTree::FileTree()
     : Widget()
     , m_scrollOffset(0)
     , m_itemHeight(20)
+    , m_orientation(Orientation::VERTICAL)
 {
     m_height = 300;
 }
@@ -516,6 +517,66 @@ void FileTree::SetSelectedPath(const std::wstring& path) {
     if (!m_rootNode) return;
     
     m_selectedNode = FindNodeByPath(m_rootNode, path);
+}
+
+void FileTree::ExpandAll() {
+    if (m_rootNode) {
+        ExpandAllRecursive(m_rootNode);
+    }
+}
+
+void FileTree::CollapseAll() {
+    if (m_rootNode) {
+        CollapseAllRecursive(m_rootNode);
+    }
+}
+
+void FileTree::ExpandNode(const std::wstring& path) {
+    if (!m_rootNode) return;
+    
+    auto node = FindNodeByPath(m_rootNode, path);
+    if (node && node->isDirectory) {
+        node->expanded = true;
+        if (node->children.empty()) {
+            LoadDirectory(node);
+        }
+    }
+}
+
+void FileTree::CollapseNode(const std::wstring& path) {
+    if (!m_rootNode) return;
+    
+    auto node = FindNodeByPath(m_rootNode, path);
+    if (node && node->isDirectory) {
+        node->expanded = false;
+    }
+}
+
+void FileTree::ExpandAllRecursive(std::shared_ptr<TreeNode> node) {
+    if (!node) return;
+    
+    if (node->isDirectory) {
+        node->expanded = true;
+        if (node->children.empty()) {
+            LoadDirectory(node);
+        }
+        
+        for (auto& child : node->children) {
+            ExpandAllRecursive(child);
+        }
+    }
+}
+
+void FileTree::CollapseAllRecursive(std::shared_ptr<TreeNode> node) {
+    if (!node) return;
+    
+    if (node->isDirectory) {
+        node->expanded = false;
+        
+        for (auto& child : node->children) {
+            CollapseAllRecursive(child);
+        }
+    }
 }
 
 void FileTree::LoadDirectory(std::shared_ptr<TreeNode> node) {
@@ -550,13 +611,23 @@ void FileTree::Render(HDC hdc) {
     RECT bounds; GetBounds(bounds);
     Renderer::DrawRoundedRect(hdc, bounds, 4, Color(255, 255, 255, 255), Color(128, 128, 128, 255), 1);
     
-    int yOffset = bounds.top;
-    RenderNode(hdc, m_rootNode, yOffset);
+    int offset = (m_orientation == Orientation::VERTICAL) ? bounds.top : bounds.left;
+    RenderNode(hdc, m_rootNode, offset);
     
     Widget::Render(hdc);
 }
 
-void FileTree::RenderNode(HDC hdc, std::shared_ptr<TreeNode> node, int& yOffset) {
+void FileTree::RenderNode(HDC hdc, std::shared_ptr<TreeNode> node, int& offset) {
+    if (!node) return;
+    
+    if (m_orientation == Orientation::VERTICAL) {
+        RenderNodeVertical(hdc, node, offset);
+    } else {
+        RenderNodeHorizontal(hdc, node, offset);
+    }
+}
+
+void FileTree::RenderNodeVertical(HDC hdc, std::shared_ptr<TreeNode> node, int& yOffset) {
     if (!node) return;
     
     RECT bounds; GetBounds(bounds);
@@ -570,47 +641,133 @@ void FileTree::RenderNode(HDC hdc, std::shared_ptr<TreeNode> node, int& yOffset)
         DeleteObject(brush);
     }
     
+    // Draw expand/collapse indicator for directories
+    if (node->isDirectory && !node->children.empty()) {
+        RenderExpandIndicator(hdc, node, bounds.left + indent, yOffset + m_itemHeight / 2);
+    }
+    
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, RGB(0, 0, 0));
     
     std::wstring displayText = node->isDirectory ? L"📁 " : L"📄 ";
     displayText += node->name;
     
-    DrawTextW(hdc, displayText.c_str(), -1, &nodeRect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+    RECT textRect = nodeRect;
+    textRect.left += 20; // Space for expand indicator
+    DrawTextW(hdc, displayText.c_str(), -1, &textRect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
     
     yOffset += m_itemHeight;
     
     if (node->expanded && node->isDirectory) {
         for (auto& child : node->children) {
-            RenderNode(hdc, child, yOffset);
+            RenderNodeVertical(hdc, child, yOffset);
         }
     }
+}
+
+void FileTree::RenderNodeHorizontal(HDC hdc, std::shared_ptr<TreeNode> node, int& xOffset) {
+    if (!node) return;
+    
+    RECT bounds; GetBounds(bounds);
+    int indent = node->depth * 80;
+    
+    RECT nodeRect = {xOffset, bounds.top + indent, xOffset + 60, bounds.top + indent + m_itemHeight};
+    
+    if (node == m_selectedNode) {
+        HBRUSH brush = CreateSolidBrush(RGB(200, 220, 255));
+        FillRect(hdc, &nodeRect, brush);
+        DeleteObject(brush);
+    }
+    
+    // Draw expand/collapse indicator for directories
+    if (node->isDirectory && !node->children.empty()) {
+        RenderExpandIndicator(hdc, node, xOffset + 30, bounds.top + indent);
+    }
+    
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, RGB(0, 0, 0));
+    
+    std::wstring displayText = node->isDirectory ? L"📁" : L"📄";
+    DrawTextW(hdc, displayText.c_str(), -1, &nodeRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    
+    xOffset += 70;
+    
+    if (node->expanded && node->isDirectory) {
+        int childYStart = bounds.top + indent + m_itemHeight;
+        for (auto& child : node->children) {
+            RenderNodeHorizontal(hdc, child, xOffset);
+        }
+    }
+}
+
+void FileTree::RenderExpandIndicator(HDC hdc, std::shared_ptr<TreeNode> node, int x, int y) {
+    if (!node || !node->isDirectory) return;
+    
+    int size = 4;
+    POINT triangle[3];
+    
+    if (node->expanded) {
+        // Down-pointing triangle (expanded)
+        triangle[0] = {x, y + size};
+        triangle[1] = {x - size, y - size};
+        triangle[2] = {x + size, y - size};
+    } else {
+        // Right-pointing triangle (collapsed)
+        triangle[0] = {x + size, y};
+        triangle[1] = {x - size, y - size};
+        triangle[2] = {x - size, y + size};
+    }
+    
+    HBRUSH brush = CreateSolidBrush(RGB(100, 100, 100));
+    HPEN pen = CreatePen(PS_SOLID, 1, RGB(100, 100, 100));
+    HGDIOBJ oldBrush = SelectObject(hdc, brush);
+    HGDIOBJ oldPen = SelectObject(hdc, pen);
+    
+    Polygon(hdc, triangle, 3);
+    
+    SelectObject(hdc, oldBrush);
+    SelectObject(hdc, oldPen);
+    DeleteObject(brush);
+    DeleteObject(pen);
 }
 
 std::shared_ptr<FileTree::TreeNode> FileTree::HitTestNode(int x, int y) {
     if (!m_rootNode) return nullptr;
     
     RECT bounds; GetBounds(bounds);
-    int yOffset = bounds.top;
-    return HitTestNodeRecursive(m_rootNode, x, y, yOffset);
+    int offset = (m_orientation == Orientation::VERTICAL) ? bounds.top : bounds.left;
+    return HitTestNodeRecursive(m_rootNode, x, y, offset);
 }
 
-std::shared_ptr<FileTree::TreeNode> FileTree::HitTestNodeRecursive(std::shared_ptr<TreeNode> node, int x, int y, int& yOffset) {
+std::shared_ptr<FileTree::TreeNode> FileTree::HitTestNodeRecursive(std::shared_ptr<TreeNode> node, int x, int y, int& offset) {
     if (!node) return nullptr;
     
     RECT bounds; GetBounds(bounds);
-    int indent = node->depth * 15;
-    RECT nodeRect = {bounds.left + indent, yOffset, bounds.right, yOffset + m_itemHeight};
+    RECT nodeRect;
     
-    if (x >= nodeRect.left && x < nodeRect.right && y >= nodeRect.top && y < nodeRect.bottom) {
-        return node;
+    if (m_orientation == Orientation::VERTICAL) {
+        int indent = node->depth * 15;
+        nodeRect = {bounds.left + indent, offset, bounds.right, offset + m_itemHeight};
+        
+        if (x >= nodeRect.left && x < nodeRect.right && y >= nodeRect.top && y < nodeRect.bottom) {
+            return node;
+        }
+        
+        offset += m_itemHeight;
+    } else {
+        int indent = node->depth * 80;
+        nodeRect = {offset, bounds.top + indent, offset + 60, bounds.top + indent + m_itemHeight};
+        
+        if (x >= nodeRect.left && x < nodeRect.right && y >= nodeRect.top && y < nodeRect.bottom) {
+            return node;
+        }
+        
+        offset += 70;
     }
-    
-    yOffset += m_itemHeight;
     
     if (node->expanded && node->isDirectory) {
         for (auto& child : node->children) {
-            auto result = HitTestNodeRecursive(child, x, y, yOffset);
+            auto result = HitTestNodeRecursive(child, x, y, offset);
             if (result) return result;
         }
     }
