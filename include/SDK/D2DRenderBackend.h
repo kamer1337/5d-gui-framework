@@ -59,6 +59,12 @@ private:
     // Create brush from color
     ID2D1SolidColorBrush* GetBrush(Color color);
     
+    // Helper to get HDC for GDI fallback rendering
+    HDC GetGDIFallbackDC() const;
+    
+    // Helper to release GDI fallback DC
+    void ReleaseGDIFallbackDC(HDC hdc) const;
+    
     HWND m_hwnd;
     ID2D1Factory* m_pD2DFactory;
     ID2D1HwndRenderTarget* m_pRenderTarget;
