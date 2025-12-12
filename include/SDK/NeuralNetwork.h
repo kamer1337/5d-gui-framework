@@ -32,18 +32,43 @@ public:
         ADD_CHECKBOX,
         ADD_PROGRESSBAR,
         ADD_TOOLTIP,
+        ADD_SLIDER,
+        ADD_COMBOBOX,
+        ADD_LISTBOX,
+        ADD_LISTVIEW,
+        ADD_RADIOBUTTON,
+        ADD_SPINBOX,
+        ADD_IMAGE,
+        ADD_SEPARATOR,
+        ADD_PANEL,
+        ADD_TABCONTROL,
+        ADD_TOOLBAR,
         SET_CALLBACK,
         SET_THEME,
+        SET_LAYOUT,
         UNKNOWN
     };
     
-    // Callback types for buttons
+    // Callback types for widgets
     enum class CallbackType {
         ON_CLICK,
+        ON_DOUBLE_CLICK,
         ON_HOVER,
         ON_FOCUS,
         ON_BLUR,
+        ON_CHANGE,
+        ON_VALUE_CHANGED,
+        ON_KEY_PRESS,
         CUSTOM
+    };
+    
+    // Layout types for widget organization
+    enum class LayoutType {
+        NONE,
+        VERTICAL,
+        HORIZONTAL,
+        GRID,
+        ABSOLUTE
     };
     
     // Extracted information from prompt
@@ -51,6 +76,8 @@ public:
         Intent intent;
         std::map<std::wstring, std::wstring> entities;  // Key-value pairs
         float confidence;  // 0.0 to 1.0
+        std::vector<Intent> additionalWidgets;  // For multi-widget prompts
+        LayoutType layoutType;  // Layout specification
         
         // Convenience getters
         int GetWidth() const;
@@ -58,6 +85,9 @@ public:
         std::wstring GetTitle() const;
         std::wstring GetWidgetText() const;
         CallbackType GetCallbackType() const;
+        std::wstring GetWidgetType() const;
+        int GetItemCount() const;
+        std::vector<std::wstring> GetItems() const;
     };
     
     NeuralNetwork();
@@ -98,7 +128,7 @@ private:
     // Network parameters
     static constexpr int EMBEDDING_DIM = 32;
     static constexpr int HIDDEN_LAYER_SIZE = 64;
-    static constexpr int OUTPUT_SIZE = 10;  // Number of intent classes
+    static constexpr int OUTPUT_SIZE = 22;  // Number of intent classes (expanded)
     static constexpr float LEARNING_RATE = 0.01f;
     
     // Helper functions
@@ -118,6 +148,8 @@ private:
     
     Intent OutputToIntent(const std::vector<float>& output, float& confidence);
     std::map<std::wstring, std::wstring> ExtractEntities(const std::wstring& prompt);
+    std::vector<Intent> ExtractMultipleWidgets(const std::wstring& prompt);
+    LayoutType DetermineLayout(const std::wstring& prompt);
     
     std::mt19937 m_rng;
 };
