@@ -31,6 +31,7 @@ endif()
 set(SDK_COMMON_SOURCES
     src/SDK/NeuralNetwork.cpp
     src/SDK/Theme.cpp
+    src/SDK/InstructionDecoder.cpp
 )
 
 # Platform-specific sources
@@ -44,6 +45,9 @@ if(PLATFORM_WINDOWS)
         src/SDK/WindowSnapping.cpp
         src/SDK/WindowAnimation.cpp
         src/SDK/Renderer.cpp
+        src/SDK/RenderBackend.cpp
+        src/SDK/GDIRenderBackend.cpp
+        src/SDK/D2DRenderBackend.cpp
         src/SDK/Widget.cpp
         src/SDK/ProgressBar.cpp
         src/SDK/Tooltip.cpp
@@ -75,6 +79,10 @@ set(SDK_HEADERS
     include/SDK/WindowAnimation.h
     include/SDK/Theme.h
     include/SDK/Renderer.h
+    include/SDK/RenderBackend.h
+    include/SDK/GDIRenderBackend.h
+    include/SDK/D2DRenderBackend.h
+    include/SDK/InstructionDecoder.h
     include/SDK/Widget.h
     include/SDK/ProgressBar.h
     include/SDK/Tooltip.h

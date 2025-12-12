@@ -1,5 +1,6 @@
 #include "../../include/SDK/WindowHook.h"
 #include "../../include/SDK/WindowManager.h"
+#include "../../include/SDK/InstructionDecoder.h"
 #include <psapi.h>
 #include <cstring>
 
@@ -27,6 +28,8 @@ WindowHook::~WindowHook() {
 }
 
 bool WindowHook::Initialize(HookType type) {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    
     if (m_bIsHooked) {
         return true; // Already hooked
     }
@@ -43,10 +46,19 @@ bool WindowHook::Initialize(HookType type) {
         m_bIsHooked = InstallIATHook();
     }
     
+    // Verify the hook was installed correctly
+    if (m_bIsHooked && !VerifyHook()) {
+        // Hook verification failed, clean up
+        Shutdown();
+        return false;
+    }
+    
     return m_bIsHooked;
 }
 
 void WindowHook::Shutdown() {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    
     if (m_bIsHooked) {
         if (m_hookType == HookType::INLINE) {
             RemoveInlineHook();
@@ -271,20 +283,23 @@ bool WindowHook::InstallInlineHook() {
     // and Windows Defender. This is expected behavior for legitimate hooking.
     // Ensure proper error handling and consider fallback mechanisms if hooking fails.
     
-    // THREAD SAFETY NOTE: This implementation is not thread-safe during installation.
-    // Ensure hooks are installed during application initialization before multiple
-    // threads are created, or add synchronization mechanisms.
-    
     // Get the address of CreateWindowExW
     void* targetFunc = (void*)&CreateWindowExW;
     void* hookFunc = (void*)&HookedCreateWindowExW;
     
-    // Save original bytes (first 5 bytes for JMP instruction on x86, or more for x64)
+    // Determine safe hook length using instruction decoder
 #ifdef _WIN64
-    m_originalBytesSize = 14; // Longer for x64 absolute jump
+    size_t minBytes = 14; // Minimum for x64 absolute jump
 #else
-    m_originalBytesSize = 5;  // 5 bytes for x86 relative jump
+    size_t minBytes = 5;  // Minimum for x86 relative jump
 #endif
+    
+    m_originalBytesSize = InstructionDecoder::GetSafeHookLength(targetFunc, minBytes, sizeof(m_originalBytes));
+    
+    if (m_originalBytesSize == 0 || m_originalBytesSize > sizeof(m_originalBytes)) {
+        // Failed to find safe hook point
+        return false;
+    }
     
     // Read original bytes
     memcpy(m_originalBytes, targetFunc, m_originalBytesSize);
@@ -305,16 +320,46 @@ bool WindowHook::InstallInlineHook() {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 // Address (8 bytes)
     };
     *(UINT64*)(jumpBytes + 6) = (UINT64)hookFunc;
+    
+    // Fill remaining bytes with NOPs if we hooked more than 14 bytes
+    if (!WriteMemory(targetFunc, jumpBytes, 14)) {
+        FreeTrampoline();
+        return false;
+    }
+    
+    // NOP out any remaining bytes
+    if (m_originalBytesSize > 14) {
+        BYTE nops[32];
+        memset(nops, 0x90, m_originalBytesSize - 14);
+        if (!WriteMemory((BYTE*)targetFunc + 14, nops, m_originalBytesSize - 14)) {
+            // Restore original bytes
+            WriteMemory(targetFunc, m_originalBytes, m_originalBytesSize);
+            FreeTrampoline();
+            return false;
+        }
+    }
 #else
     // For x86, we write a 5-byte relative jump
     BYTE jumpBytes[5] = { 0xE9, 0x00, 0x00, 0x00, 0x00 }; // JMP rel32
     *(INT32*)(jumpBytes + 1) = (INT32)((BYTE*)hookFunc - (BYTE*)targetFunc - 5);
-#endif
     
-    if (!WriteMemory(targetFunc, jumpBytes, m_originalBytesSize)) {
+    if (!WriteMemory(targetFunc, jumpBytes, 5)) {
         FreeTrampoline();
         return false;
     }
+    
+    // NOP out any remaining bytes
+    if (m_originalBytesSize > 5) {
+        BYTE nops[32];
+        memset(nops, 0x90, m_originalBytesSize - 5);
+        if (!WriteMemory((BYTE*)targetFunc + 5, nops, m_originalBytesSize - 5)) {
+            // Restore original bytes
+            WriteMemory(targetFunc, m_originalBytes, m_originalBytesSize);
+            FreeTrampoline();
+            return false;
+        }
+    }
+#endif
     
     return true;
 }
@@ -334,10 +379,6 @@ void WindowHook::RemoveInlineHook() {
 }
 
 bool WindowHook::CreateTrampoline(void* target, void* hook, void** trampoline) {
-    // NOTE: This implementation assumes m_originalBytesSize contains complete instructions.
-    // In production code, use a disassembler library to ensure instruction boundaries
-    // are respected when copying bytes. Incomplete instructions can cause crashes.
-    
     // Allocate memory for trampoline near target function
     // Initially allocate as read-write for setup
     *trampoline = VirtualAlloc(nullptr, 256, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -346,7 +387,7 @@ bool WindowHook::CreateTrampoline(void* target, void* hook, void** trampoline) {
         return false;
     }
     
-    // Copy original bytes to trampoline
+    // Copy original bytes to trampoline (now using proper instruction boundaries)
     memcpy(*trampoline, target, m_originalBytesSize);
     
     // Add jump back to original function (after the hook)
@@ -400,6 +441,90 @@ bool WindowHook::WriteMemory(void* address, const void* data, size_t size) {
     
     // Flush instruction cache
     FlushInstructionCache(GetCurrentProcess(), address, size);
+    
+    return true;
+}
+
+bool WindowHook::VerifyHook() const {
+    if (!m_bIsHooked) {
+        return false;
+    }
+    
+    void* targetFunc = (void*)&CreateWindowExW;
+    
+    if (m_hookType == HookType::INLINE) {
+        // Verify the jump instruction is in place
+        BYTE* funcBytes = (BYTE*)targetFunc;
+        
+#ifdef _WIN64
+        // Check for FF 25 (JMP [RIP+0]) at start
+        if (funcBytes[0] != 0xFF || funcBytes[1] != 0x25) {
+            return false;
+        }
+#else
+        // Check for E9 (JMP rel32) at start
+        if (funcBytes[0] != 0xE9) {
+            return false;
+        }
+#endif
+        
+        // Verify trampoline is valid
+        if (!m_pTrampoline) {
+            return false;
+        }
+        
+        // Verify trampoline memory is still accessible
+        MEMORY_BASIC_INFORMATION mbi;
+        if (VirtualQuery(m_pTrampoline, &mbi, sizeof(mbi)) == 0) {
+            return false;
+        }
+        
+        if (!(mbi.Protect & PAGE_EXECUTE_READ)) {
+            return false;
+        }
+        
+    } else {
+        // IAT hook verification
+        HMODULE hModule = GetModuleHandle(nullptr);
+        if (!hModule) {
+            return false;
+        }
+        
+        PIMAGE_THUNK_DATA pThunk = FindIATEntry(hModule, "user32.dll", "CreateWindowExW");
+        if (!pThunk) {
+            return false;
+        }
+        
+        // Verify the IAT entry points to our hook
+        if ((void*)pThunk->u1.Function != (void*)&HookedCreateWindowExW) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+bool WindowHook::IsHookSafe() const {
+    if (!m_bIsHooked) {
+        return false;
+    }
+    
+    // Check if original function pointer is valid
+    if (!m_pOriginalCreateWindowExW) {
+        return false;
+    }
+    
+    // Verify we can read from the original function memory
+    void* targetFunc = (void*)&CreateWindowExW;
+    MEMORY_BASIC_INFORMATION mbi;
+    if (VirtualQuery(targetFunc, &mbi, sizeof(mbi)) == 0) {
+        return false;
+    }
+    
+    // Original function should be readable and executable
+    if (!(mbi.Protect & (PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY))) {
+        return false;
+    }
     
     return true;
 }

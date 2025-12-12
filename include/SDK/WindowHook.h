@@ -2,9 +2,11 @@
 
 
 #include "Platform.h"
+#include "InstructionDecoder.h"
 #include <functional>
 #include <unordered_map>
 #include <memory>
+#include <mutex>
 
 namespace SDK {
 
@@ -61,6 +63,10 @@ public:
     bool IsHooked() const { return m_bIsHooked; }
     HookType GetHookType() const { return m_hookType; }
     
+    // Verification and safety
+    bool VerifyHook() const;
+    bool IsHookSafe() const;
+    
 private:
     WindowHook();
     ~WindowHook();
@@ -86,11 +92,12 @@ private:
     
     CreateWindowExW_t m_pOriginalCreateWindowExW;
     void* m_pTrampoline;
-    BYTE m_originalBytes[16];
+    BYTE m_originalBytes[32];  // Increased size for safety
     size_t m_originalBytesSize;
     bool m_bIsHooked;
     HookType m_hookType;
     CreateWindowCallback m_createCallback;
+    mutable std::mutex m_mutex;  // Thread safety
 };
 
 } // namespace SDK
