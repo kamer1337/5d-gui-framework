@@ -158,7 +158,9 @@ size_t InstructionDecoder::CalculateLengthInternal(const uint8_t* code) {
             
         case 0xB8: case 0xB9: case 0xBA: case 0xBB:
         case 0xBC: case 0xBD: case 0xBE: case 0xBF:
-            immediateSize = (operandSize == 64) ? 8 : (operandSize / 8);
+            // MOV immediate to register
+            // In x64, still uses 32-bit immediate (sign-extended to 64-bit)
+            immediateSize = 4;
             break;
             
         // Most other opcodes use ModR/M

@@ -329,9 +329,12 @@ bool WindowHook::InstallInlineHook() {
     
     // NOP out any remaining bytes
     if (m_originalBytesSize > 14) {
+        size_t nopCount = m_originalBytesSize - 14;
+        if (nopCount > 32) nopCount = 32;  // Safety limit
+        
         BYTE nops[32];
-        memset(nops, 0x90, m_originalBytesSize - 14);
-        if (!WriteMemory((BYTE*)targetFunc + 14, nops, m_originalBytesSize - 14)) {
+        memset(nops, 0x90, nopCount);
+        if (!WriteMemory((BYTE*)targetFunc + 14, nops, nopCount)) {
             // Restore original bytes
             WriteMemory(targetFunc, m_originalBytes, m_originalBytesSize);
             FreeTrampoline();
@@ -350,9 +353,12 @@ bool WindowHook::InstallInlineHook() {
     
     // NOP out any remaining bytes
     if (m_originalBytesSize > 5) {
+        size_t nopCount = m_originalBytesSize - 5;
+        if (nopCount > 32) nopCount = 32;  // Safety limit
+        
         BYTE nops[32];
-        memset(nops, 0x90, m_originalBytesSize - 5);
-        if (!WriteMemory((BYTE*)targetFunc + 5, nops, m_originalBytesSize - 5)) {
+        memset(nops, 0x90, nopCount);
+        if (!WriteMemory((BYTE*)targetFunc + 5, nops, nopCount)) {
             // Restore original bytes
             WriteMemory(targetFunc, m_originalBytes, m_originalBytesSize);
             FreeTrampoline();

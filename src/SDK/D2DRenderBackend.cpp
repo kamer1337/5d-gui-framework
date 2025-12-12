@@ -161,12 +161,8 @@ void D2DRenderBackend::Clear(Color color) {
 }
 
 HDC D2DRenderBackend::GetDC() const {
-    // D2D doesn't use HDC, but we can get one if needed for interop
-    if (m_pRenderTarget) {
-        HDC hdc = nullptr;
-        m_pRenderTarget->QueryInterface(__uuidof(ID2D1GdiInteropRenderTarget), (void**)&hdc);
-        return hdc;
-    }
+    // D2D doesn't use HDC directly, return nullptr
+    // For GDI interop, users should use ID2D1GdiInteropRenderTarget
     return nullptr;
 }
 
@@ -477,7 +473,7 @@ void D2DRenderBackend::DrawGlow(const RECT& rect, int radius, Color glowColor) {
         InflateRect(&glowRect, i, i);
         
         Color layerColor = glowColor;
-        layerColor.a = (uint8_t)(glowColor.a * (1.0f - (float)i / radius));
+        layerColor.a = (uint8_t)(glowColor.a * (1.0f - (float)i / (float)radius));
         
         ID2D1SolidColorBrush* brush = GetBrush(layerColor);
         if (brush) {
