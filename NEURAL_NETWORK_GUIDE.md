@@ -6,10 +6,23 @@ This guide explains how to use the neural network-powered GUI creation system in
 
 The SDK includes a lightweight neural network implementation (zero external dependencies) that can interpret natural language prompts to create GUI windows, add widgets, and set up callbacks. The network is pre-trained on the project documentation and understands common GUI creation patterns.
 
+## Recent Updates (v2.0)
+
+### Enhanced Polymorphism Support
+- **12 New Widget Types**: Added support for Slider, ComboBox, ListBox, ListView, RadioButton, SpinBox, Image, Separator, Panel, TabControl, and Toolbar
+- **Multi-Widget Parsing**: Single prompts can now specify multiple widgets (e.g., "window with button, textbox, and slider")
+- **Layout Intelligence**: Automatic detection of layout intent (vertical, horizontal, grid)
+- **Complex Callbacks**: Support for more event types including double-click, value-changed, and key-press
+
+### Advanced Features
+- **Layout Types**: VERTICAL, HORIZONTAL, GRID, and ABSOLUTE positioning
+- **Widget Properties**: Extract and apply widget-specific properties (items, ranges, values)
+- **Hierarchical Structures**: Support for nested containers and panels
+
 ## Features
 
 - **Natural Language Understanding**: Parse English prompts to understand GUI creation intent
-- **Intent Classification**: Recognizes 9+ different intents (create window, add button, set callback, etc.)
+- **Intent Classification**: Recognizes 22+ different intents (create window, add various widgets, set callbacks, layouts)
 - **Entity Extraction**: Automatically extracts dimensions, titles, widget types, and callback types
 - **Callback Generation**: Creates event handler functions from prompt descriptions
 - **Zero Dependencies**: Pure C++ implementation with no external ML libraries
@@ -74,13 +87,76 @@ builder.BuildFromPrompt(L"Create a dialog 400x300", hInstance);
 // Add a button
 builder.BuildFromPrompt(L"Add a button with text 'Submit'", hInstance);
 
-// Add multiple widgets
+// Add multiple widgets in one prompt
 builder.BuildFromPrompt(L"Create window with label, textbox, and button", hInstance);
 
 // Add specific widget types
 builder.BuildFromPrompt(L"Add a progress bar", hInstance);
 builder.BuildFromPrompt(L"Add a checkbox for agree to terms", hInstance);
 builder.BuildFromPrompt(L"Add a tooltip that says 'Help'", hInstance);
+
+// Advanced widgets (NEW!)
+builder.BuildFromPrompt(L"Add a slider from 0 to 100", hInstance);
+builder.BuildFromPrompt(L"Add a combobox with items: Red, Green, Blue", hInstance);
+builder.BuildFromPrompt(L"Add a listbox with multiple items", hInstance);
+builder.BuildFromPrompt(L"Add a panel with title 'Settings'", hInstance);
+```
+
+### Layout Control (NEW!)
+
+The neural network now understands layout specifications:
+
+```cpp
+// Vertical layout
+builder.BuildFromPrompt(
+    L"Create window with button, textbox, and checkbox arranged vertically",
+    hInstance
+);
+
+// Horizontal layout
+builder.BuildFromPrompt(
+    L"Create window with three buttons side by side",
+    hInstance
+);
+
+// Grid layout
+builder.BuildFromPrompt(
+    L"Create window with 6 buttons in a grid",
+    hInstance
+);
+
+// Position-based layout
+builder.BuildFromPrompt(
+    L"Create window with label at top, textbox below, and button at bottom",
+    hInstance
+);
+```
+
+### Complex Multi-Widget Prompts (NEW!)
+
+Create sophisticated interfaces with a single prompt:
+
+```cpp
+// Login form with layout
+builder.BuildFromPrompt(
+    L"Create dialog 400x300 'Login' with label 'Username', textbox, "
+    L"label 'Password', textbox, and button 'Sign In' arranged vertically",
+    hInstance
+);
+
+// Settings panel with multiple controls
+builder.BuildFromPrompt(
+    L"Create window 600x500 'Settings' with checkbox 'Enable notifications', "
+    L"slider for volume, combobox for theme, and button 'Apply'",
+    hInstance
+);
+
+// Data entry form
+builder.BuildFromPrompt(
+    L"Create form 700x600 with label, textbox for name, combobox for category, "
+    L"slider for priority, checkbox for urgent, and two buttons",
+    hInstance
+);
 ```
 
 ### Callbacks and Event Handlers
@@ -145,15 +221,34 @@ std::wstring text = parsed.GetWidgetText();
 
 The network recognizes the following intents:
 
+**Window Creation:**
 - `CREATE_WINDOW` - Creating a new window or dialog
+
+**Basic Widgets:**
 - `ADD_BUTTON` - Adding a button widget
 - `ADD_LABEL` - Adding a label widget
 - `ADD_TEXTBOX` - Adding a text input widget
 - `ADD_CHECKBOX` - Adding a checkbox widget
+
+**Advanced Widgets (NEW!):**
 - `ADD_PROGRESSBAR` - Adding a progress bar widget
 - `ADD_TOOLTIP` - Adding a tooltip widget
+- `ADD_SLIDER` - Adding a slider/trackbar widget
+- `ADD_COMBOBOX` - Adding a combo box/dropdown widget
+- `ADD_LISTBOX` - Adding a list box widget
+- `ADD_LISTVIEW` - Adding a list view with columns
+- `ADD_RADIOBUTTON` - Adding a radio button widget
+- `ADD_SPINBOX` - Adding a spin box/numeric up-down
+- `ADD_IMAGE` - Adding an image/picture widget
+- `ADD_SEPARATOR` - Adding a separator/divider line
+- `ADD_PANEL` - Adding a panel/container widget
+- `ADD_TABCONTROL` - Adding a tab control
+- `ADD_TOOLBAR` - Adding a toolbar
+
+**Actions:**
 - `SET_CALLBACK` - Setting up event handlers
 - `SET_THEME` - Applying themes
+- `SET_LAYOUT` - Arranging widget layout (NEW!)
 - `UNKNOWN` - Unrecognized intent
 
 #### Callback Types
@@ -161,10 +256,24 @@ The network recognizes the following intents:
 For event handlers, the network understands:
 
 - `ON_CLICK` - Click events
+- `ON_DOUBLE_CLICK` - Double-click events (NEW!)
 - `ON_HOVER` - Hover/mouse enter events
 - `ON_FOCUS` - Focus events
 - `ON_BLUR` - Blur/focus lost events
+- `ON_CHANGE` - Change events (NEW!)
+- `ON_VALUE_CHANGED` - Value change events for sliders, spinboxes (NEW!)
+- `ON_KEY_PRESS` - Keyboard press events (NEW!)
 - `CUSTOM` - Custom event types
+
+#### Layout Types (NEW!)
+
+The network can determine layout preferences:
+
+- `NONE` - No specific layout (default positioning)
+- `VERTICAL` - Stack widgets vertically
+- `HORIZONTAL` - Arrange widgets horizontally
+- `GRID` - Arrange widgets in a grid pattern
+- `ABSOLUTE` - Absolute positioning specified
 
 ### NeuralPromptBuilder Class
 
@@ -294,7 +403,7 @@ window->UpdateAppearance();
 auto widgetManager = builder.GetLastWidgetManager();
 ```
 
-## Understanding the Neural Network
+### Understanding the Neural Network
 
 ### Architecture
 
@@ -302,35 +411,39 @@ The neural network uses a simple feedforward architecture:
 
 1. **Input Layer**: Word embeddings (32 dimensions)
 2. **Hidden Layer**: 64 neurons with ReLU activation
-3. **Output Layer**: 10 neurons (one per intent) with sigmoid activation
+3. **Output Layer**: 22 neurons (one per intent) with sigmoid activation (EXPANDED!)
 
 ### Training Process
 
 The network is pre-initialized with:
 
-- **Vocabulary**: 1000+ words related to GUI development
+- **Vocabulary**: 2100+ words related to GUI development (EXPANDED!)
 - **Embeddings**: Random initialization with uniform distribution
-- **Patterns**: Keyword-based intent recognition
+- **Patterns**: Keyword-based intent recognition for 22 intents
 - **Entity Extractors**: Regex-based dimension, title, and type extraction
 
 The hybrid approach combines:
 - **Neural network inference** for complex natural language understanding
 - **Pattern matching** for high-confidence simple cases
 - **Entity extraction** for structured information
+- **Layout detection** for spatial arrangement (NEW!)
+- **Multi-widget parsing** for complex prompts (NEW!)
 
 ### Performance
 
 - **Initialization**: < 1ms
 - **Single prompt parsing**: < 5ms
+- **Multi-widget parsing**: < 10ms (NEW!)
 - **Window creation**: Depends on window complexity
-- **Memory footprint**: ~800KB for network weights and expanded vocabulary (2100+ words)
+- **Memory footprint**: ~1.2MB for network weights and expanded vocabulary (2100+ words)
 
 ### Limitations
 
 1. **Fixed vocabulary**: Unknown words are mapped to `<UNK>` token (2100+ words supported)
-2. **Simple architecture**: Not suitable for complex semantic understanding
+2. **Simple architecture**: Not suitable for extremely complex semantic understanding
 3. **Limited context**: No conversation history or multi-turn dialogues
 4. **English only**: Currently trained on English GUI terminology
+5. **Layout constraints**: Complex nested layouts may require manual adjustment
 
 ### Recent Enhancements (v1.2.1)
 
@@ -365,6 +478,12 @@ builder.BuildFromPrompt(L"Create window 800x600 with button and textbox", hInsta
 // Better: Include position information
 builder.BuildFromPrompt(L"Create window 800x600 with button at top and textbox below", hInstance);
 
+// Best: Specify layout and multiple widgets (NEW!)
+builder.BuildFromPrompt(
+    L"Create window 800x600 with button, textbox, and slider arranged vertically", 
+    hInstance
+);
+
 // Avoid: Vague or ambiguous
 builder.BuildFromPrompt(L"Make something", hInstance);
 ```
@@ -377,25 +496,68 @@ builder.BuildFromPrompt(L"Add a progress bar", hInstance);
 
 // Also good: Use synonyms now supported
 builder.BuildFromPrompt(L"Add a slider", hInstance);
-builder.BuildFromPrompt(L"Add a dropdown menu", hInstance);
+builder.BuildFromPrompt(L"Add a dropdown menu", hInstance);  // Maps to combobox
 
 // Works but less accurate: Non-standard terms
 builder.BuildFromPrompt(L"Add a loading indicator", hInstance);
 ```
 
-### 3. Combine with Manual Configuration
+### 3. Leverage Multi-Widget Support (NEW!)
+
+```cpp
+// Single widget per prompt (old way)
+auto hwnd = builder.BuildFromPrompt(L"Create window 600x400", hInstance);
+// Then manually add widgets...
+
+// Multiple widgets in one prompt (new way - better!)
+auto hwnd = builder.BuildFromPrompt(
+    L"Create window 600x400 with label, textbox, button, and checkbox",
+    hInstance
+);
+```
+
+### 4. Use Layout Keywords (NEW!)
+
+```cpp
+// Vertical layout
+builder.BuildFromPrompt(
+    L"Create window with 5 buttons stacked vertically", 
+    hInstance
+);
+
+// Horizontal layout  
+builder.BuildFromPrompt(
+    L"Create window with 3 buttons side by side",
+    hInstance
+);
+
+// Grid layout
+builder.BuildFromPrompt(
+    L"Create window with 9 buttons in a grid",
+    hInstance
+);
+```
+
+### 5. Combine with Manual Configuration
 
 ```cpp
 // Use neural network for structure
-HWND hwnd = builder.BuildFromPrompt(L"Create window 600x400", hInstance);
+HWND hwnd = builder.BuildFromPrompt(
+    L"Create window 600x400 with slider, combobox, and button arranged vertically",
+    hInstance
+);
 
 // Manually configure details
 auto window = SDK::WindowManager::GetInstance().RegisterWindow(hwnd);
 window->SetTheme(myCustomTheme);
 window->SetRoundedCorners(true, 20);
+
+// Access widgets and customize
+auto widgetMgr = builder.GetLastWidgetManager();
+// Customize individual widgets as needed...
 ```
 
-### 4. Check Confidence Scores
+### 6. Check Confidence Scores
 
 ```cpp
 auto parsed = nn->ParsePrompt(prompt);
@@ -404,7 +566,7 @@ if (parsed.confidence > 0.8f) {
     // High confidence - proceed
     CreateFromParsed(parsed);
 } else {
-    // Low confidence - use fallback
+    // Low confidence - use fallback or ask for clarification
     CreateDefault();
 }
 ```
@@ -414,9 +576,17 @@ if (parsed.confidence > 0.8f) {
 ### Login Window
 
 ```cpp
+// Simple login form
 HWND loginWindow = builder.BuildFromPrompt(
     L"Create a window 400x300 'Login' with label 'Username', textbox, "
     L"label 'Password', textbox, and button 'Login'",
+    hInstance
+);
+
+// With layout specification (NEW!)
+HWND betterLogin = builder.BuildFromPrompt(
+    L"Create dialog 400x300 'Login' with label, textbox, label, textbox, "
+    L"and button arranged vertically",
     hInstance
 );
 ```
@@ -424,9 +594,50 @@ HWND loginWindow = builder.BuildFromPrompt(
 ### Settings Dialog
 
 ```cpp
+// Basic settings
 HWND settingsDialog = builder.BuildFromPrompt(
     L"Create dialog 500x400 'Settings' with checkbox 'Enable notifications', "
     L"checkbox 'Auto-save', and button 'Apply'",
+    hInstance
+);
+
+// Advanced settings with multiple widget types (NEW!)
+HWND advancedSettings = builder.BuildFromPrompt(
+    L"Create window 600x500 'Settings' with checkbox 'Enable notifications', "
+    L"slider for volume, combobox for theme selection, separator, "
+    L"and two buttons arranged vertically",
+    hInstance
+);
+```
+
+### Data Entry Form (NEW!)
+
+```cpp
+// Complex form with various widgets
+HWND dataEntry = builder.BuildFromPrompt(
+    L"Create form 700x600 'Data Entry' with label 'Name', textbox, "
+    L"label 'Category', combobox, label 'Priority', slider, "
+    L"checkbox 'Urgent', and button 'Submit' in vertical layout",
+    hInstance
+);
+```
+
+### Control Panel (NEW!)
+
+```cpp
+// Control panel with grid layout
+HWND controlPanel = builder.BuildFromPrompt(
+    L"Create window 800x600 'Control Panel' with 9 buttons in a grid",
+    hInstance
+);
+```
+
+### Horizontal Toolbar (NEW!)
+
+```cpp
+// Toolbar with buttons side by side
+HWND toolbar = builder.BuildFromPrompt(
+    L"Create window 800x100 with 5 buttons arranged horizontally",
     hInstance
 );
 ```
@@ -488,14 +699,24 @@ button->SetSize(120, 40);
 
 ## Future Enhancements
 
-The neural network system is designed to be extensible:
+The neural network system is designed to be extensible. Completed and planned improvements:
 
+### Completed (v2.0)
+1. ✅ **Enhanced widget support**: Added 12+ new widget types
+2. ✅ **Layout intelligence**: Automatic vertical, horizontal, and grid layouts
+3. ✅ **Multi-widget parsing**: Single prompts with multiple widgets
+4. ✅ **Expanded vocabulary**: 2100+ GUI-related terms
+5. ✅ **Complex callbacks**: More event types and handlers
+
+### Planned
 1. **Enhanced training**: Add more training examples from real applications
 2. **Context awareness**: Remember previous prompts in session
 3. **Multi-language**: Support for non-English prompts
-4. **Advanced callbacks**: Generate more complex event handlers
-5. **UI layout**: Understand spatial relationships and positioning (✅ Partially implemented)
+4. **Advanced callbacks**: Generate more complex event handlers with logic
+5. **Nested layouts**: Complex hierarchical widget arrangements
 6. **Style inference**: Infer theme and styling from prompt tone
+7. **Widget relationships**: Parent-child and sibling relationships
+8. **Data binding**: Connect widgets to data models
 
 ## Cross-Platform Support
 

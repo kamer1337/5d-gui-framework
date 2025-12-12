@@ -57,6 +57,11 @@ private:
     // Generate widgets based on neural network interpretation
     std::vector<std::shared_ptr<Widget>> GenerateWidgetsFromParsed(const NeuralNetwork::ParsedPrompt& parsed);
     
+    // Apply layout to widgets
+    void ApplyLayout(std::vector<std::shared_ptr<Widget>>& widgets, 
+                     int windowWidth, int windowHeight,
+                     NeuralNetwork::LayoutType layout);
+    
     // Helper to create common callback actions
     std::function<void(Widget*, WidgetEvent, void*)> CreateShowMessageCallback(const std::wstring& message);
     std::function<void(Widget*, WidgetEvent, void*)> CreateShowTooltipCallback(const std::wstring& tooltipText);

@@ -11,7 +11,11 @@ namespace SDK {
 int NeuralNetwork::ParsedPrompt::GetWidth() const {
     auto it = entities.find(L"width");
     if (it != entities.end()) {
-        return std::stoi(it->second);
+        try {
+            return std::stoi(it->second);
+        } catch (const std::exception&) {
+            // If parsing fails, return default
+        }
     }
     return 800;  // Default
 }
@@ -19,7 +23,11 @@ int NeuralNetwork::ParsedPrompt::GetWidth() const {
 int NeuralNetwork::ParsedPrompt::GetHeight() const {
     auto it = entities.find(L"height");
     if (it != entities.end()) {
-        return std::stoi(it->second);
+        try {
+            return std::stoi(it->second);
+        } catch (const std::exception&) {
+            // If parsing fails, return default
+        }
     }
     return 600;  // Default
 }
@@ -45,13 +53,72 @@ NeuralNetwork::CallbackType NeuralNetwork::ParsedPrompt::GetCallbackType() const
     if (it != entities.end()) {
         if (it->second == L"click" || it->second == L"onclick") {
             return CallbackType::ON_CLICK;
+        } else if (it->second == L"doubleclick" || it->second == L"ondoubleclick") {
+            return CallbackType::ON_DOUBLE_CLICK;
         } else if (it->second == L"hover") {
             return CallbackType::ON_HOVER;
         } else if (it->second == L"focus") {
             return CallbackType::ON_FOCUS;
+        } else if (it->second == L"change" || it->second == L"onchange") {
+            return CallbackType::ON_CHANGE;
+        } else if (it->second == L"valuechanged") {
+            return CallbackType::ON_VALUE_CHANGED;
+        } else if (it->second == L"keypress") {
+            return CallbackType::ON_KEY_PRESS;
         }
     }
     return CallbackType::ON_CLICK;  // Default
+}
+
+std::wstring NeuralNetwork::ParsedPrompt::GetWidgetType() const {
+    auto it = entities.find(L"widget_type");
+    if (it != entities.end()) {
+        return it->second;
+    }
+    return L"";
+}
+
+int NeuralNetwork::ParsedPrompt::GetItemCount() const {
+    auto it = entities.find(L"item_count");
+    if (it != entities.end()) {
+        try {
+            return std::stoi(it->second);
+        } catch (const std::exception&) {
+            // If parsing fails, return default
+        }
+    }
+    return 0;
+}
+
+std::vector<std::wstring> NeuralNetwork::ParsedPrompt::GetItems() const {
+    std::vector<std::wstring> items;
+    auto it = entities.find(L"items");
+    if (it != entities.end()) {
+        // Parse comma-separated items
+        std::wstring itemsStr = it->second;
+        size_t start = 0;
+        size_t end = itemsStr.find(L',');
+        
+        while (end != std::wstring::npos) {
+            std::wstring item = itemsStr.substr(start, end - start);
+            // Trim whitespace
+            item.erase(0, item.find_first_not_of(L" \t"));
+            item.erase(item.find_last_not_of(L" \t") + 1);
+            if (!item.empty()) {
+                items.push_back(item);
+            }
+            start = end + 1;
+            end = itemsStr.find(L',', start);
+        }
+        // Add last item
+        std::wstring lastItem = itemsStr.substr(start);
+        lastItem.erase(0, lastItem.find_first_not_of(L" \t"));
+        lastItem.erase(lastItem.find_last_not_of(L" \t") + 1);
+        if (!lastItem.empty()) {
+            items.push_back(lastItem);
+        }
+    }
+    return items;
 }
 
 NeuralNetwork::NeuralNetwork() 
@@ -219,11 +286,32 @@ void NeuralNetwork::InitializePatterns() {
     
     m_intentKeywords[L"progressbar"] = Intent::ADD_PROGRESSBAR;
     m_intentKeywords[L"progress"] = Intent::ADD_PROGRESSBAR;
-    m_intentKeywords[L"bar"] = Intent::ADD_PROGRESSBAR;
     
     m_intentKeywords[L"tooltip"] = Intent::ADD_TOOLTIP;
     m_intentKeywords[L"tip"] = Intent::ADD_TOOLTIP;
     m_intentKeywords[L"hint"] = Intent::ADD_TOOLTIP;
+    
+    // Advanced widgets
+    m_intentKeywords[L"slider"] = Intent::ADD_SLIDER;
+    m_intentKeywords[L"combobox"] = Intent::ADD_COMBOBOX;
+    m_intentKeywords[L"combo"] = Intent::ADD_COMBOBOX;
+    m_intentKeywords[L"dropdown"] = Intent::ADD_COMBOBOX;
+    m_intentKeywords[L"listbox"] = Intent::ADD_LISTBOX;
+    m_intentKeywords[L"list"] = Intent::ADD_LISTBOX;
+    m_intentKeywords[L"listview"] = Intent::ADD_LISTVIEW;
+    m_intentKeywords[L"radiobutton"] = Intent::ADD_RADIOBUTTON;
+    m_intentKeywords[L"radio"] = Intent::ADD_RADIOBUTTON;
+    m_intentKeywords[L"spinbox"] = Intent::ADD_SPINBOX;
+    m_intentKeywords[L"spin"] = Intent::ADD_SPINBOX;
+    m_intentKeywords[L"image"] = Intent::ADD_IMAGE;
+    m_intentKeywords[L"picture"] = Intent::ADD_IMAGE;
+    m_intentKeywords[L"separator"] = Intent::ADD_SEPARATOR;
+    m_intentKeywords[L"divider"] = Intent::ADD_SEPARATOR;
+    m_intentKeywords[L"panel"] = Intent::ADD_PANEL;
+    m_intentKeywords[L"container"] = Intent::ADD_PANEL;
+    m_intentKeywords[L"tabcontrol"] = Intent::ADD_TABCONTROL;
+    m_intentKeywords[L"tabs"] = Intent::ADD_TABCONTROL;
+    m_intentKeywords[L"toolbar"] = Intent::ADD_TOOLBAR;
     
     m_intentKeywords[L"callback"] = Intent::SET_CALLBACK;
     m_intentKeywords[L"handler"] = Intent::SET_CALLBACK;
@@ -231,6 +319,10 @@ void NeuralNetwork::InitializePatterns() {
     
     m_intentKeywords[L"theme"] = Intent::SET_THEME;
     m_intentKeywords[L"style"] = Intent::SET_THEME;
+    
+    // Layout keywords
+    m_intentKeywords[L"layout"] = Intent::SET_LAYOUT;
+    m_intentKeywords[L"arrange"] = Intent::SET_LAYOUT;
 }
 
 std::vector<std::wstring> NeuralNetwork::Tokenize(const std::wstring& text) {
@@ -363,10 +455,10 @@ NeuralNetwork::Intent NeuralNetwork::OutputToIntent(const std::vector<float>& ou
     int maxIdx = 0;
     float maxVal = output[0];
     
-    for (int i = 1; i < OUTPUT_SIZE; i++) {
+    for (size_t i = 1; i < output.size() && i < OUTPUT_SIZE; i++) {
         if (output[i] > maxVal) {
             maxVal = output[i];
-            maxIdx = i;
+            maxIdx = static_cast<int>(i);
         }
     }
     
@@ -381,8 +473,20 @@ NeuralNetwork::Intent NeuralNetwork::OutputToIntent(const std::vector<float>& ou
         case 4: return Intent::ADD_CHECKBOX;
         case 5: return Intent::ADD_PROGRESSBAR;
         case 6: return Intent::ADD_TOOLTIP;
-        case 7: return Intent::SET_CALLBACK;
-        case 8: return Intent::SET_THEME;
+        case 7: return Intent::ADD_SLIDER;
+        case 8: return Intent::ADD_COMBOBOX;
+        case 9: return Intent::ADD_LISTBOX;
+        case 10: return Intent::ADD_LISTVIEW;
+        case 11: return Intent::ADD_RADIOBUTTON;
+        case 12: return Intent::ADD_SPINBOX;
+        case 13: return Intent::ADD_IMAGE;
+        case 14: return Intent::ADD_SEPARATOR;
+        case 15: return Intent::ADD_PANEL;
+        case 16: return Intent::ADD_TABCONTROL;
+        case 17: return Intent::ADD_TOOLBAR;
+        case 18: return Intent::SET_CALLBACK;
+        case 19: return Intent::SET_THEME;
+        case 20: return Intent::SET_LAYOUT;
         default: return Intent::UNKNOWN;
     }
 }
@@ -500,6 +604,7 @@ NeuralNetwork::ParsedPrompt NeuralNetwork::ParsePrompt(const std::wstring& promp
     // Determine intent based on keywords
     result.intent = Intent::UNKNOWN;
     result.confidence = 0.5f;
+    result.layoutType = LayoutType::NONE;
     
     for (const auto& token : tokens) {
         auto it = m_intentKeywords.find(token);
@@ -520,7 +625,71 @@ NeuralNetwork::ParsedPrompt NeuralNetwork::ParsePrompt(const std::wstring& promp
     // Extract entities
     result.entities = ExtractEntities(prompt);
     
+    // Extract multiple widgets from prompt
+    result.additionalWidgets = ExtractMultipleWidgets(prompt);
+    
+    // Determine layout type
+    result.layoutType = DetermineLayout(prompt);
+    
     return result;
+}
+
+std::vector<NeuralNetwork::Intent> NeuralNetwork::ExtractMultipleWidgets(const std::wstring& prompt) {
+    std::vector<Intent> widgets;
+    auto tokens = Tokenize(prompt);
+    
+    // Look for multiple widget mentions in the prompt
+    for (const auto& token : tokens) {
+        auto it = m_intentKeywords.find(token);
+        if (it != m_intentKeywords.end()) {
+            // Only add widget-related intents
+            if (it->second != Intent::CREATE_WINDOW && 
+                it->second != Intent::SET_CALLBACK && 
+                it->second != Intent::SET_THEME &&
+                it->second != Intent::SET_LAYOUT) {
+                widgets.push_back(it->second);
+            }
+        }
+    }
+    
+    return widgets;
+}
+
+NeuralNetwork::LayoutType NeuralNetwork::DetermineLayout(const std::wstring& prompt) {
+    auto lowerPrompt = prompt;
+    std::transform(lowerPrompt.begin(), lowerPrompt.end(), lowerPrompt.begin(), ::towlower);
+    
+    if (lowerPrompt.find(L"vertical") != std::wstring::npos ||
+        lowerPrompt.find(L"stack") != std::wstring::npos ||
+        lowerPrompt.find(L"column") != std::wstring::npos) {
+        return LayoutType::VERTICAL;
+    }
+    
+    if (lowerPrompt.find(L"horizontal") != std::wstring::npos ||
+        lowerPrompt.find(L"row") != std::wstring::npos ||
+        lowerPrompt.find(L"side by side") != std::wstring::npos) {
+        return LayoutType::HORIZONTAL;
+    }
+    
+    if (lowerPrompt.find(L"grid") != std::wstring::npos ||
+        lowerPrompt.find(L"table") != std::wstring::npos) {
+        return LayoutType::GRID;
+    }
+    
+    // Check for layout-related keywords
+    if (lowerPrompt.find(L"above") != std::wstring::npos ||
+        lowerPrompt.find(L"below") != std::wstring::npos ||
+        lowerPrompt.find(L"beneath") != std::wstring::npos) {
+        return LayoutType::VERTICAL;
+    }
+    
+    if (lowerPrompt.find(L"beside") != std::wstring::npos ||
+        lowerPrompt.find(L"next to") != std::wstring::npos ||
+        lowerPrompt.find(L"adjacent") != std::wstring::npos) {
+        return LayoutType::HORIZONTAL;
+    }
+    
+    return LayoutType::NONE;
 }
 
 void NeuralNetwork::Train(const std::vector<std::pair<std::wstring, ParsedPrompt>>& trainingData, int epochs) {
