@@ -525,7 +525,7 @@ void D2DRenderBackend::ApplyBlur(const RECT& rect, int blurRadius) {
     hr = m_pRenderTarget->CreateBitmap(bitmapSize, bitmapProps, &pBitmap);
     
     if (SUCCEEDED(hr) && pBitmap) {
-        // Copy the region to bitmap
+        // Copy the region to bitmap (called during render cycle between BeginDraw/EndDraw)
         D2D1_POINT_2U destPoint = D2D1::Point2U(0, 0);
         D2D1_RECT_U sourceRect = D2D1::RectU(
             (UINT32)d2dRect.left, (UINT32)d2dRect.top,
@@ -592,7 +592,7 @@ void D2DRenderBackend::ApplyBloom(const RECT& rect, float threshold, float inten
     hr = m_pRenderTarget->CreateBitmap(bitmapSize, bitmapProps, &pBitmap);
     
     if (SUCCEEDED(hr) && pBitmap) {
-        // Copy the region to bitmap
+        // Copy the region to bitmap (works during render cycle between BeginDraw/EndDraw)
         D2D1_POINT_2U destPoint = D2D1::Point2U(0, 0);
         D2D1_RECT_U sourceRect = D2D1::RectU(
             (UINT32)d2dRect.left, (UINT32)d2dRect.top,
@@ -604,21 +604,24 @@ void D2DRenderBackend::ApplyBloom(const RECT& rect, float threshold, float inten
         if (SUCCEEDED(hr)) {
             // Create effects for bloom: brightness threshold -> blur -> composite
             
-            // 1. Create brightness/threshold effect (using color matrix to extract bright areas)
+            // 1. Create brightness extraction effect using color matrix
             ID2D1Effect* pThresholdEffect = nullptr;
             hr = pDeviceContext->CreateEffect(CLSID_D2D1ColorMatrix, &pThresholdEffect);
             
             if (SUCCEEDED(hr) && pThresholdEffect) {
                 pThresholdEffect->SetInput(0, pBitmap);
                 
-                // Create a color matrix that extracts bright pixels based on threshold
-                // This is simplified - proper bloom would use a brightness pass
+                // Create a color matrix that extracts bright pixels
+                // Scale by intensity and subtract threshold to isolate bright areas
+                // This approximates: output = max(0, input * intensity - threshold)
+                float scale = intensity;
+                float offset = -threshold * 255.0f;  // Adjust threshold to 0-255 range
                 D2D1_MATRIX_5X4_F matrix = D2D1::Matrix5x4F(
-                    intensity, 0, 0, 0,
-                    0, intensity, 0, 0,
-                    0, 0, intensity, 0,
-                    0, 0, 0, 1,
-                    -threshold, -threshold, -threshold, 0
+                    scale, 0, 0, 0,      // Red channel
+                    0, scale, 0, 0,      // Green channel  
+                    0, 0, scale, 0,      // Blue channel
+                    0, 0, 0, 1,          // Alpha channel
+                    offset, offset, offset, 0  // Offset to create threshold
                 );
                 pThresholdEffect->SetValue(D2D1_COLORMATRIX_PROP_COLOR_MATRIX, matrix);
                 
@@ -628,7 +631,9 @@ void D2DRenderBackend::ApplyBloom(const RECT& rect, float threshold, float inten
                 
                 if (SUCCEEDED(hr) && pBlurEffect) {
                     pBlurEffect->SetInputEffect(0, pThresholdEffect);
-                    pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, 5.0f);
+                    // Use configurable blur radius based on intensity
+                    float blurRadius = 3.0f + (intensity * 2.0f);
+                    pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, blurRadius);
                     pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, D2D1_BORDER_MODE_SOFT);
                     
                     // 3. Create composite effect to blend bloom with original
