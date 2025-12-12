@@ -24,6 +24,7 @@ Widget::Widget()
     , m_fontSize(12)
     , m_fontBold(false)
     , m_fontItalic(false)
+    , m_alignment(WidgetAlignment::NONE)
 {
 }
 
@@ -246,6 +247,177 @@ void Widget::TriggerEvent(WidgetEvent event, void* data) {
     }
 }
 
+// Alignment methods
+void Widget::AlignToWidget(Widget* target, WidgetAlignment alignment, int spacing) {
+    if (!target || target == this) return;  // Prevent aligning to self
+    
+    RECT targetBounds;
+    target->GetBounds(targetBounds);
+    
+    int newX = m_x;
+    int newY = m_y;
+    
+    switch (alignment) {
+        case WidgetAlignment::LEFT:
+            newX = targetBounds.left - m_width - spacing;
+            newY = targetBounds.top;
+            break;
+        case WidgetAlignment::RIGHT:
+            newX = targetBounds.right + spacing;
+            newY = targetBounds.top;
+            break;
+        case WidgetAlignment::TOP:
+            newX = targetBounds.left;
+            newY = targetBounds.top - m_height - spacing;
+            break;
+        case WidgetAlignment::BOTTOM:
+            newX = targetBounds.left;
+            newY = targetBounds.bottom + spacing;
+            break;
+        case WidgetAlignment::CENTER:
+            newX = targetBounds.left + (targetBounds.right - targetBounds.left - m_width) / 2;
+            newY = targetBounds.top + (targetBounds.bottom - targetBounds.top - m_height) / 2;
+            break;
+        case WidgetAlignment::TOP_LEFT:
+            newX = targetBounds.left;
+            newY = targetBounds.top;
+            break;
+        case WidgetAlignment::TOP_RIGHT:
+            newX = targetBounds.right - m_width;
+            newY = targetBounds.top;
+            break;
+        case WidgetAlignment::BOTTOM_LEFT:
+            newX = targetBounds.left;
+            newY = targetBounds.bottom - m_height;
+            break;
+        case WidgetAlignment::BOTTOM_RIGHT:
+            newX = targetBounds.right - m_width;
+            newY = targetBounds.bottom - m_height;
+            break;
+        default:
+            break;
+    }
+    
+    SetPosition(newX, newY);
+}
+
+void Widget::AlignToParent(WidgetAlignment alignment, int margin) {
+    if (!m_parent) return;
+    
+    RECT parentBounds;
+    m_parent->GetBounds(parentBounds);
+    
+    int newX = m_x;
+    int newY = m_y;
+    
+    switch (alignment) {
+        case WidgetAlignment::LEFT:
+            newX = parentBounds.left + margin;
+            newY = m_y;
+            break;
+        case WidgetAlignment::RIGHT:
+            newX = parentBounds.right - m_width - margin;
+            newY = m_y;
+            break;
+        case WidgetAlignment::TOP:
+            newX = m_x;
+            newY = parentBounds.top + margin;
+            break;
+        case WidgetAlignment::BOTTOM:
+            newX = m_x;
+            newY = parentBounds.bottom - m_height - margin;
+            break;
+        case WidgetAlignment::CENTER:
+            newX = parentBounds.left + (parentBounds.right - parentBounds.left - m_width) / 2;
+            newY = parentBounds.top + (parentBounds.bottom - parentBounds.top - m_height) / 2;
+            break;
+        case WidgetAlignment::TOP_LEFT:
+            newX = parentBounds.left + margin;
+            newY = parentBounds.top + margin;
+            break;
+        case WidgetAlignment::TOP_RIGHT:
+            newX = parentBounds.right - m_width - margin;
+            newY = parentBounds.top + margin;
+            break;
+        case WidgetAlignment::BOTTOM_LEFT:
+            newX = parentBounds.left + margin;
+            newY = parentBounds.bottom - m_height - margin;
+            break;
+        case WidgetAlignment::BOTTOM_RIGHT:
+            newX = parentBounds.right - m_width - margin;
+            newY = parentBounds.bottom - m_height - margin;
+            break;
+        default:
+            break;
+    }
+    
+    SetPosition(newX, newY);
+}
+
+// Overlap detection methods
+bool Widget::CheckOverlap(const Widget* other) const {
+    if (!other) return false;
+    
+    RECT thisBounds, otherBounds;
+    GetBounds(thisBounds);
+    other->GetBounds(otherBounds);
+    
+    return !(thisBounds.right <= otherBounds.left ||
+             thisBounds.left >= otherBounds.right ||
+             thisBounds.bottom <= otherBounds.top ||
+             thisBounds.top >= otherBounds.bottom);
+}
+
+bool Widget::CheckOverlap(int x, int y, int width, int height) const {
+    RECT thisBounds;
+    GetBounds(thisBounds);
+    
+    RECT otherBounds = {x, y, x + width, y + height};
+    
+    return !(thisBounds.right <= otherBounds.left ||
+             thisBounds.left >= otherBounds.right ||
+             thisBounds.bottom <= otherBounds.top ||
+             thisBounds.top >= otherBounds.bottom);
+}
+
+void Widget::ResolveOverlap(Widget* other, int spacing) {
+    if (!other || other == this || !CheckOverlap(other)) return;  // Prevent resolving with self
+    
+    RECT thisBounds, otherBounds;
+    GetBounds(thisBounds);
+    other->GetBounds(otherBounds);
+    
+    // Calculate overlap amounts in each direction
+    int overlapLeft = thisBounds.right - otherBounds.left;
+    int overlapRight = otherBounds.right - thisBounds.left;
+    int overlapTop = thisBounds.bottom - otherBounds.top;
+    int overlapBottom = otherBounds.bottom - thisBounds.top;
+    
+    // Find minimum overlap direction
+    int minOverlap = overlapLeft;
+    int direction = 0; // 0=left, 1=right, 2=top, 3=bottom
+    
+    if (overlapRight < minOverlap) { minOverlap = overlapRight; direction = 1; }
+    if (overlapTop < minOverlap) { minOverlap = overlapTop; direction = 2; }
+    if (overlapBottom < minOverlap) { minOverlap = overlapBottom; direction = 3; }
+    
+    // Move this widget in the direction of minimum overlap
+    switch (direction) {
+        case 0: // Move left
+            SetPosition(otherBounds.left - m_width - spacing, m_y);
+            break;
+        case 1: // Move right
+            SetPosition(otherBounds.right + spacing, m_y);
+            break;
+        case 2: // Move up
+            SetPosition(m_x, otherBounds.top - m_height - spacing);
+            break;
+        case 3: // Move down
+            SetPosition(m_x, otherBounds.bottom + spacing);
+            break;
+    }
+}
+
 // Button implementation
 Button::Button(const std::wstring& text)
     : Widget()
@@ -322,7 +494,7 @@ Label::Label(const std::wstring& text)
     : Widget()
     , m_text(text)
     , m_textColor(50, 50, 50, 255)
-    , m_alignment(DT_LEFT | DT_VCENTER | DT_SINGLELINE)
+    , m_textAlignment(DT_LEFT | DT_VCENTER | DT_SINGLELINE)
 {
     m_height = 20;
 }
@@ -337,7 +509,7 @@ void Label::Render(HDC hdc) {
     
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, m_textColor.ToCOLORREF());
-    DrawTextW(hdc, m_text.c_str(), -1, &bounds, m_alignment);
+    DrawTextW(hdc, m_text.c_str(), -1, &bounds, m_textAlignment);
     
     Widget::Render(hdc);
 }
@@ -936,12 +1108,192 @@ Panel::Panel()
     , m_borderColor(180, 180, 180, 255)
     , m_titleBarColor(200, 200, 200, 255)
     , m_titleBarHeight(25)
+    , m_collapsible(false)
+    , m_collapsed(false)
+    , m_collapseOrientation(CollapseOrientation::VERTICAL)
+    , m_expandedSize(0)
+    , m_constrainChildren(false)
 {
     m_width = 200;
     m_height = 150;
 }
 
 Panel::~Panel() {
+}
+
+void Panel::SetCollapsed(bool collapsed) {
+    if (m_collapsed == collapsed || !m_collapsible) return;
+    
+    m_collapsed = collapsed;
+    
+    if (collapsed) {
+        // Store expanded size and children visibility states before collapsing
+        if (m_collapseOrientation == CollapseOrientation::VERTICAL) {
+            m_expandedSize = m_height;
+            m_height = m_titleBarHeight;
+        } else {
+            m_expandedSize = m_width;
+            m_width = 30; // Collapsed width for horizontal
+        }
+        
+        // Store visibility states and hide children
+        m_childrenVisibilityState.clear();
+        for (auto& child : m_children) {
+            m_childrenVisibilityState.push_back(child->IsVisible());
+            child->SetVisible(false);
+        }
+    } else {
+        // Restore expanded size
+        if (m_collapseOrientation == CollapseOrientation::VERTICAL) {
+            m_height = m_expandedSize > 0 ? m_expandedSize : 150;
+        } else {
+            m_width = m_expandedSize > 0 ? m_expandedSize : 200;
+        }
+        
+        // Restore original visibility states
+        for (size_t i = 0; i < m_children.size() && i < m_childrenVisibilityState.size(); ++i) {
+            m_children[i]->SetVisible(m_childrenVisibilityState[i]);
+        }
+        m_childrenVisibilityState.clear();
+    }
+}
+
+void Panel::ToggleCollapsed() {
+    SetCollapsed(!m_collapsed);
+}
+
+void Panel::ClampChildPosition(Widget* child) {
+    if (!child || !m_constrainChildren) return;
+    
+    RECT panelBounds;
+    GetBounds(panelBounds);
+    
+    // Account for title bar if present
+    if (!m_title.empty()) {
+        panelBounds.top += m_titleBarHeight;
+    }
+    
+    // Add padding
+    panelBounds.left += m_paddingLeft;
+    panelBounds.top += m_paddingTop;
+    panelBounds.right -= m_paddingRight;
+    panelBounds.bottom -= m_paddingBottom;
+    
+    int childX, childY, childWidth, childHeight;
+    child->GetPosition(childX, childY);
+    child->GetSize(childWidth, childHeight);
+    
+    // Clamp child position within panel bounds
+    if (childX < panelBounds.left) childX = panelBounds.left;
+    if (childY < panelBounds.top) childY = panelBounds.top;
+    if (childX + childWidth > panelBounds.right) childX = panelBounds.right - childWidth;
+    if (childY + childHeight > panelBounds.bottom) childY = panelBounds.bottom - childHeight;
+    
+    child->SetPosition(childX, childY);
+}
+
+void Panel::AddChild(std::shared_ptr<Widget> child) {
+    Widget::AddChild(child);
+    
+    // Apply boundary constraints if enabled
+    if (m_constrainChildren) {
+        ClampChildPosition(child.get());
+    }
+}
+
+RECT Panel::GetCollapseButtonRect() const {
+    RECT bounds;
+    GetBounds(bounds);
+    
+    int buttonSize = m_titleBarHeight - 6;
+    RECT buttonRect;
+    buttonRect.right = bounds.right - 5;
+    buttonRect.left = buttonRect.right - buttonSize;
+    buttonRect.top = bounds.top + 3;
+    buttonRect.bottom = buttonRect.top + buttonSize;
+    
+    return buttonRect;
+}
+
+int Panel::GetCollapsedSize() const {
+    if (m_collapseOrientation == CollapseOrientation::VERTICAL) {
+        return m_titleBarHeight;
+    } else {
+        return 30;
+    }
+}
+
+void Panel::RenderCollapseButton(HDC hdc, const RECT& buttonRect) {
+    // Draw button background
+    Color btnColor = m_hovered ? Color(220, 220, 220, 255) : Color(200, 200, 200, 255);
+    Renderer::DrawRoundedRect(hdc, buttonRect, 3, btnColor, Color(150, 150, 150, 255), 1);
+    
+    // Draw triangle indicator
+    int centerX = (buttonRect.left + buttonRect.right) / 2;
+    int centerY = (buttonRect.top + buttonRect.bottom) / 2;
+    int size = 5;
+    
+    POINT triangle[3];
+    if (m_collapsed) {
+        if (m_collapseOrientation == CollapseOrientation::VERTICAL) {
+            // Down-pointing triangle (collapsed state for vertical)
+            triangle[0] = {centerX, centerY + size};
+            triangle[1] = {centerX - size, centerY - size};
+            triangle[2] = {centerX + size, centerY - size};
+        } else {
+            // Right-pointing triangle (collapsed state for horizontal)
+            triangle[0] = {centerX + size, centerY};
+            triangle[1] = {centerX - size, centerY - size};
+            triangle[2] = {centerX - size, centerY + size};
+        }
+    } else {
+        if (m_collapseOrientation == CollapseOrientation::VERTICAL) {
+            // Up-pointing triangle (expanded state for vertical)
+            triangle[0] = {centerX, centerY - size};
+            triangle[1] = {centerX - size, centerY + size};
+            triangle[2] = {centerX + size, centerY + size};
+        } else {
+            // Left-pointing triangle (expanded state for horizontal)
+            triangle[0] = {centerX - size, centerY};
+            triangle[1] = {centerX + size, centerY - size};
+            triangle[2] = {centerX + size, centerY + size};
+        }
+    }
+    
+    HBRUSH brush = CreateSolidBrush(RGB(80, 80, 80));
+    HPEN pen = CreatePen(PS_SOLID, 1, RGB(80, 80, 80));
+    HGDIOBJ oldBrush = SelectObject(hdc, brush);
+    HGDIOBJ oldPen = SelectObject(hdc, pen);
+    
+    Polygon(hdc, triangle, 3);
+    
+    SelectObject(hdc, oldBrush);
+    SelectObject(hdc, oldPen);
+    DeleteObject(brush);
+    DeleteObject(pen);
+}
+
+bool Panel::HandleMouseDown(int x, int y, int button) {
+    if (!m_visible || !m_enabled) return false;
+    
+    // Check if clicking collapse button
+    if (m_collapsible && !m_title.empty()) {
+        RECT buttonRect = GetCollapseButtonRect();
+        if (x >= buttonRect.left && x < buttonRect.right &&
+            y >= buttonRect.top && y < buttonRect.bottom) {
+            ToggleCollapsed();
+            return true;
+        }
+    }
+    
+    // Check children
+    for (auto& child : m_children) {
+        if (child->HandleMouseDown(x, y, button)) {
+            return true;
+        }
+    }
+    
+    return HitTest(x, y);
 }
 
 void Panel::Render(HDC hdc) {
@@ -962,7 +1314,14 @@ void Panel::Render(HDC hdc) {
         SetTextColor(hdc, RGB(50, 50, 50));
         RECT titleTextRect = titleBarRect;
         titleTextRect.left += 10;
+        titleTextRect.right -= (m_collapsible ? m_titleBarHeight : 0);
         DrawTextW(hdc, m_title.c_str(), -1, &titleTextRect, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+        
+        // Draw collapse button if collapsible
+        if (m_collapsible) {
+            RECT buttonRect = GetCollapseButtonRect();
+            RenderCollapseButton(hdc, buttonRect);
+        }
     }
     
     Widget::Render(hdc);

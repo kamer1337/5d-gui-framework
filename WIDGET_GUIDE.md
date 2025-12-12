@@ -51,6 +51,39 @@ All widgets inherit from `SDK::Widget` which provides:
 ### Hierarchy
 - **Parent/Child**: `SetParent()`, `GetParent()`, `AddChild()`, `RemoveChild()`, `GetChildren()`
 
+### Alignment and Layout (New!)
+- **Auto-Alignment**: `SetAlignment()`, `GetAlignment()` - Set widget alignment type
+- **Align to Widget**: `AlignToWidget(target, alignment, spacing)` - Align relative to another widget
+- **Align to Parent**: `AlignToParent(alignment, margin)` - Align within parent bounds
+- **Alignment Types**: `NONE`, `LEFT`, `RIGHT`, `TOP`, `BOTTOM`, `CENTER`, `TOP_LEFT`, `TOP_RIGHT`, `BOTTOM_LEFT`, `BOTTOM_RIGHT`
+
+### Overlap Detection (New!)
+- **Check Overlap**: `CheckOverlap(widget)` or `CheckOverlap(x, y, width, height)` - Detect if widgets overlap
+- **Resolve Overlap**: `ResolveOverlap(widget, spacing)` - Automatically move to resolve overlap
+
+#### Alignment Examples
+
+```cpp
+// Align button to the right of another button
+auto btn1 = std::make_shared<SDK::Button>(L"First");
+btn1->SetPosition(20, 20);
+btn1->SetSize(100, 30);
+
+auto btn2 = std::make_shared<SDK::Button>(L"Second");
+btn2->SetSize(100, 30);
+btn2->AlignToWidget(btn1.get(), SDK::WidgetAlignment::RIGHT, 10); // 10px spacing
+
+// Center a widget within its parent
+auto label = std::make_shared<SDK::Label>(L"Centered");
+label->SetParent(panel.get());
+label->AlignToParent(SDK::WidgetAlignment::CENTER, 0);
+
+// Check for overlaps and resolve
+if (btn1->CheckOverlap(btn2.get())) {
+    btn2->ResolveOverlap(btn1.get(), 5); // Move btn2 with 5px spacing
+}
+```
+
 ### Rendering
 - **Render**: `Render(HDC)` - Draw the widget (pure virtual)
 - **Update**: `Update(deltaTime)` - Update widget state for animations
@@ -918,12 +951,68 @@ window->AddWidget(tabControl);
 ### Complex Widgets
 
 #### FileTree
+
+A hierarchical tree widget for displaying and navigating file system structures. Now supports both vertical and horizontal orientations!
+
+**Features:**
+- Display directory and file hierarchy
+- Expandable/collapsible directories
+- **Vertical and horizontal orientation** (new!)
+- **Expand/collapse all functionality** (new!)
+- **Enhanced visual indicators** with triangle arrows (new!)
+- File/folder icons
+- Click to expand/collapse or select
+
+**Basic Usage:**
 ```cpp
 auto fileTree = std::make_shared<SDK::FileTree>();
 fileTree->SetPosition(50, 50);
 fileTree->SetSize(300, 400);
 fileTree->SetRootPath(L"C:\\");
+
+// Set orientation (default is VERTICAL)
+fileTree->SetOrientation(SDK::FileTree::Orientation::VERTICAL);
+
+// Expand/collapse operations
+fileTree->ExpandAll();     // Expand all directories
+fileTree->CollapseAll();   // Collapse all directories
+fileTree->ExpandNode(L"C:\\Users");    // Expand specific path
+fileTree->CollapseNode(L"C:\\Users");  // Collapse specific path
+
 window->AddWidget(fileTree);
+```
+
+**API Reference:**
+```cpp
+// Path management
+void SetRootPath(const std::wstring& path);
+std::wstring GetRootPath() const;
+void SetSelectedPath(const std::wstring& path);
+std::wstring GetSelectedPath() const;
+
+// Orientation (New!)
+enum class Orientation { VERTICAL, HORIZONTAL };
+void SetOrientation(Orientation orientation);
+Orientation GetOrientation() const;
+
+// Expansion control (New!)
+void ExpandAll();                          // Expand all nodes recursively
+void CollapseAll();                        // Collapse all nodes recursively
+void ExpandNode(const std::wstring& path); // Expand specific node by path
+void CollapseNode(const std::wstring& path); // Collapse specific node by path
+```
+
+**Orientation Examples:**
+```cpp
+// Vertical tree (traditional file browser style)
+auto verticalTree = std::make_shared<SDK::FileTree>();
+verticalTree->SetOrientation(SDK::FileTree::Orientation::VERTICAL);
+verticalTree->SetSize(300, 400);
+
+// Horizontal tree (timeline/flow chart style)
+auto horizontalTree = std::make_shared<SDK::FileTree>();
+horizontalTree->SetOrientation(SDK::FileTree::Orientation::HORIZONTAL);
+horizontalTree->SetSize(600, 300);
 ```
 
 #### FileExplorer
@@ -1389,10 +1478,13 @@ int GetGroupId() const;
 
 ### Panel
 
-A container widget for visually grouping related widgets with an optional title bar.
+A container widget for visually grouping related widgets with an optional title bar. Now includes collapsible functionality and boundary constraints!
 
 #### Features
 - Optional title bar
+- **Collapsible panels** with triangle indicator (new!)
+- **Vertical or horizontal collapse** direction (new!)
+- **Boundary constraints** to keep children within panel (new!)
 - Rounded corners and borders
 - Customizable colors
 - Can contain child widgets
@@ -1408,10 +1500,20 @@ panel->SetBounds(50, 50, 300, 200);
 panel->SetTitle(L"Settings");
 panel->SetBackgroundColor(SDK::Color(245, 245, 245, 255));
 
+// Enable collapsible feature
+panel->SetCollapsible(true);
+panel->SetCollapseOrientation(SDK::Panel::CollapseOrientation::VERTICAL);
+
+// Enable boundary constraints
+panel->SetConstrainChildren(true);
+panel->SetPadding(10);
+
 // Add widgets to panel
 auto label = std::make_shared<SDK::Label>(L"Volume:");
 label->SetPosition(70, 90);
 panel->AddChild(label);
+
+// Click the triangle button in title bar to collapse/expand!
 
 window->AddWidget(panel);
 window->AddWidget(label);
@@ -1431,6 +1533,46 @@ std::wstring GetTitle() const;
 void SetBackgroundColor(const Color& color);
 void SetBorderColor(const Color& color);
 void SetTitleBarColor(const Color& color);
+
+// Collapse/Expand functionality (New!)
+void SetCollapsible(bool collapsible);        // Enable collapse button
+bool IsCollapsible() const;
+void SetCollapsed(bool collapsed);            // Set collapsed state
+bool IsCollapsed() const;
+void ToggleCollapsed();                       // Toggle between collapsed/expanded
+void SetCollapseOrientation(CollapseOrientation orientation);
+CollapseOrientation GetCollapseOrientation() const;
+
+// Orientation enum: VERTICAL (collapses to title bar height) or HORIZONTAL (collapses to narrow width)
+
+// Boundary Constraints (New!)
+void SetConstrainChildren(bool constrain);    // Keep children within panel bounds
+bool IsConstrainChildren() const;
+void ClampChildPosition(Widget* child);       // Manually clamp child position
+```
+
+#### Examples
+
+**Collapsible Panel:**
+```cpp
+auto panel = std::make_shared<SDK::Panel>();
+panel->SetTitle(L"Options");
+panel->SetCollapsible(true);  // Shows triangle button
+panel->SetCollapseOrientation(SDK::Panel::CollapseOrientation::VERTICAL);
+
+// User clicks triangle to toggle, or use code:
+panel->ToggleCollapsed();
+```
+
+**Constrained Children:**
+```cpp
+auto panel = std::make_shared<SDK::Panel>();
+panel->SetConstrainChildren(true);
+panel->SetPadding(10);
+
+auto button = std::make_shared<SDK::Button>(L"Button");
+button->SetPosition(1000, 1000);  // Way outside panel
+panel->AddChild(button);  // Automatically clamped within bounds!
 ```
 
 ### SpinBox
