@@ -1,6 +1,8 @@
 #include "../../include/SDK/D2DRenderBackend.h"
+#include "../../include/SDK/Renderer.h"
 #include <d2d1_1.h>
 #include <d2d1effects.h>
+#include <dxgiformat.h>
 
 namespace SDK {
 
@@ -483,19 +485,178 @@ void D2DRenderBackend::DrawGlow(const RECT& rect, int radius, Color glowColor) {
 }
 
 void D2DRenderBackend::ApplyBlur(const RECT& rect, int blurRadius) {
-    if (!m_pRenderTarget || !m_pBlurEffect) return;
+    if (!m_pRenderTarget) return;
     
-    // Set blur parameters
-    m_pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, (float)blurRadius);
+    // Try to get device context for effects
+    ID2D1DeviceContext* pDeviceContext = nullptr;
+    HRESULT hr = m_pRenderTarget->QueryInterface(&pDeviceContext);
     
-    // Apply blur (would need bitmap as input)
-    // This is a simplified version - full implementation would capture rect as bitmap first
+    if (FAILED(hr) || !pDeviceContext || !m_pBlurEffect) {
+        // Fallback to software blur using Renderer
+        HDC hdc = nullptr;
+        ID2D1GdiInteropRenderTarget* pGdiInterop = nullptr;
+        hr = m_pRenderTarget->QueryInterface(&pGdiInterop);
+        if (SUCCEEDED(hr) && pGdiInterop) {
+            hr = pGdiInterop->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &hdc);
+            if (SUCCEEDED(hr) && hdc) {
+                Renderer::ApplyBlur(hdc, rect, blurRadius);
+                pGdiInterop->ReleaseDC(nullptr);
+            }
+            pGdiInterop->Release();
+        }
+        return;
+    }
+    
+    // Create a bitmap from the render target area
+    D2D1_SIZE_F size = m_pRenderTarget->GetSize();
+    D2D1_RECT_F d2dRect = ToD2DRect(rect);
+    
+    // Create bitmap to hold the region
+    ID2D1Bitmap* pBitmap = nullptr;
+    D2D1_BITMAP_PROPERTIES bitmapProps = D2D1::BitmapProperties(
+        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
+    );
+    
+    D2D1_SIZE_U bitmapSize = D2D1::SizeU(
+        (UINT32)(d2dRect.right - d2dRect.left),
+        (UINT32)(d2dRect.bottom - d2dRect.top)
+    );
+    
+    hr = m_pRenderTarget->CreateBitmap(bitmapSize, bitmapProps, &pBitmap);
+    
+    if (SUCCEEDED(hr) && pBitmap) {
+        // Copy the region to bitmap
+        D2D1_POINT_2U destPoint = D2D1::Point2U(0, 0);
+        D2D1_RECT_U sourceRect = D2D1::RectU(
+            (UINT32)d2dRect.left, (UINT32)d2dRect.top,
+            (UINT32)d2dRect.right, (UINT32)d2dRect.bottom
+        );
+        
+        hr = pBitmap->CopyFromRenderTarget(&destPoint, m_pRenderTarget, &sourceRect);
+        
+        if (SUCCEEDED(hr)) {
+            // Set blur effect parameters
+            m_pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, (float)blurRadius);
+            m_pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, D2D1_BORDER_MODE_SOFT);
+            
+            // Set input bitmap
+            m_pBlurEffect->SetInput(0, pBitmap);
+            
+            // Draw the blurred result back
+            pDeviceContext->DrawImage(m_pBlurEffect, D2D1::Point2F(d2dRect.left, d2dRect.top));
+        }
+        
+        pBitmap->Release();
+    }
+    
+    pDeviceContext->Release();
 }
 
 void D2DRenderBackend::ApplyBloom(const RECT& rect, float threshold, float intensity) {
-    // Bloom requires custom implementation
-    // Would involve: extract bright pixels -> blur -> composite
-    // For now, this is a placeholder that could be implemented later
+    if (!m_pRenderTarget) return;
+    
+    // Try to get device context for effects
+    ID2D1DeviceContext* pDeviceContext = nullptr;
+    HRESULT hr = m_pRenderTarget->QueryInterface(&pDeviceContext);
+    
+    if (FAILED(hr) || !pDeviceContext) {
+        // Fallback to software bloom using Renderer
+        HDC hdc = nullptr;
+        ID2D1GdiInteropRenderTarget* pGdiInterop = nullptr;
+        hr = m_pRenderTarget->QueryInterface(&pGdiInterop);
+        if (SUCCEEDED(hr) && pGdiInterop) {
+            hr = pGdiInterop->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &hdc);
+            if (SUCCEEDED(hr) && hdc) {
+                Renderer::ApplyBloom(hdc, rect, threshold, intensity);
+                pGdiInterop->ReleaseDC(nullptr);
+            }
+            pGdiInterop->Release();
+        }
+        return;
+    }
+    
+    // Create a bitmap from the render target area
+    D2D1_RECT_F d2dRect = ToD2DRect(rect);
+    
+    // Create bitmap to hold the region
+    ID2D1Bitmap* pBitmap = nullptr;
+    D2D1_BITMAP_PROPERTIES bitmapProps = D2D1::BitmapProperties(
+        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
+    );
+    
+    D2D1_SIZE_U bitmapSize = D2D1::SizeU(
+        (UINT32)(d2dRect.right - d2dRect.left),
+        (UINT32)(d2dRect.bottom - d2dRect.top)
+    );
+    
+    hr = m_pRenderTarget->CreateBitmap(bitmapSize, bitmapProps, &pBitmap);
+    
+    if (SUCCEEDED(hr) && pBitmap) {
+        // Copy the region to bitmap
+        D2D1_POINT_2U destPoint = D2D1::Point2U(0, 0);
+        D2D1_RECT_U sourceRect = D2D1::RectU(
+            (UINT32)d2dRect.left, (UINT32)d2dRect.top,
+            (UINT32)d2dRect.right, (UINT32)d2dRect.bottom
+        );
+        
+        hr = pBitmap->CopyFromRenderTarget(&destPoint, m_pRenderTarget, &sourceRect);
+        
+        if (SUCCEEDED(hr)) {
+            // Create effects for bloom: brightness threshold -> blur -> composite
+            
+            // 1. Create brightness/threshold effect (using color matrix to extract bright areas)
+            ID2D1Effect* pThresholdEffect = nullptr;
+            hr = pDeviceContext->CreateEffect(CLSID_D2D1ColorMatrix, &pThresholdEffect);
+            
+            if (SUCCEEDED(hr) && pThresholdEffect) {
+                pThresholdEffect->SetInput(0, pBitmap);
+                
+                // Create a color matrix that extracts bright pixels based on threshold
+                // This is simplified - proper bloom would use a brightness pass
+                D2D1_MATRIX_5X4_F matrix = D2D1::Matrix5x4F(
+                    intensity, 0, 0, 0,
+                    0, intensity, 0, 0,
+                    0, 0, intensity, 0,
+                    0, 0, 0, 1,
+                    -threshold, -threshold, -threshold, 0
+                );
+                pThresholdEffect->SetValue(D2D1_COLORMATRIX_PROP_COLOR_MATRIX, matrix);
+                
+                // 2. Create blur effect for the bright areas
+                ID2D1Effect* pBlurEffect = nullptr;
+                hr = pDeviceContext->CreateEffect(CLSID_D2D1GaussianBlur, &pBlurEffect);
+                
+                if (SUCCEEDED(hr) && pBlurEffect) {
+                    pBlurEffect->SetInputEffect(0, pThresholdEffect);
+                    pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, 5.0f);
+                    pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, D2D1_BORDER_MODE_SOFT);
+                    
+                    // 3. Create composite effect to blend bloom with original
+                    ID2D1Effect* pCompositeEffect = nullptr;
+                    hr = pDeviceContext->CreateEffect(CLSID_D2D1Composite, &pCompositeEffect);
+                    
+                    if (SUCCEEDED(hr) && pCompositeEffect) {
+                        pCompositeEffect->SetInput(0, pBitmap);  // Original
+                        pCompositeEffect->SetInputEffect(1, pBlurEffect);  // Bloom
+                        pCompositeEffect->SetValue(D2D1_COMPOSITE_PROP_MODE, D2D1_COMPOSITE_MODE_PLUS);
+                        
+                        // Draw the final composited result
+                        pDeviceContext->DrawImage(pCompositeEffect, D2D1::Point2F(d2dRect.left, d2dRect.top));
+                        
+                        pCompositeEffect->Release();
+                    }
+                    
+                    pBlurEffect->Release();
+                }
+                
+                pThresholdEffect->Release();
+            }
+        }
+        
+        pBitmap->Release();
+    }
+    
+    pDeviceContext->Release();
 }
 
 RenderBackend::Capabilities D2DRenderBackend::GetCapabilities() const {
