@@ -205,7 +205,7 @@ While these widgets are now functional, potential improvements include:
 ## Files Created
 
 1. `examples/new_widgets_demo.cpp` - Comprehensive demo of new widgets
-2. `WIDGET_ENHANCEMENTS.md` - This summary document
+2. `WIDGET_ADDITIONS.md` - This summary document (previously WIDGET_ENHANCEMENTS.md)
 
 ## Lines of Code Added
 

@@ -266,16 +266,31 @@ ShowWindow(hwnd, SW_SHOW);
 
 ## Documentation
 
-- **[Optimization Guide](OPTIMIZATION_GUIDE.md)**: Rendering and memory optimization features ✅
-- **[Optimizations Completed](OPTIMIZATIONS_COMPLETED.md)**: Complete implementation summary ✅
-- **[Neural Network Guide](NEURAL_NETWORK_GUIDE.md)**: AI-powered GUI creation with natural language
-- **[Advanced Window Features](ADVANCED_WINDOW_FEATURES.md)**: Window groups, snapping, and animations
-- **[Camera Controller Guide](CAMERA_GUIDE.md)**: Camera controls and 3D widget placement
-- **[Widget Guide](WIDGET_GUIDE.md)**: Complete widget system documentation
-- **[API Reference](API.md)**: Complete API documentation with examples
-- **[Architecture](ARCHITECTURE.md)**: Technical design and internals
+### Core Documentation
+- **[Getting Started](USAGE.md)**: Practical examples and patterns
 - **[Build Guide](BUILD.md)**: Compilation instructions for all platforms
-- **[Usage Guide](USAGE.md)**: Practical examples and patterns
+- **[API Reference](API.md)**: Complete API documentation with examples
+- **[Quick Reference](QUICKREF.md)**: Quick syntax reference and common patterns
+
+### Feature Guides
+- **[Widget Guide](WIDGET_GUIDE.md)**: Complete widget system documentation
+- **[Neural Network Guide](NEURAL_NETWORK_GUIDE.md)**: AI-powered GUI creation with natural language
+- **[Optimization Guide](OPTIMIZATION_GUIDE.md)**: Rendering and memory optimization features
+- **[Camera Controller Guide](CAMERA_GUIDE.md)**: 3D camera controls and widget placement
+- **[Advanced Window Features](ADVANCED_WINDOW_FEATURES.md)**: Window groups, snapping, and animations
+
+### Technical Documentation
+- **[Architecture](ARCHITECTURE.md)**: Technical design and internals
+- **[Architecture Diagram](ARCHITECTURE_DIAGRAM.md)**: Visual system architecture
+- **[Optimizations Completed](OPTIMIZATIONS_COMPLETED.md)**: Implementation details and benchmarks
+
+### Platform-Specific
+- **[Linux Support](LINUX_SUPPORT.md)**: Linux platform support information
+
+### Project Information
+- **[Roadmap](ROADMAP.md)**: Future features and development plans
+- **[TODO](TODO.md)**: Active tasks and improvements
+- **[Contributing](CONTRIBUTING.md)**: Guidelines for contributors
 
 ## Building
 
