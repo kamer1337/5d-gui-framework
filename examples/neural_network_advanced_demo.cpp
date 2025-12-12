@@ -221,7 +221,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 break;
         }
         
-        results += L"\nConfidence: " + std::to_wstring(static_cast<int>(parsed.confidence * 100)) + L"%\n\n";
+        results += L"\nConfidence: " + std::to_wstring(static_cast<int>(std::round(parsed.confidence * 100))) + L"%\n\n";
     }
     
     MessageBoxW(nullptr, results.c_str(), L"Widget Recognition Results", MB_OK | MB_ICONINFORMATION);

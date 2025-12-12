@@ -342,19 +342,20 @@ void NeuralPromptBuilder::ApplyLayout(std::vector<std::shared_ptr<Widget>>& widg
                                        NeuralNetwork::LayoutType layout) {
     if (widgets.empty()) return;
     
-    const int padding = 20;
-    const int spacing = 10;
+    constexpr int PADDING = 20;
+    constexpr int SPACING = 10;
+    constexpr int GRID_CELL_PADDING = 10;
     
     switch (layout) {
         case NeuralNetwork::LayoutType::VERTICAL: {
             // Stack widgets vertically
-            int yPos = padding;
-            int widgetWidth = windowWidth - (2 * padding);
+            int yPos = PADDING;
+            int widgetWidth = windowWidth - (2 * PADDING);
             int widgetHeight = 40;
             
             for (auto& widget : widgets) {
-                widget->SetBounds(padding, yPos, widgetWidth, widgetHeight);
-                yPos += widgetHeight + spacing;
+                widget->SetBounds(PADDING, yPos, widgetWidth, widgetHeight);
+                yPos += widgetHeight + SPACING;
             }
             break;
         }
@@ -362,16 +363,16 @@ void NeuralPromptBuilder::ApplyLayout(std::vector<std::shared_ptr<Widget>>& widg
         case NeuralNetwork::LayoutType::HORIZONTAL: {
             // Arrange widgets horizontally
             int widgetCount = static_cast<int>(widgets.size());
-            int totalSpacing = spacing * (widgetCount - 1);
-            int availableWidth = windowWidth - (2 * padding) - totalSpacing;
+            int totalSpacing = SPACING * (widgetCount - 1);
+            int availableWidth = windowWidth - (2 * PADDING) - totalSpacing;
             int widgetWidth = availableWidth / widgetCount;
             int widgetHeight = 40;
-            int xPos = padding;
-            int yPos = padding;
+            int xPos = PADDING;
+            int yPos = PADDING;
             
             for (auto& widget : widgets) {
                 widget->SetBounds(xPos, yPos, widgetWidth, widgetHeight);
-                xPos += widgetWidth + spacing;
+                xPos += widgetWidth + SPACING;
             }
             break;
         }
@@ -381,17 +382,17 @@ void NeuralPromptBuilder::ApplyLayout(std::vector<std::shared_ptr<Widget>>& widg
             int cols = static_cast<int>(std::ceil(std::sqrt(widgets.size())));
             int rows = static_cast<int>(std::ceil(static_cast<float>(widgets.size()) / cols));
             
-            int cellWidth = (windowWidth - (2 * padding) - (spacing * (cols - 1))) / cols;
-            int cellHeight = (windowHeight - (2 * padding) - (spacing * (rows - 1))) / rows;
+            int cellWidth = (windowWidth - (2 * PADDING) - (SPACING * (cols - 1))) / cols;
+            int cellHeight = (windowHeight - (2 * PADDING) - (SPACING * (rows - 1))) / rows;
             
             for (size_t i = 0; i < widgets.size(); i++) {
                 int row = static_cast<int>(i / cols);
                 int col = static_cast<int>(i % cols);
                 
-                int x = padding + (col * (cellWidth + spacing));
-                int y = padding + (row * (cellHeight + spacing));
+                int x = PADDING + (col * (cellWidth + SPACING));
+                int y = PADDING + (row * (cellHeight + SPACING));
                 
-                widgets[i]->SetBounds(x, y, cellWidth - 10, cellHeight - 10);
+                widgets[i]->SetBounds(x, y, cellWidth - GRID_CELL_PADDING, cellHeight - GRID_CELL_PADDING);
             }
             break;
         }

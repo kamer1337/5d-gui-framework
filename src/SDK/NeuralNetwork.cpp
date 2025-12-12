@@ -11,7 +11,11 @@ namespace SDK {
 int NeuralNetwork::ParsedPrompt::GetWidth() const {
     auto it = entities.find(L"width");
     if (it != entities.end()) {
-        return std::stoi(it->second);
+        try {
+            return std::stoi(it->second);
+        } catch (const std::exception&) {
+            // If parsing fails, return default
+        }
     }
     return 800;  // Default
 }
@@ -19,7 +23,11 @@ int NeuralNetwork::ParsedPrompt::GetWidth() const {
 int NeuralNetwork::ParsedPrompt::GetHeight() const {
     auto it = entities.find(L"height");
     if (it != entities.end()) {
-        return std::stoi(it->second);
+        try {
+            return std::stoi(it->second);
+        } catch (const std::exception&) {
+            // If parsing fails, return default
+        }
     }
     return 600;  // Default
 }
@@ -73,7 +81,11 @@ std::wstring NeuralNetwork::ParsedPrompt::GetWidgetType() const {
 int NeuralNetwork::ParsedPrompt::GetItemCount() const {
     auto it = entities.find(L"item_count");
     if (it != entities.end()) {
-        return std::stoi(it->second);
+        try {
+            return std::stoi(it->second);
+        } catch (const std::exception&) {
+            // If parsing fails, return default
+        }
     }
     return 0;
 }
@@ -88,11 +100,23 @@ std::vector<std::wstring> NeuralNetwork::ParsedPrompt::GetItems() const {
         size_t end = itemsStr.find(L',');
         
         while (end != std::wstring::npos) {
-            items.push_back(itemsStr.substr(start, end - start));
+            std::wstring item = itemsStr.substr(start, end - start);
+            // Trim whitespace
+            item.erase(0, item.find_first_not_of(L" \t"));
+            item.erase(item.find_last_not_of(L" \t") + 1);
+            if (!item.empty()) {
+                items.push_back(item);
+            }
             start = end + 1;
             end = itemsStr.find(L',', start);
         }
-        items.push_back(itemsStr.substr(start));
+        // Add last item
+        std::wstring lastItem = itemsStr.substr(start);
+        lastItem.erase(0, lastItem.find_first_not_of(L" \t"));
+        lastItem.erase(lastItem.find_last_not_of(L" \t") + 1);
+        if (!lastItem.empty()) {
+            items.push_back(lastItem);
+        }
     }
     return items;
 }
