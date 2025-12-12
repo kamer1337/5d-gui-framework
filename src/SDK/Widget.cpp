@@ -249,7 +249,7 @@ void Widget::TriggerEvent(WidgetEvent event, void* data) {
 
 // Alignment methods
 void Widget::AlignToWidget(Widget* target, WidgetAlignment alignment, int spacing) {
-    if (!target) return;
+    if (!target || target == this) return;  // Prevent aligning to self
     
     RECT targetBounds;
     target->GetBounds(targetBounds);
@@ -381,7 +381,7 @@ bool Widget::CheckOverlap(int x, int y, int width, int height) const {
 }
 
 void Widget::ResolveOverlap(Widget* other, int spacing) {
-    if (!other || !CheckOverlap(other)) return;
+    if (!other || other == this || !CheckOverlap(other)) return;  // Prevent resolving with self
     
     RECT thisBounds, otherBounds;
     GetBounds(thisBounds);
@@ -494,7 +494,7 @@ Label::Label(const std::wstring& text)
     : Widget()
     , m_text(text)
     , m_textColor(50, 50, 50, 255)
-    , m_alignment(DT_LEFT | DT_VCENTER | DT_SINGLELINE)
+    , m_textAlignment(DT_LEFT | DT_VCENTER | DT_SINGLELINE)
 {
     m_height = 20;
 }
@@ -509,7 +509,7 @@ void Label::Render(HDC hdc) {
     
     SetBkMode(hdc, TRANSPARENT);
     SetTextColor(hdc, m_textColor.ToCOLORREF());
-    DrawTextW(hdc, m_text.c_str(), -1, &bounds, m_alignment);
+    DrawTextW(hdc, m_text.c_str(), -1, &bounds, m_textAlignment);
     
     Widget::Render(hdc);
 }
@@ -1127,7 +1127,7 @@ void Panel::SetCollapsed(bool collapsed) {
     m_collapsed = collapsed;
     
     if (collapsed) {
-        // Store expanded size before collapsing
+        // Store expanded size and children visibility states before collapsing
         if (m_collapseOrientation == CollapseOrientation::VERTICAL) {
             m_expandedSize = m_height;
             m_height = m_titleBarHeight;
@@ -1136,8 +1136,10 @@ void Panel::SetCollapsed(bool collapsed) {
             m_width = 30; // Collapsed width for horizontal
         }
         
-        // Hide all children
+        // Store visibility states and hide children
+        m_childrenVisibilityState.clear();
         for (auto& child : m_children) {
+            m_childrenVisibilityState.push_back(child->IsVisible());
             child->SetVisible(false);
         }
     } else {
@@ -1148,10 +1150,11 @@ void Panel::SetCollapsed(bool collapsed) {
             m_width = m_expandedSize > 0 ? m_expandedSize : 200;
         }
         
-        // Show all children
-        for (auto& child : m_children) {
-            child->SetVisible(true);
+        // Restore original visibility states
+        for (size_t i = 0; i < m_children.size() && i < m_childrenVisibilityState.size(); ++i) {
+            m_children[i]->SetVisible(m_childrenVisibilityState[i]);
         }
+        m_childrenVisibilityState.clear();
     }
 }
 

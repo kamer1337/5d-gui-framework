@@ -263,14 +263,14 @@ public:
     std::wstring GetText() const { return m_text; }
     
     void SetTextColor(const Color& color) { m_textColor = color; }
-    void SetAlignment(UINT alignment) { m_alignment = alignment; }
+    void SetTextAlignment(UINT alignment) { m_textAlignment = alignment; }
     
     void Render(HDC hdc) override;
     
 private:
     std::wstring m_text;
     Color m_textColor;
-    UINT m_alignment;
+    UINT m_textAlignment;
 };
 
 // TextBox widget
@@ -496,6 +496,7 @@ private:
     bool m_collapsed;
     CollapseOrientation m_collapseOrientation;
     int m_expandedSize;  // Store original size when collapsed
+    std::vector<bool> m_childrenVisibilityState;  // Store original visibility of children
     
     // Boundary constraint properties
     bool m_constrainChildren;

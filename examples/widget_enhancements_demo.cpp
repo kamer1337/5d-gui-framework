@@ -294,7 +294,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     );
     instructions->SetPosition(660, 410);
     instructions->SetSize(500, 100);
-    instructions->SetAlignment(DT_LEFT | DT_TOP | DT_WORDBREAK);
+    instructions->SetTextAlignment(DT_LEFT | DT_TOP | DT_WORDBREAK);
     g_window->AddWidget(instructions);
     
     // Show window
