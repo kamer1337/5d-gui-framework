@@ -221,6 +221,33 @@ ID2D1SolidColorBrush* D2DRenderBackend::GetBrush(Color color) {
     return m_pCachedBrush;
 }
 
+HDC D2DRenderBackend::GetGDIFallbackDC() const {
+    if (!m_pRenderTarget) return nullptr;
+    
+    HDC hdc = nullptr;
+    ID2D1GdiInteropRenderTarget* pGdiInterop = nullptr;
+    HRESULT hr = m_pRenderTarget->QueryInterface(&pGdiInterop);
+    
+    if (SUCCEEDED(hr) && pGdiInterop) {
+        hr = pGdiInterop->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &hdc);
+        pGdiInterop->Release();
+    }
+    
+    return hdc;
+}
+
+void D2DRenderBackend::ReleaseGDIFallbackDC(HDC hdc) const {
+    if (!m_pRenderTarget || !hdc) return;
+    
+    ID2D1GdiInteropRenderTarget* pGdiInterop = nullptr;
+    HRESULT hr = m_pRenderTarget->QueryInterface(&pGdiInterop);
+    
+    if (SUCCEEDED(hr) && pGdiInterop) {
+        pGdiInterop->ReleaseDC(nullptr);
+        pGdiInterop->Release();
+    }
+}
+
 void D2DRenderBackend::DrawRectangle(const RECT& rect, Color fillColor, Color borderColor, float borderWidth) {
     if (!m_pRenderTarget) return;
     
@@ -500,16 +527,10 @@ void D2DRenderBackend::ApplyBlur(const RECT& rect, int blurRadius) {
     // Check if D2D1.1 device context is available
     if (FAILED(hr) || !pDeviceContext) {
         // Fallback to software blur - D2D1.1 not available
-        HDC hdc = nullptr;
-        ID2D1GdiInteropRenderTarget* pGdiInterop = nullptr;
-        hr = m_pRenderTarget->QueryInterface(&pGdiInterop);
-        if (SUCCEEDED(hr) && pGdiInterop) {
-            hr = pGdiInterop->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &hdc);
-            if (SUCCEEDED(hr) && hdc) {
-                Renderer::ApplyBlur(hdc, rect, blurRadius);
-                pGdiInterop->ReleaseDC(nullptr);
-            }
-            pGdiInterop->Release();
+        HDC hdc = GetGDIFallbackDC();
+        if (hdc) {
+            Renderer::ApplyBlur(hdc, rect, blurRadius);
+            ReleaseGDIFallbackDC(hdc);
         }
         return;
     }
@@ -517,16 +538,10 @@ void D2DRenderBackend::ApplyBlur(const RECT& rect, int blurRadius) {
     // Check if blur effect is available (created during initialization)
     if (!m_pBlurEffect) {
         // Fallback to software blur - blur effect not available
-        HDC hdc = nullptr;
-        ID2D1GdiInteropRenderTarget* pGdiInterop = nullptr;
-        hr = m_pRenderTarget->QueryInterface(&pGdiInterop);
-        if (SUCCEEDED(hr) && pGdiInterop) {
-            hr = pGdiInterop->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &hdc);
-            if (SUCCEEDED(hr) && hdc) {
-                Renderer::ApplyBlur(hdc, rect, blurRadius);
-                pGdiInterop->ReleaseDC(nullptr);
-            }
-            pGdiInterop->Release();
+        HDC hdc = GetGDIFallbackDC();
+        if (hdc) {
+            Renderer::ApplyBlur(hdc, rect, blurRadius);
+            ReleaseGDIFallbackDC(hdc);
         }
         pDeviceContext->Release();
         return;
@@ -585,17 +600,11 @@ void D2DRenderBackend::ApplyBloom(const RECT& rect, float threshold, float inten
     HRESULT hr = m_pRenderTarget->QueryInterface(&pDeviceContext);
     
     if (FAILED(hr) || !pDeviceContext) {
-        // Fallback to software bloom using Renderer
-        HDC hdc = nullptr;
-        ID2D1GdiInteropRenderTarget* pGdiInterop = nullptr;
-        hr = m_pRenderTarget->QueryInterface(&pGdiInterop);
-        if (SUCCEEDED(hr) && pGdiInterop) {
-            hr = pGdiInterop->GetDC(D2D1_DC_INITIALIZE_MODE_COPY, &hdc);
-            if (SUCCEEDED(hr) && hdc) {
-                Renderer::ApplyBloom(hdc, rect, threshold, intensity);
-                pGdiInterop->ReleaseDC(nullptr);
-            }
-            pGdiInterop->Release();
+        // Fallback to software bloom - D2D1.1 not available
+        HDC hdc = GetGDIFallbackDC();
+        if (hdc) {
+            Renderer::ApplyBloom(hdc, rect, threshold, intensity);
+            ReleaseGDIFallbackDC(hdc);
         }
         return;
     }
