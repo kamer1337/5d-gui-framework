@@ -6,9 +6,43 @@
 #include <cstring>
 #include <algorithm>
 #include <locale>
-#include <codecvt>
+#include <cwchar>
 
 namespace SDK {
+
+// Helper function to convert wstring to UTF-8 (replaces deprecated std::wstring_convert)
+static std::string WStringToUTF8(const std::wstring& wstr) {
+    if (wstr.empty()) {
+        return std::string();
+    }
+    
+    std::string result;
+    result.reserve(wstr.size() * 4); // Reserve worst case (4 bytes per UTF-8 char)
+    
+    for (wchar_t wc : wstr) {
+        if (wc < 0x80) {
+            // ASCII range (0x00-0x7F)
+            result.push_back(static_cast<char>(wc));
+        } else if (wc < 0x800) {
+            // 2-byte UTF-8 (0x80-0x7FF)
+            result.push_back(static_cast<char>(0xC0 | ((wc >> 6) & 0x1F)));
+            result.push_back(static_cast<char>(0x80 | (wc & 0x3F)));
+        } else if (wc < 0x10000) {
+            // 3-byte UTF-8 (0x800-0xFFFF)
+            result.push_back(static_cast<char>(0xE0 | ((wc >> 12) & 0x0F)));
+            result.push_back(static_cast<char>(0x80 | ((wc >> 6) & 0x3F)));
+            result.push_back(static_cast<char>(0x80 | (wc & 0x3F)));
+        } else {
+            // 4-byte UTF-8 (0x10000-0x10FFFF)
+            result.push_back(static_cast<char>(0xF0 | ((wc >> 18) & 0x07)));
+            result.push_back(static_cast<char>(0x80 | ((wc >> 12) & 0x3F)));
+            result.push_back(static_cast<char>(0x80 | ((wc >> 6) & 0x3F)));
+            result.push_back(static_cast<char>(0x80 | (wc & 0x3F)));
+        }
+    }
+    
+    return result;
+}
 
 X11RenderBackend::X11RenderBackend()
     : m_display(nullptr)
@@ -284,8 +318,7 @@ void X11RenderBackend::DrawText(const std::wstring& text, const RECT& rect, Colo
     }
     
     // Convert wstring to UTF-8
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-    std::string utf8Text = converter.to_bytes(text);
+    std::string utf8Text = WStringToUTF8(text);
     
     // Draw text
     int x = rect.left + 5; // Small padding

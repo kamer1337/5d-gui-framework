@@ -1,6 +1,7 @@
 #include "SDK/RendererOptimizer.h"
 #include <cmath>
 #include <algorithm>
+#include <climits>
 
 namespace SDK {
 
