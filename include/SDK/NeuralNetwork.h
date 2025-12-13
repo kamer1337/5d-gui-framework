@@ -88,6 +88,20 @@ public:
         std::wstring GetWidgetType() const;
         int GetItemCount() const;
         std::vector<std::wstring> GetItems() const;
+        
+        // Enhanced getters for v1.2.2
+        std::wstring GetColor() const;
+        std::wstring GetColorModifier() const;
+        std::wstring GetSize() const;
+        std::wstring GetState() const;
+        std::wstring GetAction() const;
+        std::wstring GetFontStyle() const;
+        std::wstring GetPattern() const;
+        std::wstring GetValidation() const;
+        std::wstring GetPlaceholder() const;
+        int GetMinValue() const;
+        int GetMaxValue() const;
+        int GetCount() const;
     };
     
     NeuralNetwork();
