@@ -73,6 +73,10 @@ public:
     // Enable layered window mode for alpha blending
     void EnableLayeredMode();
     
+    // Begin/End batched updates to avoid excessive redraws
+    void BeginUpdate();
+    void EndUpdate();
+    
     // Custom rendering callback
     void SetRenderCallback(std::function<void(HDC)> callback);
     void Render(HDC hdc);
@@ -127,6 +131,10 @@ private:
     // v2.0: DPI and Monitor support
     DPIScaleInfo m_currentDPI;
     HMONITOR m_currentMonitor;
+    
+    // Flag to defer appearance updates during batch changes
+    bool m_deferUpdates;
+    bool m_needsUpdate;
 };
 
 } // namespace SDK

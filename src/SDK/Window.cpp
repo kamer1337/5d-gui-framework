@@ -24,6 +24,8 @@ Window::Window(HWND hwnd)
     , m_theme(nullptr)
     , m_renderCallback(nullptr)
     , m_currentMonitor(nullptr)
+    , m_deferUpdates(false)
+    , m_needsUpdate(false)
 {
     // Initialize DPI info
     m_currentDPI = DPIManager::GetInstance().GetDPIForWindow(hwnd);
@@ -86,9 +88,30 @@ void Window::SetShadowIntensity(float intensity) {
 void Window::UpdateAppearance() {
     if (!IsValid()) return;
     
-    // Force window redraw
-    InvalidateRect(m_hwnd, nullptr, TRUE);
-    UpdateWindow(m_hwnd);
+    // If updates are deferred, just mark as needing update
+    if (m_deferUpdates) {
+        m_needsUpdate = true;
+        return;
+    }
+    
+    // Use FALSE to avoid erasing background, which causes flickering
+    // The WM_PAINT handler should clear the background as needed
+    InvalidateRect(m_hwnd, nullptr, FALSE);
+    // Remove UpdateWindow() call to avoid immediate synchronous redraw
+    // Let the normal message loop handle repaints
+}
+
+void Window::BeginUpdate() {
+    m_deferUpdates = true;
+    m_needsUpdate = false;
+}
+
+void Window::EndUpdate() {
+    m_deferUpdates = false;
+    if (m_needsUpdate) {
+        UpdateAppearance();
+        m_needsUpdate = false;
+    }
 }
 
 void Window::EnableLayeredMode() {
@@ -168,6 +191,9 @@ void Window::Render(HDC hdc) {
 }
 
 void Window::ApplyDepthSettings() {
+    // Batch all updates to avoid multiple redraws
+    BeginUpdate();
+    
     // Apply depth-based defaults
     switch (m_depth) {
         case WindowDepth::FAR_BACKGROUND:
@@ -205,6 +231,8 @@ void Window::ApplyDepthSettings() {
             SetShadowIntensity(1.0f);
             break;
     }
+    
+    EndUpdate();
 }
 
 void Window::UpdateLayeredWindow() {
