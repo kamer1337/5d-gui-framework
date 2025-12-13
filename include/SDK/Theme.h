@@ -19,14 +19,14 @@ struct Color {
     BYTE r, g, b, a;
     
     Color() : r(0), g(0), b(0), a(255) {}
-    Color(BYTE red, BYTE green, BYTE blue, BYTE alpha = 255)
+    Color(int red, int green, int blue, int alpha = 255)
         : r(red), g(green), b(blue), a(alpha) {}
     
     COLORREF ToCOLORREF() const {
         return RGB(r, g, b);
     }
     
-    static Color FromRGB(BYTE r, BYTE g, BYTE b) {
+    static Color FromRGB(int r, int g, int b) {
         return Color(r, g, b, 255);
     }
 };
