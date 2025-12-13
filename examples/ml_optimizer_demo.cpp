@@ -183,10 +183,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         
         case WM_LBUTTONDOWN: {
             // Mark random elements as changed (simulate interaction)
-            std::uniform_int_distribution<int> dist(0, static_cast<int>(g_elementIds.size()) - 1);
-            for (int i = 0; i < 5; ++i) {
-                int idx = dist(g_rng);
-                g_optimizer.MarkElementChanged(g_elementIds[idx]);
+            if (!g_elementIds.empty()) {
+                std::uniform_int_distribution<int> dist(0, static_cast<int>(g_elementIds.size()) - 1);
+                for (int i = 0; i < 5; ++i) {
+                    int idx = dist(g_rng);
+                    g_optimizer.MarkElementChanged(g_elementIds[idx]);
+                }
             }
             InvalidateRect(hwnd, nullptr, FALSE);
             return 0;

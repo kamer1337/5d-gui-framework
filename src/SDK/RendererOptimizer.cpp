@@ -4,6 +4,12 @@
 
 namespace SDK {
 
+// Performance thresholds
+namespace {
+    constexpr float GOOD_PERFORMANCE_THRESHOLD_MS = 8.0f;  // Target render time for good performance (60fps = 16ms frame, aim for half)
+    constexpr float MAX_CONFIDENCE = 0.95f;  // Maximum confidence to prevent overconfidence
+}
+
 // OptimizationModel Implementation
 RendererOptimizer::OptimizationModel::OptimizationModel()
     : learningRate_(0.01f)
@@ -13,6 +19,13 @@ RendererOptimizer::OptimizationModel::OptimizationModel()
 {
     // Initialize weights for features
     // Features: renderTime, changeFreq, pixelArea, screenCoverage, isAnimated, cacheHitRate
+    // Weight rationale:
+    //   renderTime (0.3): Important for identifying slow elements
+    //   changeFreq (0.4): Most important - frequently changing elements need full render
+    //   pixelArea (0.15): Larger elements benefit more from optimization
+    //   screenCoverage (0.1): On-screen elements prioritized
+    //   isAnimated (0.25): Animated elements need frequent updates
+    //   cacheHitRate (-0.2): Negative weight - low cache hit suggests changing content
     weights_ = {0.3f, 0.4f, 0.15f, 0.1f, 0.25f, -0.2f};
 }
 
@@ -108,7 +121,7 @@ void RendererOptimizer::OptimizationModel::Learn(const ElementMetrics& metrics, 
     
     // Calculate error based on performance feedback
     // Good performance (low render time) = correct prediction
-    float target = performance < 8.0f ? 1.0f : 0.0f; // Target 8ms for good performance
+    float target = performance < GOOD_PERFORMANCE_THRESHOLD_MS ? 1.0f : 0.0f;
     float error = target - predicted;
     
     // Update weights
@@ -118,7 +131,7 @@ void RendererOptimizer::OptimizationModel::Learn(const ElementMetrics& metrics, 
     trainingCount_++;
     float accuracy = 1.0f - std::abs(error);
     confidence_ = (confidence_ * (trainingCount_ - 1) + accuracy) / trainingCount_;
-    confidence_ = std::min(confidence_, 0.95f); // Cap at 95%
+    confidence_ = std::min(confidence_, MAX_CONFIDENCE);
 }
 
 // RendererOptimizer Implementation
@@ -193,8 +206,8 @@ void RendererOptimizer::RecordRenderMetrics(const std::string& elementId, float 
         RenderStrategy strategy = model_->Predict(metrics);
         model_->Learn(metrics, strategy, renderTime);
         
-        // Update accuracy tracking
-        if (renderTime < 8.0f) { // Good performance threshold
+        // Update accuracy tracking (using same threshold as learning)
+        if (renderTime < GOOD_PERFORMANCE_THRESHOLD_MS) {
             correctDecisions_++;
         }
     }
