@@ -107,6 +107,7 @@ public:
         
         bool AddTexture(const std::string& name, HBITMAP bitmap, int width, int height);
         const AtlasEntry* GetTexture(const std::string& name) const;
+        bool RemoveTexture(const std::string& name);
         void Clear();
         
     private:
