@@ -58,6 +58,8 @@ if(PLATFORM_WINDOWS)
         src/SDK/CameraController.cpp
         src/SDK/Widget3D.cpp
         src/SDK/Toolbar.cpp
+        src/SDK/RichText.cpp
+        src/SDK/DataGrid.cpp
     )
 elseif(PLATFORM_LINUX)
     # Linux: Only platform-independent components for now
@@ -94,6 +96,8 @@ set(SDK_HEADERS
     include/SDK/CameraController.h
     include/SDK/Widget3D.h
     include/SDK/Toolbar.h
+    include/SDK/RichText.h
+    include/SDK/DataGrid.h
 )
 
 # Create static library
