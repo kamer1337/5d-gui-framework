@@ -28,6 +28,8 @@
  * - Layout system (v1.3): Grid, Flow, Stack layouts
  * - Menu system (v1.3): MenuBar, ContextMenu with icons and shortcuts
  * - Rich text rendering (v1.3): Markdown support, formatting
+ * - DPI awareness (v2.0): Per-monitor DPI support, automatic scaling
+ * - Multi-monitor support (v2.0): Monitor-specific themes, window migration
  * 
  * No external dependencies - pure Win32 API (Windows) or X11 (Linux)
  */
@@ -58,8 +60,15 @@
 #include "Layout.h"
 #include "Menu.h"
 #include "RichText.h"
+#include "DPIManager.h"
+#include "MonitorManager.h"
 
 namespace SDK {
+
+// Version information
+constexpr int SDK_VERSION_MAJOR = 2;
+constexpr int SDK_VERSION_MINOR = 0;
+constexpr int SDK_VERSION_PATCH = 0;
 
 /**
  * Initialize the 5D GUI SDK

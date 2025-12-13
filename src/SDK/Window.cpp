@@ -1,6 +1,8 @@
 #include "../../include/SDK/Window.h"
 #include "../../include/SDK/Widget.h"
 #include "../../include/SDK/Renderer.h"
+#include "../../include/SDK/DPIManager.h"
+#include "../../include/SDK/MonitorManager.h"
 #include <dwmapi.h>
 #include <algorithm>
 
@@ -21,7 +23,13 @@ Window::Window(HWND hwnd)
     , m_shadowIntensity(1.0f)
     , m_theme(nullptr)
     , m_renderCallback(nullptr)
+    , m_currentMonitor(nullptr)
 {
+    // Initialize DPI info
+    m_currentDPI = DPIManager::GetInstance().GetDPIForWindow(hwnd);
+    
+    // Initialize monitor tracking
+    m_currentMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 }
 
 Window::~Window() {
@@ -282,6 +290,72 @@ void Window::UpdateWidgets(float deltaTime) {
     for (auto& widget : m_widgets) {
         widget->Update(deltaTime);
     }
+}
+
+// DPI Support (v2.0)
+DPIScaleInfo Window::GetDPIScale() const {
+    return m_currentDPI;
+}
+
+void Window::HandleDPIChange(const DPIScaleInfo& oldDPI, const DPIScaleInfo& newDPI) {
+    m_currentDPI = newDPI;
+    
+    // Scale all widgets
+    float scaleFactorX = newDPI.scaleX / oldDPI.scaleX;
+    float scaleFactorY = newDPI.scaleY / oldDPI.scaleY;
+    
+    for (auto& widget : m_widgets) {
+        int x, y, width, height;
+        widget->GetBounds(x, y, width, height);
+        
+        // Scale position and size with proper rounding
+        x = static_cast<int>(x * scaleFactorX + 0.5f);
+        y = static_cast<int>(y * scaleFactorY + 0.5f);
+        width = static_cast<int>(width * scaleFactorX + 0.5f);
+        height = static_cast<int>(height * scaleFactorY + 0.5f);
+        
+        widget->SetBounds(x, y, width, height);
+    }
+    
+    // Update corner radius with DPI scaling
+    if (m_roundedCorners) {
+        m_cornerRadius = DPIManager::GetInstance().ScaleValueX(12, newDPI);
+    }
+    
+    UpdateAppearance();
+}
+
+void Window::UpdateForDPI() {
+    DPIScaleInfo newDPI = DPIManager::GetInstance().GetDPIForWindow(m_hwnd);
+    if (newDPI.dpi != m_currentDPI.dpi) {
+        HandleDPIChange(m_currentDPI, newDPI);
+    }
+}
+
+// Monitor Support (v2.0)
+HMONITOR Window::GetMonitor() const {
+    return m_currentMonitor;
+}
+
+void Window::HandleMonitorChange(HMONITOR oldMonitor, HMONITOR newMonitor) {
+    m_currentMonitor = newMonitor;
+    
+    // Update DPI for new monitor
+    DPIScaleInfo oldDPI = m_currentDPI;
+    m_currentDPI = DPIManager::GetInstance().GetDPIForMonitor(newMonitor);
+    
+    // Apply DPI changes if different
+    if (oldDPI.dpi != m_currentDPI.dpi) {
+        HandleDPIChange(oldDPI, m_currentDPI);
+    }
+    
+    // Check for monitor-specific theme
+    auto monitorTheme = MonitorManager::GetInstance().GetMonitorTheme(newMonitor);
+    if (monitorTheme) {
+        SetTheme(monitorTheme);
+    }
+    
+    UpdateAppearance();
 }
 
 } // namespace SDK

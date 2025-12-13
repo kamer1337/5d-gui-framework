@@ -4,7 +4,7 @@ A custom complex C++ GUI SDK for Windows with inline hooking, complete widget sy
 
 ## Overview
 
-The 5D GUI SDK provides an enhanced window rendering system with 5-depth layering, modern visual effects, comprehensive widget system, and multidimensional (3D/4D/5D/6D) rendering support. Windows are automatically enhanced through inline hooking or explicit registration, enabling advanced features without modifying existing code.
+The 5D GUI SDK provides an enhanced window rendering system with 5-depth layering, modern visual effects, comprehensive widget system, and multidimensional (3D/4D/5D/6D) rendering support. **Version 2.0.0** adds per-monitor DPI awareness and multi-monitor support for modern display configurations. Windows are automatically enhanced through inline hooking or explicit registration, enabling advanced features without modifying existing code.
 
 ## Features
 
@@ -20,6 +20,16 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Prompt Window Builder**: Template-based window generation (extensible for AI)
 - **Multidimensional Rendering**: 3D/4D/5D/6D rendering with software projection
 - **Zero Dependencies**: Pure Win32 API - no external libraries required
+
+### Modern Display Support (v2.0)
+- **High DPI Support**: Per-monitor DPI awareness with automatic scaling
+- **DPI Change Detection**: Automatic handling of DPI changes when moving between monitors
+- **Vector Graphics**: Scalable rendering that adapts to different DPI settings
+- **Multi-Monitor Management**: Complete multi-monitor window management system
+- **Monitor Enumeration**: Automatic detection and tracking of all connected monitors
+- **Monitor-Specific Themes**: Apply different themes to windows on different monitors
+- **Window Migration**: Seamlessly move windows between monitors with automatic DPI adjustment
+- **Monitor Change Detection**: Automatic detection when windows move to different monitors
 
 ### Widget System
 - **Basic Widgets**: Button, Label, TextBox, CheckBox, Separator, Image, Slider, RadioButton, SpinBox
@@ -79,6 +89,80 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Animation Groups (v1.3)**: Sequence or parallel animation playback
 
 ## Quick Start
+
+### DPI and Multi-Monitor Support (v2.0)
+
+The SDK automatically handles DPI awareness and multi-monitor configurations:
+
+```cpp
+#include "SDK/SDK.h"
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int nCmdShow) {
+    // Initialize SDK (automatically enables per-monitor DPI awareness)
+    SDK::Initialize();
+    
+    // Get managers
+    auto& dpiMgr = SDK::DPIManager::GetInstance();
+    auto& monitorMgr = SDK::MonitorManager::GetInstance();
+    
+    // Get system DPI for initial window sizing
+    SDK::DPIScaleInfo systemDPI = dpiMgr.GetSystemDPI();
+    int windowWidth = dpiMgr.ScaleValueX(800, systemDPI);
+    int windowHeight = dpiMgr.ScaleValueY(600, systemDPI);
+    
+    // Create window with DPI-scaled dimensions
+    HWND hwnd = CreateWindowExW(WS_EX_LAYERED, L"MyClass", L"DPI-Aware App",
+        WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+        windowWidth, windowHeight, nullptr, nullptr, hInstance, nullptr);
+    
+    // Register with SDK
+    auto window = SDK::WindowManager::GetInstance().RegisterWindow(hwnd);
+    
+    // Track window for monitor changes
+    monitorMgr.TrackWindow(hwnd);
+    
+    // Register DPI change callback
+    dpiMgr.RegisterDPIChangeCallback(hwnd, [window](HWND hwnd, 
+        const SDK::DPIScaleInfo& oldDPI, const SDK::DPIScaleInfo& newDPI) {
+        window->HandleDPIChange(oldDPI, newDPI);
+    });
+    
+    // Register monitor change callback  
+    monitorMgr.RegisterMonitorChangeCallback(hwnd, [window](HWND hwnd,
+        HMONITOR oldMonitor, HMONITOR newMonitor) {
+        window->HandleMonitorChange(oldMonitor, newMonitor);
+    });
+    
+    // Set monitor-specific theme (optional)
+    const SDK::MonitorInfo* primary = monitorMgr.GetPrimaryMonitor();
+    if (primary) {
+        auto theme = std::make_shared<SDK::Theme>(SDK::Theme::CreateModernTheme());
+        monitorMgr.SetMonitorTheme(primary->hMonitor, theme);
+    }
+    
+    ShowWindow(hwnd, nCmdShow);
+    
+    // Message loop with monitor update
+    MSG msg;
+    while (GetMessage(&msg, nullptr, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+        monitorMgr.Update(); // Check for window monitor changes
+    }
+    
+    SDK::Shutdown();
+    return 0;
+}
+
+// Handle WM_DPICHANGED in window procedure
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_DPICHANGED) {
+        SDK::DPIManager::GetInstance().HandleDPIChange(hwnd, wParam, lParam);
+        return 0;
+    }
+    return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+```
 
 ### Basic Window with Widgets (Universal Function)
 
