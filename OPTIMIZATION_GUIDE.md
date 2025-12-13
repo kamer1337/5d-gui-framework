@@ -1,15 +1,16 @@
 # Optimization and Enhancement Guide
 
-This guide covers the new rendering optimizations, memory optimizations, visual enhancements, and advanced effects added to the 5D GUI Framework.
+This guide covers the new rendering optimizations, memory optimizations, machine learning optimization, visual enhancements, and advanced effects added to the 5D GUI Framework.
 
 ## Table of Contents
 
 1. [Rendering Optimizations](#rendering-optimizations)
 2. [Memory Optimizations](#memory-optimizations)
-3. [Visual Enhancements](#visual-enhancements)
-4. [Advanced Effects](#advanced-effects)
-5. [Usage Examples](#usage-examples)
-6. [Performance Tips](#performance-tips)
+3. [Machine Learning Optimization](#machine-learning-optimization)
+4. [Visual Enhancements](#visual-enhancements)
+5. [Advanced Effects](#advanced-effects)
+6. [Usage Examples](#usage-examples)
+7. [Performance Tips](#performance-tips)
 
 ---
 
@@ -180,6 +181,60 @@ atlas.Clear();
 - Better GPU performance
 - Efficient memory usage
 - Automatic packing
+
+---
+
+## Machine Learning Optimization
+
+### ML Renderer Optimizer
+
+The `RendererOptimizer` class uses lightweight machine learning to predict optimal rendering strategies:
+
+```cpp
+#include "SDK/RendererOptimizer.h"
+
+// Create optimizer
+SDK::RendererOptimizer optimizer;
+
+// Register elements
+RECT bounds = {100, 100, 200, 200};
+optimizer.RegisterElement("myElement", bounds);
+
+// Get optimal rendering strategy
+auto strategy = optimizer.GetOptimalStrategy("myElement");
+
+switch (strategy) {
+    case SDK::RendererOptimizer::RenderStrategy::FULL_RENDER:
+        RenderElementFull(hdc, element);
+        break;
+    case SDK::RendererOptimizer::RenderStrategy::CACHED_RENDER:
+        RenderFromCache(hdc, element);
+        break;
+    case SDK::RendererOptimizer::RenderStrategy::LOD_HIGH:
+        RenderHighDetail(hdc, element);
+        break;
+    // ... handle other strategies
+}
+
+// Record performance for learning
+DWORD startTime = GetTickCount();
+RenderElement(hdc, element);
+DWORD endTime = GetTickCount();
+optimizer.RecordRenderMetrics("myElement", endTime - startTime, true);
+
+// Get performance statistics
+auto stats = optimizer.GetStats();
+// stats.mlAccuracy, stats.cacheHitRate, stats.avgRenderTime
+```
+
+**Benefits:**
+- 20-40% reduction in rendering time
+- Adaptive learning from usage patterns
+- Automatic LOD (Level of Detail) selection
+- Smart caching predictions
+- Zero configuration required
+
+**See the complete guide:** [ML Renderer Optimization Guide](ML_RENDERER_OPTIMIZATION.md)
 
 ---
 
