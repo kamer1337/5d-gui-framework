@@ -65,6 +65,11 @@
 
 namespace SDK {
 
+// Version information
+constexpr int SDK_VERSION_MAJOR = 2;
+constexpr int SDK_VERSION_MINOR = 0;
+constexpr int SDK_VERSION_PATCH = 0;
+
 /**
  * Initialize the 5D GUI SDK
  * Must be called before creating any windows

@@ -96,12 +96,20 @@ void MonitorManager::GatherMonitorDetails(MonitorInfo& info) {
     }
     
     // Try to get friendly name from display config
-    DISPLAYCONFIG_PATH_INFO pathInfo[128];
-    DISPLAYCONFIG_MODE_INFO modeInfo[128];
-    UINT32 pathCount = 128;
-    UINT32 modeCount = 128;
+    UINT32 pathCount = 0;
+    UINT32 modeCount = 0;
     
-    if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &pathCount, pathInfo, &modeCount, modeInfo, nullptr) == ERROR_SUCCESS) {
+    // First call to get required array sizes
+    LONG result = QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &pathCount, nullptr, &modeCount, nullptr, nullptr);
+    if (result != ERROR_SUCCESS || pathCount == 0) {
+        return;
+    }
+    
+    // Allocate arrays of the correct size
+    std::vector<DISPLAYCONFIG_PATH_INFO> pathInfo(pathCount);
+    std::vector<DISPLAYCONFIG_MODE_INFO> modeInfo(modeCount);
+    
+    if (QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &pathCount, pathInfo.data(), &modeCount, modeInfo.data(), nullptr) == ERROR_SUCCESS) {
         for (UINT32 i = 0; i < pathCount; ++i) {
             DISPLAYCONFIG_SOURCE_DEVICE_NAME sourceName = {0};
             sourceName.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;

@@ -5,6 +5,7 @@
 #include "../../include/SDK/MonitorManager.h"
 #include <cstdlib>
 #include <ctime>
+#include <cstdio>
 
 namespace SDK {
 
@@ -67,7 +68,10 @@ void Shutdown() {
 }
 
 const char* GetVersion() {
-    return "5D GUI SDK v2.0.0";
+    static char version[32];
+    snprintf(version, sizeof(version), "5D GUI SDK v%d.%d.%d", 
+             SDK_VERSION_MAJOR, SDK_VERSION_MINOR, SDK_VERSION_PATCH);
+    return version;
 }
 
 bool IsInitialized() {

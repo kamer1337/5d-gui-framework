@@ -308,11 +308,11 @@ void Window::HandleDPIChange(const DPIScaleInfo& oldDPI, const DPIScaleInfo& new
         int x, y, width, height;
         widget->GetBounds(x, y, width, height);
         
-        // Scale position and size
-        x = static_cast<int>(x * scaleFactorX);
-        y = static_cast<int>(y * scaleFactorY);
-        width = static_cast<int>(width * scaleFactorX);
-        height = static_cast<int>(height * scaleFactorY);
+        // Scale position and size with proper rounding
+        x = static_cast<int>(x * scaleFactorX + 0.5f);
+        y = static_cast<int>(y * scaleFactorY + 0.5f);
+        width = static_cast<int>(width * scaleFactorX + 0.5f);
+        height = static_cast<int>(height * scaleFactorY + 0.5f);
         
         widget->SetBounds(x, y, width, height);
     }
