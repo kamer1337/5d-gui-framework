@@ -32,6 +32,7 @@ set(SDK_COMMON_SOURCES
     src/SDK/NeuralNetwork.cpp
     src/SDK/Theme.cpp
     src/SDK/InstructionDecoder.cpp
+    src/SDK/RenderBackend.cpp
 )
 
 # Platform-specific sources
@@ -45,7 +46,6 @@ if(PLATFORM_WINDOWS)
         src/SDK/WindowSnapping.cpp
         src/SDK/WindowAnimation.cpp
         src/SDK/Renderer.cpp
-        src/SDK/RenderBackend.cpp
         src/SDK/GDIRenderBackend.cpp
         src/SDK/D2DRenderBackend.cpp
         src/SDK/RendererOptimizer.cpp
@@ -63,9 +63,10 @@ if(PLATFORM_WINDOWS)
         src/SDK/DataGrid.cpp
     )
 elseif(PLATFORM_LINUX)
-    # Linux: Only platform-independent components for now
+    # Linux: X11 backend and window implementation
     set(SDK_PLATFORM_SOURCES
-        # Future: Linux window implementation
+        src/SDK/X11RenderBackend.cpp
+        src/SDK/WindowX11.cpp
     )
 endif()
 
@@ -85,6 +86,8 @@ set(SDK_HEADERS
     include/SDK/RenderBackend.h
     include/SDK/GDIRenderBackend.h
     include/SDK/D2DRenderBackend.h
+    include/SDK/X11RenderBackend.h
+    include/SDK/WindowX11.h
     include/SDK/RendererOptimizer.h
     include/SDK/InstructionDecoder.h
     include/SDK/Widget.h
@@ -183,6 +186,14 @@ if(PLATFORM_WINDOWS)
     # ML Optimizer demo application
     add_executable(ML_Optimizer_Demo examples/ml_optimizer_demo.cpp)
     target_link_libraries(ML_Optimizer_Demo PRIVATE 5DGUI_SDK)
+elseif(PLATFORM_LINUX)
+    # Linux demo applications
+    add_executable(5DGUI_Demo_Linux examples/demo_linux.cpp)
+    target_link_libraries(5DGUI_Demo_Linux PRIVATE 5DGUI_SDK)
+    
+    # Widget demo application
+    add_executable(5DGUI_WidgetDemo_Linux examples/widget_demo_linux.cpp)
+    target_link_libraries(5DGUI_WidgetDemo_Linux PRIVATE 5DGUI_SDK)
 endif()
 
 # Set subsystem to Windows (GUI application) - Windows only
@@ -284,6 +295,10 @@ install(DIRECTORY include/SDK
 
 if(PLATFORM_WINDOWS)
     install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo RichText_DataGrid_Demo ML_Optimizer_Demo
+        RUNTIME DESTINATION bin
+    )
+elseif(PLATFORM_LINUX)
+    install(TARGETS 5DGUI_Demo_Linux 5DGUI_WidgetDemo_Linux
         RUNTIME DESTINATION bin
     )
 endif()
