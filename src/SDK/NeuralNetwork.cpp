@@ -12,7 +12,7 @@ int NeuralNetwork::ParsedPrompt::GetWidth() const {
     auto it = entities.find(L"width");
     if (it != entities.end()) {
         try {
-            return std::stoi(it->second);
+            return static_cast<int>(std::stol(it->second));
         } catch (const std::exception&) {
             // If parsing fails, return default
         }
@@ -24,7 +24,7 @@ int NeuralNetwork::ParsedPrompt::GetHeight() const {
     auto it = entities.find(L"height");
     if (it != entities.end()) {
         try {
-            return std::stoi(it->second);
+            return static_cast<int>(std::stol(it->second));
         } catch (const std::exception&) {
             // If parsing fails, return default
         }
@@ -82,7 +82,7 @@ int NeuralNetwork::ParsedPrompt::GetItemCount() const {
     auto it = entities.find(L"item_count");
     if (it != entities.end()) {
         try {
-            return std::stoi(it->second);
+            return static_cast<int>(std::stol(it->second));
         } catch (const std::exception&) {
             // If parsing fails, return default
         }
@@ -198,7 +198,7 @@ int NeuralNetwork::ParsedPrompt::GetMinValue() const {
     auto it = entities.find(L"min_value");
     if (it != entities.end()) {
         try {
-            return std::stoi(it->second);
+            return static_cast<int>(std::stol(it->second));
         } catch (const std::exception&) {
             // If parsing fails, return default
         }
@@ -210,7 +210,7 @@ int NeuralNetwork::ParsedPrompt::GetMaxValue() const {
     auto it = entities.find(L"max_value");
     if (it != entities.end()) {
         try {
-            return std::stoi(it->second);
+            return static_cast<int>(std::stol(it->second));
         } catch (const std::exception&) {
             // If parsing fails, return default
         }
@@ -222,7 +222,7 @@ int NeuralNetwork::ParsedPrompt::GetCount() const {
     auto it = entities.find(L"count");
     if (it != entities.end()) {
         try {
-            return std::stoi(it->second);
+            return static_cast<int>(std::stol(it->second));
         } catch (const std::exception&) {
             // If parsing fails, return default
         }
@@ -1024,7 +1024,7 @@ NeuralNetwork::LayoutType NeuralNetwork::DetermineLayout(const std::wstring& pro
         for (const auto& token : tokens) {
             if (!token.empty() && std::all_of(token.begin(), token.end(), ::iswdigit)) {
                 try {
-                    int count = std::stoi(token);
+                    int count = static_cast<int>(std::stol(token));
                     // If count is 6, 9, 12, or other square-ish numbers, suggest grid
                     if (count >= 6 && (count % 3 == 0 || count % 4 == 0)) {
                         return LayoutType::GRID;
