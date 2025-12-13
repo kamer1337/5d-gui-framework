@@ -112,11 +112,12 @@ RECT ComboBox::GetDropdownRect(const RECT& bounds) const {
         return {0, 0, 0, 0};
     }
     
+    const int SCREEN_MARGIN = 10;
     int dropdownHeight = (int)m_items.size() * 25;
     int screenHeight = GetSystemMetrics(SM_CYSCREEN);
     
     // Check if there's enough space below
-    bool showBelow = (bounds.bottom + dropdownHeight <= screenHeight - 10);
+    bool showBelow = (bounds.bottom + dropdownHeight <= screenHeight - SCREEN_MARGIN);
     
     RECT dropRect;
     if (showBelow) {
@@ -599,6 +600,63 @@ void FileTree::CollapseAllRecursive(std::shared_ptr<TreeNode> node) {
         for (auto& child : node->children) {
             CollapseAllRecursive(child);
         }
+    }
+}
+
+void FileTree::Refresh() {
+    if (!m_rootNode) {
+        return;
+    }
+    
+    // Save current expansion state
+    std::vector<std::wstring> expandedPaths;
+    GetExpandedPaths(m_rootNode, expandedPaths);
+    
+    // Save selected path
+    std::wstring selectedPath = GetSelectedPath();
+    
+    // Reload the tree
+    m_rootNode->children.clear();
+    LoadDirectory(m_rootNode);
+    
+    // Restore expansion state
+    RestoreExpandedPaths(m_rootNode, expandedPaths);
+    
+    // Restore selection
+    if (!selectedPath.empty()) {
+        SetSelectedPath(selectedPath);
+    }
+}
+
+void FileTree::GetExpandedPaths(std::shared_ptr<TreeNode> node, std::vector<std::wstring>& paths) {
+    if (!node) return;
+    
+    if (node->expanded && node->isDirectory) {
+        paths.push_back(node->fullPath);
+    }
+    
+    for (auto& child : node->children) {
+        GetExpandedPaths(child, paths);
+    }
+}
+
+void FileTree::RestoreExpandedPaths(std::shared_ptr<TreeNode> node, const std::vector<std::wstring>& paths) {
+    if (!node) return;
+    
+    // Check if this node should be expanded
+    for (const auto& path : paths) {
+        if (node->fullPath == path) {
+            node->expanded = true;
+            if (node->children.empty()) {
+                LoadDirectory(node);
+            }
+            break;
+        }
+    }
+    
+    // Recursively restore children
+    for (auto& child : node->children) {
+        RestoreExpandedPaths(child, paths);
     }
 }
 

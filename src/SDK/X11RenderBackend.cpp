@@ -339,8 +339,10 @@ void X11RenderBackend::DrawRadialGradient(const RECT& rect, Color centerColor, C
     }
     
     // Calculate gradient center
-    int gradientCx = (cx >= 0 && cx <= rect.right - rect.left) ? rect.left + cx : (rect.left + rect.right) / 2;
-    int gradientCy = (cy >= 0 && cy <= rect.bottom - rect.top) ? rect.top + cy : (rect.top + rect.bottom) / 2;
+    int rectWidth = rect.right - rect.left;
+    int rectHeight = rect.bottom - rect.top;
+    int gradientCx = (cx >= 0 && cx < rectWidth) ? rect.left + cx : (rect.left + rect.right) / 2;
+    int gradientCy = (cy >= 0 && cy < rectHeight) ? rect.top + cy : (rect.top + rect.bottom) / 2;
     
     // Calculate maximum radius from center to corners
     int dx1 = gradientCx - rect.left;
@@ -357,7 +359,8 @@ void X11RenderBackend::DrawRadialGradient(const RECT& rect, Color centerColor, C
     }
     
     // Draw concentric circles from outside to inside for proper layering
-    const int steps = std::min(maxRadius, 50); // Limit steps for performance
+    // Use adaptive step count based on radius for better quality/performance balance
+    const int steps = std::max(10, std::min(maxRadius / 2, 50));
     for (int i = steps; i >= 0; --i) {
         float t = static_cast<float>(i) / static_cast<float>(steps);
         int radius = static_cast<int>(maxRadius * t);

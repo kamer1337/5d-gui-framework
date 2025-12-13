@@ -169,6 +169,9 @@ public:
     void ExpandNode(const std::wstring& path);
     void CollapseNode(const std::wstring& path);
     
+    // Refresh tree while preserving expansion state
+    void Refresh();
+    
     void Render(HDC hdc) override;
     bool HandleMouseDown(int x, int y, int button) override;
     
@@ -183,6 +186,8 @@ private:
     std::shared_ptr<TreeNode> FindNodeByPath(std::shared_ptr<TreeNode> node, const std::wstring& path);
     void ExpandAllRecursive(std::shared_ptr<TreeNode> node);
     void CollapseAllRecursive(std::shared_ptr<TreeNode> node);
+    void GetExpandedPaths(std::shared_ptr<TreeNode> node, std::vector<std::wstring>& paths);
+    void RestoreExpandedPaths(std::shared_ptr<TreeNode> node, const std::vector<std::wstring>& paths);
     
     std::wstring m_rootPath;
     std::shared_ptr<TreeNode> m_rootNode;
