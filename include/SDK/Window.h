@@ -7,6 +7,7 @@
 #include <functional>
 #include <vector>
 #include "Theme.h"
+#include "DPIManager.h"
 
 namespace SDK {
 
@@ -93,6 +94,15 @@ public:
     // Update widgets
     void UpdateWidgets(float deltaTime);
     
+    // DPI Support (v2.0)
+    DPIScaleInfo GetDPIScale() const;
+    void HandleDPIChange(const DPIScaleInfo& oldDPI, const DPIScaleInfo& newDPI);
+    void UpdateForDPI();
+    
+    // Monitor Support (v2.0)
+    HMONITOR GetMonitor() const;
+    void HandleMonitorChange(HMONITOR oldMonitor, HMONITOR newMonitor);
+    
 private:
     void ApplyDepthSettings();
     void UpdateLayeredWindow();
@@ -113,6 +123,10 @@ private:
     std::shared_ptr<Theme> m_theme;
     std::function<void(HDC)> m_renderCallback;
     std::vector<std::shared_ptr<Widget>> m_widgets;
+    
+    // v2.0: DPI and Monitor support
+    DPIScaleInfo m_currentDPI;
+    HMONITOR m_currentMonitor;
 };
 
 } // namespace SDK

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(MaterialGameEngine_5DGUI VERSION 1.3.0 LANGUAGES CXX)
+project(MaterialGameEngine_5DGUI VERSION 2.0.0 LANGUAGES CXX)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -62,6 +62,8 @@ if(PLATFORM_WINDOWS)
         src/SDK/Toolbar.cpp
         src/SDK/RichText.cpp
         src/SDK/DataGrid.cpp
+        src/SDK/DPIManager.cpp
+        src/SDK/MonitorManager.cpp
     )
 elseif(PLATFORM_LINUX)
     # Linux: X11 backend and window implementation
@@ -104,6 +106,8 @@ set(SDK_HEADERS
     include/SDK/Toolbar.h
     include/SDK/RichText.h
     include/SDK/DataGrid.h
+    include/SDK/DPIManager.h
+    include/SDK/MonitorManager.h
 )
 
 # Create static library
@@ -191,6 +195,10 @@ if(PLATFORM_WINDOWS)
     # Layout Engine demo application
     add_executable(Layout_Engine_Demo examples/layout_engine_demo.cpp)
     target_link_libraries(Layout_Engine_Demo PRIVATE 5DGUI_SDK)
+    
+    # DPI and Multi-Monitor demo application (v2.0)
+    add_executable(DPI_MultiMonitor_Demo examples/dpi_multimonitor_demo.cpp)
+    target_link_libraries(DPI_MultiMonitor_Demo PRIVATE 5DGUI_SDK)
 elseif(PLATFORM_LINUX)
     # Linux demo applications
     add_executable(5DGUI_Demo_Linux examples/demo_linux.cpp)
@@ -246,6 +254,9 @@ if(PLATFORM_WINDOWS)
         set_target_properties(Layout_Engine_Demo PROPERTIES
             LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
         )
+        set_target_properties(DPI_MultiMonitor_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
     else()
         set_target_properties(5DGUI_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
@@ -289,6 +300,9 @@ if(PLATFORM_WINDOWS)
         set_target_properties(Layout_Engine_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
         )
+        set_target_properties(DPI_MultiMonitor_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
     endif()
 endif()
 
@@ -305,7 +319,7 @@ install(DIRECTORY include/SDK
 )
 
 if(PLATFORM_WINDOWS)
-    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo RichText_DataGrid_Demo ML_Optimizer_Demo Layout_Engine_Demo
+    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo RichText_DataGrid_Demo ML_Optimizer_Demo Layout_Engine_Demo DPI_MultiMonitor_Demo
         RUNTIME DESTINATION bin
     )
 elseif(PLATFORM_LINUX)
