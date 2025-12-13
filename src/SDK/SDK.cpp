@@ -21,34 +21,35 @@ bool Initialize() {
     
     // Initialize DPI manager (v2.0)
     if (!DPIManager::GetInstance().Initialize(DPIAwareness::PER_MONITOR_V2)) {
+        // DPI manager failed - this is critical, return false
         return false;
     }
     
     // Initialize monitor manager (v2.0)
     if (!MonitorManager::GetInstance().Initialize()) {
         DPIManager::GetInstance().Shutdown();
+        // Monitor manager failed - this is critical, return false
         return false;
     }
     
-    // Initialize window hook
-    if (!WindowHook::GetInstance().Initialize()) {
-        MonitorManager::GetInstance().Shutdown();
-        DPIManager::GetInstance().Shutdown();
-        return false;
-    }
-    
-    // Initialize window manager
+    // Initialize window manager (required)
     if (!WindowManager::GetInstance().Initialize()) {
-        WindowHook::GetInstance().Shutdown();
         MonitorManager::GetInstance().Shutdown();
         DPIManager::GetInstance().Shutdown();
         return false;
     }
     
-    // Register callback for automatic window registration
-    WindowHook::GetInstance().RegisterCreateCallback([](HWND hwnd) {
-        WindowManager::GetInstance().RegisterWindow(hwnd);
-    });
+    // Try to initialize window hook (optional feature)
+    // If this fails, we continue anyway since manual registration still works
+    bool hookInitialized = WindowHook::GetInstance().Initialize();
+    if (hookInitialized) {
+        // Register callback for automatic window registration
+        WindowHook::GetInstance().RegisterCreateCallback([](HWND hwnd) {
+            WindowManager::GetInstance().RegisterWindow(hwnd);
+        });
+    }
+    // Note: If hook initialization fails, applications must manually register windows
+    // using WindowManager::GetInstance().RegisterWindow(hwnd)
     
     g_bInitialized = true;
     return true;

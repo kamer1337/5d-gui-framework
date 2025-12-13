@@ -135,6 +135,13 @@ void Window::Render(HDC hdc) {
     RECT rect;
     GetClientRect(m_hwnd, &rect);
     
+    // Always clear the background first to avoid overlapping/flickering
+    // Use a default white background if no theme is set
+    Color bgColor = m_theme ? m_theme->GetBackgroundColor() : Color(255, 255, 255, 255);
+    HBRUSH bgBrush = CreateSolidBrush(bgColor.ToCOLORREF());
+    FillRect(hdc, &rect, bgBrush);
+    DeleteObject(bgBrush);
+    
     // Render shadow if enabled
     if (m_shadowEnabled && m_theme) {
         int shadowOffsetX, shadowOffsetY;
@@ -159,17 +166,12 @@ void Window::Render(HDC hdc) {
         Renderer::DrawShadow(hdc, rect, shadowOffsetX, shadowOffsetY, shadowBlur, shadowColor);
     }
     
-    // Render window background
+    // Render themed background with rounded corners or borders
     if (m_theme) {
-        Color bgColor = m_theme->GetBackgroundColor();
         if (m_roundedCorners) {
             Color borderColor = m_theme->GetBorderColor();
             int borderWidth = m_theme->GetBorderWidth();
             Renderer::DrawRoundedRect(hdc, rect, m_cornerRadius, bgColor, borderColor, borderWidth);
-        } else {
-            HBRUSH brush = CreateSolidBrush(bgColor.ToCOLORREF());
-            FillRect(hdc, &rect, brush);
-            DeleteObject(brush);
         }
         
         // Render title bar with gradient
