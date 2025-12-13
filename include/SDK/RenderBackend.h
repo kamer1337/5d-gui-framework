@@ -58,6 +58,9 @@ public:
     virtual bool SupportsGPUEffects() const = 0;
     virtual void ApplyBlur(const RECT& rect, int blurRadius) = 0;
     virtual void ApplyBloom(const RECT& rect, float threshold, float intensity) = 0;
+    virtual void ApplyDepthOfField(const RECT& rect, int focalDepth, int blurAmount, float focalRange) = 0;
+    virtual void ApplyMotionBlur(const RECT& rect, int directionX, int directionY, float intensity) = 0;
+    virtual void ApplyChromaticAberration(const RECT& rect, float strength, int offsetX, int offsetY) = 0;
     
     // Performance
     virtual BackendType GetType() const = 0;
@@ -73,6 +76,44 @@ public:
     };
     
     virtual Capabilities GetCapabilities() const = 0;
+    
+    // Effect Presets - Convenient combinations of effects
+    enum class EffectPreset {
+        NONE,
+        CINEMATIC,      // Depth of field + subtle blur + bloom
+        GAME_UI,        // Sharp edges + glow + chromatic aberration
+        RETRO,          // Chromatic aberration + bloom
+        DREAMY,         // Soft blur + bloom
+        MOTION,         // Motion blur + slight chromatic aberration
+        CUSTOM          // User-defined combination
+    };
+    
+    struct EffectSettings {
+        bool enableBlur = false;
+        int blurRadius = 5;
+        
+        bool enableBloom = false;
+        float bloomThreshold = 0.8f;
+        float bloomIntensity = 1.0f;
+        
+        bool enableDepthOfField = false;
+        int focalDepth = 0;
+        int dofBlurAmount = 10;
+        float focalRange = 100.0f;
+        
+        bool enableMotionBlur = false;
+        int motionDirX = 5;
+        int motionDirY = 0;
+        float motionIntensity = 0.5f;
+        
+        bool enableChromaticAberration = false;
+        float chromaticStrength = 0.01f;
+        int chromaticOffsetX = 2;
+        int chromaticOffsetY = 2;
+    };
+    
+    virtual void ApplyEffectPreset(const RECT& rect, EffectPreset preset);
+    virtual void ApplyCustomEffects(const RECT& rect, const EffectSettings& settings);
     
 protected:
     RenderBackend() = default;

@@ -44,6 +44,9 @@ public:
     bool SupportsGPUEffects() const override { return true; }
     void ApplyBlur(const RECT& rect, int blurRadius) override;
     void ApplyBloom(const RECT& rect, float threshold, float intensity) override;
+    void ApplyDepthOfField(const RECT& rect, int focalDepth, int blurAmount, float focalRange) override;
+    void ApplyMotionBlur(const RECT& rect, int directionX, int directionY, float intensity) override;
+    void ApplyChromaticAberration(const RECT& rect, float strength, int offsetX, int offsetY) override;
     
     BackendType GetType() const override { return BackendType::DIRECT2D; }
     bool IsHardwareAccelerated() const override { return true; }
@@ -77,6 +80,9 @@ private:
     // Effects
     ID2D1Effect* m_pBlurEffect;
     ID2D1Effect* m_pBloomEffect;
+    ID2D1Effect* m_pDepthOfFieldEffect;
+    ID2D1Effect* m_pMotionBlurEffect;
+    ID2D1Effect* m_pChromaticAberrationEffect;
 };
 
 } // namespace SDK

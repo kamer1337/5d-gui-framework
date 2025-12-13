@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(MaterialGameEngine_5DGUI VERSION 1.2.0 LANGUAGES CXX)
+project(MaterialGameEngine_5DGUI VERSION 1.3.0 LANGUAGES CXX)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)

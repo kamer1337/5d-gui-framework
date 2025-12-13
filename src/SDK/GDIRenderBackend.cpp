@@ -1,5 +1,7 @@
 #include "../../include/SDK/GDIRenderBackend.h"
 #include "../../include/SDK/Renderer.h"
+#include <vector>
+#include <algorithm>
 
 namespace SDK {
 
@@ -225,6 +227,117 @@ void GDIRenderBackend::ApplyBloom(const RECT& rect, float threshold, float inten
     
     // Software bloom using existing Renderer implementation
     Renderer::ApplyBloom(m_memDC, rect, threshold, intensity);
+}
+
+void GDIRenderBackend::ApplyDepthOfField(const RECT& rect, int focalDepth, int blurAmount, float focalRange) {
+    if (!m_memDC) return;
+    
+    // Software depth of field implementation
+    // Create a depth-based blur effect where areas outside focal range are blurred
+    int centerY = (rect.top + rect.bottom) / 2;
+    int height = rect.bottom - rect.top;
+    
+    // Calculate blur based on distance from focal depth
+    for (int y = rect.top; y < rect.bottom; y++) {
+        int distanceFromFocus = abs(y - (rect.top + focalDepth));
+        float blurFactor = (float)distanceFromFocus / focalRange;
+        blurFactor = std::min(blurFactor, 1.0f);
+        
+        int currentBlur = (int)(blurAmount * blurFactor);
+        if (currentBlur > 0) {
+            RECT lineRect = { rect.left, y, rect.right, y + 1 };
+            Renderer::ApplyBlur(m_memDC, lineRect, currentBlur);
+        }
+    }
+}
+
+void GDIRenderBackend::ApplyMotionBlur(const RECT& rect, int directionX, int directionY, float intensity) {
+    if (!m_memDC) return;
+    
+    // Software motion blur implementation
+    // Create directional blur by sampling pixels along motion vector
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
+    
+    // Create temporary bitmap for motion blur
+    HDC tempDC = CreateCompatibleDC(m_memDC);
+    HBITMAP tempBitmap = CreateCompatibleBitmap(m_memDC, width, height);
+    HBITMAP oldBitmap = (HBITMAP)SelectObject(tempDC, tempBitmap);
+    
+    // Copy original image
+    BitBlt(tempDC, 0, 0, width, height, m_memDC, rect.left, rect.top, SRCCOPY);
+    
+    // Apply motion blur by blending multiple shifted copies
+    int samples = 5;
+    BLENDFUNCTION blend = { AC_SRC_OVER, 0, (BYTE)(255 * intensity / samples), 0 };
+    
+    for (int i = 0; i < samples; i++) {
+        int offsetX = (directionX * i) / samples;
+        int offsetY = (directionY * i) / samples;
+        
+        AlphaBlend(m_memDC, rect.left + offsetX, rect.top + offsetY, width, height,
+                   tempDC, 0, 0, width, height, blend);
+    }
+    
+    // Cleanup
+    SelectObject(tempDC, oldBitmap);
+    DeleteObject(tempBitmap);
+    DeleteDC(tempDC);
+}
+
+void GDIRenderBackend::ApplyChromaticAberration(const RECT& rect, float strength, int offsetX, int offsetY) {
+    if (!m_memDC) return;
+    
+    // Software chromatic aberration implementation
+    // Shift color channels to simulate lens distortion
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
+    
+    // Get bitmap bits for direct manipulation
+    BITMAPINFO bmi = {};
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = width;
+    bmi.bmiHeader.biHeight = -height; // Top-down
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+    
+    std::vector<BYTE> pixels(width * height * 4);
+    GetDIBits(m_memDC, m_memBitmap, rect.top, height, pixels.data(), &bmi, DIB_RGB_COLORS);
+    
+    // Apply chromatic aberration by offsetting RGB channels
+    std::vector<BYTE> result = pixels;
+    
+    int scaledOffsetX = (int)(offsetX * strength);
+    int scaledOffsetY = (int)(offsetY * strength);
+    
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            int idx = (y * width + x) * 4;
+            
+            // Red channel - shift in one direction
+            int redX = x + scaledOffsetX;
+            int redY = y;
+            if (redX >= 0 && redX < width && redY >= 0 && redY < height) {
+                int redIdx = (redY * width + redX) * 4;
+                result[idx + 2] = pixels[redIdx + 2]; // R
+            }
+            
+            // Blue channel - shift in opposite direction
+            int blueX = x - scaledOffsetX;
+            int blueY = y;
+            if (blueX >= 0 && blueX < width && blueY >= 0 && blueY < height) {
+                int blueIdx = (blueY * width + blueX) * 4;
+                result[idx + 0] = pixels[blueIdx + 0]; // B
+            }
+            
+            // Green channel - no shift (center)
+            result[idx + 1] = pixels[idx + 1]; // G
+        }
+    }
+    
+    // Set modified pixels back
+    SetDIBits(m_memDC, m_memBitmap, rect.top, height, result.data(), &bmi, DIB_RGB_COLORS);
 }
 
 RenderBackend::Capabilities GDIRenderBackend::GetCapabilities() const {

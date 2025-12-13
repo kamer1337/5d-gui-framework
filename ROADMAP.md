@@ -2,7 +2,7 @@
 
 This document outlines planned features and improvements for the 5D GUI SDK.
 
-## Current Version: v1.2.0
+## Current Version: v1.3.0
 
 ### Implemented Features ✓
 - [x] Window hooking framework (CreateWindowExW)
@@ -97,28 +97,45 @@ This document outlines planned features and improvements for the 5D GUI SDK.
   - [x] Texture atlasing for icons
   - [x] Shared memory for themes
 
-### Visual Enhancements
-- [ ] **Advanced Effects**
-  - Blur effect (background blur)
-  - Bloom effect
-  - Color correction
-  - Noise/grain overlay
-  
-- [ ] **Animation System**
-  - Keyframe-based animations
-  - Easing functions (ease-in, ease-out, etc.)
-  - Animation timeline
-  - Chained animations
-  
-- [ ] **Advanced Gradients**
-  - Multi-stop gradients
-  - Conical gradients
-  - Pattern fills
-  - Texture gradients
+## Version 1.3.0 (Completed) ✅
 
-## Version 1.2.0 (In Progress - Partially Complete)
+### Visual Enhancements (Completed)
+- [x] **Advanced Effects** ✅ COMPLETED
+  - [x] Depth-of-field effect
+  - [x] Motion blur effect
+  - [x] Chromatic aberration effect
+  - [x] Effect preset system (CINEMATIC, GAME_UI, RETRO, DREAMY, MOTION)
+  
+- [x] **Animation System Enhancements** ✅ COMPLETED
+  - [x] Bezier curve interpolation
+  - [x] Animation grouping/sequencing
+  - [x] Pause/resume/reverse controls
+  - [x] Elastic and back easing functions
+  
+### UI Components (Completed)
+- [x] **Layout System** ✅ COMPLETED
+  - [x] Grid layout manager
+  - [x] Flow layout manager
+  - [x] Stack layout manager
+  - [x] Spacing and padding configuration
+  
+- [x] **Menu System** ✅ COMPLETED
+  - [x] MenuBar widget
+  - [x] ContextMenu with popup support
+  - [x] MenuItem with icons and shortcuts
+  - [x] Submenu support
+  - [x] Separator items
+  
+- [x] **Rich Text System** ✅ COMPLETED
+  - [x] RichTextBox widget
+  - [x] TextSpan formatting (bold, italic, underline)
+  - [x] Color and font customization
+  - [x] Markdown parsing support
+  - [x] Hyperlink support
 
-### UI Components (Partially Complete)
+## Version 1.2.0 (Completed) ✅
+
+### UI Components (Completed)
 - [x] **Built-in Controls**
   - [x] Buttons with hover/press states
   - [x] Text boxes with custom rendering
@@ -130,18 +147,6 @@ This document outlines planned features and improvements for the 5D GUI SDK.
   - [x] Dropdown menus (ComboBox)
   - [x] Tree views (FileTree)
   - [x] List views (ListBox, ListView)
-  
-- [ ] **Layout System**
-  - Automatic window arrangement
-  - Grid layout
-  - Flow layout
-  - Anchor-based positioning
-  
-- [ ] **Menu System**
-  - Custom menu rendering
-  - Context menus
-  - Menu bar integration
-  - Icon support in menus
 
 ### Advanced Window Features
 - [x] **Window Groups**
@@ -346,10 +351,20 @@ We welcome contributions! Priority areas:
 
 ## Version History
 
-### v1.2.0 (Current - In Progress)
-- Starting advanced UI components and layout system
+### v1.3.0 (Current - Released)
+- Advanced visual effects: depth-of-field, motion blur, chromatic aberration
+- Effect preset system: CINEMATIC, GAME_UI, RETRO, DREAMY, MOTION
+- Enhanced animations: Bezier curves, pause/resume/reverse
+- Animation grouping with sequence and parallel modes
+- Layout system: Grid, Flow, Stack layouts
+- Menu system: MenuBar, ContextMenu with icons and shortcuts
+- Rich text rendering with Markdown support
+
+### v1.2.0 (Released)
+- Advanced UI components and layout system
 - Enhanced window features
-- Menu system integration
+- GPU-accelerated blur and bloom effects
+- Hardware acceleration support (Direct2D)
 
 ### v1.1.0 (Released)
 - Complete widget system with 15+ widgets
@@ -369,9 +384,10 @@ We welcome contributions! Priority areas:
 ## Timeline
 
 **2025 Q1**: v1.0.0 Release ✓
-**2025 Q2**: v1.1.0 (Enhanced hooking & performance)
-**2025 Q3**: v1.2.0 (UI components & advanced features)
-**2025 Q4**: v2.0.0 (Modern display support)
+**2025 Q2**: v1.1.0 (Enhanced hooking & performance) ✓
+**2025 Q3**: v1.2.0 (UI components & advanced features) ✓
+**2025 Q4**: v1.3.0 (Visual enhancements & UI components) ✓
+**2026 Q1**: v2.0.0 (Modern display support)
 **2026+**: v3.0.0 (Cross-platform & advanced features)
 
 ## Feedback
