@@ -47,10 +47,17 @@ public:
     
     // Bezier curve control points for custom easing
     struct BezierCurve {
+        // Default Bezier control points for ease-in-out
+        static constexpr float EASE_IN_OUT_X1 = 0.42f;
+        static constexpr float EASE_IN_OUT_Y1 = 0.0f;
+        static constexpr float EASE_IN_OUT_X2 = 0.58f;
+        static constexpr float EASE_IN_OUT_Y2 = 1.0f;
+        
         float x1, y1;  // First control point
         float x2, y2;  // Second control point
         
-        BezierCurve() : x1(0.42f), y1(0.0f), x2(0.58f), y2(1.0f) {}  // Default ease-in-out
+        BezierCurve() : x1(EASE_IN_OUT_X1), y1(EASE_IN_OUT_Y1), 
+                        x2(EASE_IN_OUT_X2), y2(EASE_IN_OUT_Y2) {}  // Default ease-in-out
         BezierCurve(float _x1, float _y1, float _x2, float _y2) 
             : x1(_x1), y1(_y1), x2(_x2), y2(_y2) {}
     };

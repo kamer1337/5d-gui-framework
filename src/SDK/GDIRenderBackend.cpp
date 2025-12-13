@@ -241,7 +241,7 @@ void GDIRenderBackend::ApplyDepthOfField(const RECT& rect, int focalDepth, int b
     for (int y = rect.top; y < rect.bottom; y++) {
         int distanceFromFocus = abs(y - (rect.top + focalDepth));
         float blurFactor = (float)distanceFromFocus / focalRange;
-        blurFactor = min(blurFactor, 1.0f);
+        blurFactor = std::min(blurFactor, 1.0f);
         
         int currentBlur = (int)(blurAmount * blurFactor);
         if (currentBlur > 0) {

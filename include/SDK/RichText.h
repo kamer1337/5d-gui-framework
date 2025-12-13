@@ -8,6 +8,13 @@
 
 namespace SDK {
 
+// Default color constants for text rendering
+namespace RichTextDefaults {
+    constexpr Color DEFAULT_TEXT_COLOR = Color(0, 0, 0, 255);       // Black
+    constexpr Color TRANSPARENT_BACKGROUND = Color(255, 255, 255, 0); // Transparent
+    constexpr int DEFAULT_FONT_SIZE = 12;
+}
+
 /**
  * TextSpan - Represents a segment of text with formatting
  */
@@ -21,12 +28,12 @@ struct TextSpan {
     bool strikethrough = false;
     
     // Colors
-    Color foregroundColor = Color(0, 0, 0, 255);
-    Color backgroundColor = Color(255, 255, 255, 0);  // Transparent by default
+    Color foregroundColor = RichTextDefaults::DEFAULT_TEXT_COLOR;
+    Color backgroundColor = RichTextDefaults::TRANSPARENT_BACKGROUND;
     
     // Font
     std::wstring fontFamily = L"Segoe UI";
-    int fontSize = 12;
+    int fontSize = RichTextDefaults::DEFAULT_FONT_SIZE;
     
     // Link
     bool isLink = false;
