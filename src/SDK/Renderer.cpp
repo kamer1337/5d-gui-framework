@@ -1043,7 +1043,26 @@ const Renderer::TextureAtlas::AtlasEntry* Renderer::TextureAtlas::GetTexture(con
     return nullptr;
 }
 
+bool Renderer::TextureAtlas::RemoveTexture(const std::string& name) {
+    auto it = textures_.find(name);
+    if (it != textures_.end()) {
+        // Delete the bitmap handle
+        if (it->second.bitmap) {
+            DeleteObject(it->second.bitmap);
+        }
+        textures_.erase(it);
+        return true;
+    }
+    return false;
+}
+
 void Renderer::TextureAtlas::Clear() {
+    // Delete all bitmap handles before clearing the map
+    for (auto& pair : textures_) {
+        if (pair.second.bitmap) {
+            DeleteObject(pair.second.bitmap);
+        }
+    }
     textures_.clear();
     currentX_ = 0;
     currentY_ = 0;

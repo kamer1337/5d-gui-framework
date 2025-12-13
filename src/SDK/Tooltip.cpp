@@ -71,9 +71,14 @@ void Tooltip::SetPositionMode(Position mode) {
 void Tooltip::Show(int x, int y) {
     m_targetX = x;
     m_targetY = y;
+    
+    // Only reset timer if we're not already showing
+    if (!m_isShowing) {
+        m_delayTimer = 0.0f;
+    }
+    
     m_isShowing = true;
     m_visible = true;
-    m_delayTimer = 0.0f;
     UpdatePosition();
 }
 
