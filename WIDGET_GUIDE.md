@@ -1679,3 +1679,449 @@ window->AddWidget(connectSpin);
 ```
 
 See `examples/new_widgets_demo.cpp` for a complete working example.
+
+## RichText Widgets
+
+The SDK provides a rich text system for displaying and editing formatted text with support for bold, italic, underline, hyperlinks, and Markdown rendering.
+
+### RichTextDocument
+
+A container for rich text content with support for text spans and formatting.
+
+#### Features
+- Multiple text spans with individual formatting
+- Bold, italic, underline, and strikethrough support
+- Font family and size per span
+- Foreground and background colors
+- Hyperlink support
+- Markdown parsing
+- Export to plain text and HTML
+
+#### Basic Usage
+
+```cpp
+#include "SDK/RichText.h"
+
+// Create a document
+auto doc = std::make_shared<SDK::RichTextDocument>();
+
+// Add formatted text
+doc->AddText(L"This is regular text. ", false, false);
+doc->AddText(L"This is bold. ", true, false);
+doc->AddText(L"This is italic. ", false, true);
+
+// Add a heading
+doc->AddHeading(L"Section Title", 1);
+
+// Add a hyperlink
+doc->AddLink(L"Click here", L"https://example.com");
+
+// Parse Markdown
+doc->ParseMarkdown(
+    L"# Heading\n\n"
+    L"This is **bold** and *italic* text.\n\n"
+    L"[Link text](https://example.com)"
+);
+
+// Export to plain text
+std::wstring plainText = doc->ToPlainText();
+
+// Export to HTML
+std::wstring html = doc->ToHtml();
+```
+
+#### API Reference
+
+**Content Management:**
+```cpp
+void Clear();                                    // Clear all spans
+void AddSpan(const TextSpan& span);             // Add a text span
+void InsertSpan(size_t index, const TextSpan& span);
+void RemoveSpan(size_t index);
+std::vector<TextSpan>& GetSpans();
+```
+
+**Quick Text Addition:**
+```cpp
+void AddText(const std::wstring& text, bool bold = false, bool italic = false);
+void AddHeading(const std::wstring& text, int level = 1);
+void AddLink(const std::wstring& text, const std::wstring& url);
+void AddParagraph(const std::wstring& text);
+```
+
+**Markdown Support:**
+```cpp
+void ParseMarkdown(const std::wstring& markdown);  // Parse and render Markdown
+```
+
+**Export:**
+```cpp
+std::wstring ToPlainText() const;  // Export as plain text
+std::wstring ToHtml() const;       // Export as HTML
+```
+
+### RichTextBox
+
+An editable widget for displaying and editing rich text.
+
+#### Features
+- Editable or read-only mode
+- Text selection and formatting
+- Scrollable content
+- Hyperlink clicking
+- Line and paragraph spacing
+- Mouse interaction
+
+#### Basic Usage
+
+```cpp
+// Create a rich text box
+auto richTextBox = std::make_shared<SDK::RichTextBox>();
+richTextBox->SetBounds(20, 20, 400, 300);
+
+// Set content
+richTextBox->SetText(L"Some text");
+
+// Or use a document
+auto doc = richTextBox->GetDocument();
+doc->AddText(L"Formatted ", true, false);
+doc->AddText(L"text", false, true);
+
+// Enable editing
+richTextBox->SetEditable(true);
+richTextBox->SetReadOnly(false);
+
+// Handle link clicks
+richTextBox->SetEventCallback([](SDK::Widget* w, SDK::WidgetEvent e, void* data) {
+    if (e == SDK::WidgetEvent::CLICK && data) {
+        const wchar_t* url = static_cast<const wchar_t*>(data);
+        // Handle link click
+    }
+});
+
+window->AddWidget(richTextBox);
+```
+
+#### API Reference
+
+**Document:**
+```cpp
+void SetDocument(std::shared_ptr<RichTextDocument> document);
+std::shared_ptr<RichTextDocument> GetDocument() const;
+```
+
+**Text Operations:**
+```cpp
+void SetText(const std::wstring& text);
+std::wstring GetText() const;
+void AppendText(const std::wstring& text);
+void Clear();
+```
+
+**Editing:**
+```cpp
+void SetReadOnly(bool readOnly);
+bool IsReadOnly() const;
+void SetEditable(bool editable);
+bool IsEditable() const;
+```
+
+**Selection:**
+```cpp
+void SelectAll();
+void ClearSelection();
+bool HasSelection() const;
+void SetSelectionRange(size_t start, size_t end);
+```
+
+**Formatting:**
+```cpp
+void SetSelectionBold(bool bold);
+void SetSelectionItalic(bool italic);
+void SetSelectionUnderline(bool underline);
+void SetSelectionColor(Color color);
+void SetSelectionFontSize(int size);
+```
+
+**Scrolling:**
+```cpp
+void SetScrollable(bool scrollable);
+void ScrollToTop();
+void ScrollToBottom();
+void ScrollToPosition(int position);
+```
+
+**Appearance:**
+```cpp
+void SetLineSpacing(float spacing);      // Default: 1.2
+void SetParagraphSpacing(int spacing);   // Default: 5
+```
+
+### RichTextLabel
+
+A simple read-only rich text display widget (inherits from RichTextBox).
+
+```cpp
+auto label = std::make_shared<SDK::RichTextLabel>();
+label->SetBounds(20, 20, 300, 100);
+label->GetDocument()->ParseMarkdown(L"**Bold** and *italic* text");
+window->AddWidget(label);
+```
+
+## DataGrid Widget
+
+A powerful table widget with sorting, filtering, editing, and virtual scrolling support.
+
+### Features
+- Sortable columns (ascending/descending)
+- Global and per-column filtering
+- Cell editing support
+- Virtual scrolling for large datasets
+- Single and multi-row selection
+- Customizable appearance
+- Event callbacks
+
+### Basic Usage
+
+```cpp
+#include "SDK/DataGrid.h"
+
+// Create a data grid
+auto grid = std::make_shared<SDK::DataGrid>();
+grid->SetBounds(20, 20, 800, 500);
+
+// Add columns
+grid->AddColumn(L"ID", 60);
+grid->AddColumn(L"Name", 200);
+grid->AddColumn(L"Age", 80);
+grid->AddColumn(L"Department", 150);
+
+// Make columns editable
+grid->SetColumnEditable(1, true);  // Name
+grid->SetColumnEditable(2, true);  // Age
+
+// Add rows
+grid->AddRow({L"1", L"John Doe", L"30", L"Engineering"});
+grid->AddRow({L"2", L"Jane Smith", L"28", L"Marketing"});
+grid->AddRow({L"3", L"Bob Johnson", L"35", L"Sales"});
+
+// Set selection mode
+grid->SetSelectionMode(SDK::DataGrid::SelectionMode::SINGLE);
+
+// Enable virtual scrolling
+grid->SetVirtualScrolling(true);
+
+window->AddWidget(grid);
+```
+
+### API Reference
+
+#### Column Management
+
+```cpp
+void AddColumn(const std::wstring& header, int width = 100);
+void AddColumn(const Column& column);
+void RemoveColumn(int index);
+void ClearColumns();
+
+Column& GetColumn(int index);
+int GetColumnCount() const;
+
+void SetColumnWidth(int columnIndex, int width);
+void SetColumnSortable(int columnIndex, bool sortable);
+void SetColumnEditable(int columnIndex, bool editable);
+```
+
+#### Row Management
+
+```cpp
+void AddRow(const std::vector<std::wstring>& values);
+void AddRow(const Row& row);
+void InsertRow(int index, const std::vector<std::wstring>& values);
+void RemoveRow(int index);
+void ClearRows();
+
+Row& GetRow(int index);
+int GetRowCount() const;
+```
+
+#### Cell Access
+
+```cpp
+void SetCellValue(int row, int column, const std::wstring& value);
+std::wstring GetCellValue(int row, int column) const;
+
+Cell& GetCell(int row, int column);
+const Cell& GetCell(int row, int column) const;
+```
+
+#### Sorting
+
+```cpp
+enum class SortOrder { NONE, ASCENDING, DESCENDING };
+
+void SortByColumn(int columnIndex, SortOrder order = SortOrder::ASCENDING);
+void ToggleSort(int columnIndex);  // Cycles through NONE -> ASC -> DESC -> NONE
+
+int GetSortColumn() const;
+SortOrder GetSortOrder() const;
+```
+
+#### Filtering
+
+```cpp
+void SetFilter(const std::wstring& filterText);           // Global filter
+void SetColumnFilter(int columnIndex, const std::wstring& filterText);
+void ClearFilter();
+
+std::wstring GetFilter() const;
+bool IsFiltered() const;
+```
+
+#### Selection
+
+```cpp
+enum class SelectionMode { NONE, SINGLE, MULTI };
+
+void SetSelectionMode(SelectionMode mode);
+SelectionMode GetSelectionMode() const;
+
+void SelectRow(int index, bool selected = true);
+void SelectAll();
+void ClearSelection();
+
+bool IsRowSelected(int index) const;
+std::vector<int> GetSelectedRows() const;
+int GetSelectedRowCount() const;
+```
+
+#### Editing
+
+```cpp
+void BeginEdit(int row, int column);
+void EndEdit(bool commit = true);
+void CancelEdit();
+
+bool IsEditing() const;
+int GetEditingRow() const;
+int GetEditingColumn() const;
+```
+
+Users can press **F2** to begin editing a selected cell, **Enter** to commit, and **Escape** to cancel.
+
+#### Virtual Scrolling
+
+```cpp
+void SetVirtualScrolling(bool enabled);
+bool IsVirtualScrolling() const;
+
+void SetVisibleRowCount(int count);
+int GetVisibleRowCount() const;
+
+void ScrollToRow(int index);
+int GetFirstVisibleRow() const;
+```
+
+#### Appearance
+
+```cpp
+void SetHeaderHeight(int height);        // Default: 30
+void SetRowHeight(int height);           // Default: 25
+void SetGridLineColor(Color color);      // Default: (200, 200, 200)
+void SetHeaderColor(Color color);        // Default: (240, 240, 240)
+void SetAlternateRowColor(Color color);  // Default: (250, 250, 250)
+void SetSelectionColor(Color color);     // Default: (200, 220, 255)
+```
+
+#### Event Callbacks
+
+```cpp
+// Called when a cell is clicked
+void SetCellClickCallback(std::function<void(int row, int column)> callback);
+
+// Called when a cell value is changed
+void SetCellEditCallback(std::function<void(int row, int column, 
+    const std::wstring& oldValue, const std::wstring& newValue)> callback);
+
+// Called when sorting changes
+void SetSortCallback(std::function<void(int column, SortOrder order)> callback);
+```
+
+### Complete Example
+
+```cpp
+// Create data grid
+auto grid = std::make_shared<SDK::DataGrid>();
+grid->SetBounds(20, 20, 700, 400);
+
+// Configure columns
+grid->AddColumn(L"ID", 50);
+grid->AddColumn(L"Name", 200);
+grid->AddColumn(L"Email", 250);
+grid->AddColumn(L"Status", 100);
+
+// Make Name and Email editable
+grid->SetColumnEditable(1, true);
+grid->SetColumnEditable(2, true);
+
+// Add data
+for (int i = 1; i <= 100; i++) {
+    grid->AddRow({
+        std::to_wstring(i),
+        L"User " + std::to_wstring(i),
+        L"user" + std::to_wstring(i) + L"@example.com",
+        (i % 2 == 0) ? L"Active" : L"Inactive"
+    });
+}
+
+// Enable virtual scrolling for performance
+grid->SetVirtualScrolling(true);
+grid->SetSelectionMode(SDK::DataGrid::SelectionMode::MULTI);
+
+// Customize appearance
+grid->SetHeaderColor(SDK::Color(70, 130, 180, 255));
+grid->SetSelectionColor(SDK::Color(135, 206, 250, 255));
+grid->SetAlternateRowColor(SDK::Color(240, 248, 255, 255));
+
+// Set up callbacks
+grid->SetCellEditCallback([](int row, int col, 
+    const std::wstring& oldVal, const std::wstring& newVal) {
+    // Handle cell edit
+    std::wcout << L"Row " << row << L" Col " << col 
+               << L" changed from '" << oldVal 
+               << L"' to '" << newVal << L"'" << std::endl;
+});
+
+grid->SetSortCallback([](int col, SDK::DataGrid::SortOrder order) {
+    // Handle sort change
+    std::wcout << L"Sorted by column " << col << std::endl;
+});
+
+// Add filter
+auto filterBox = std::make_shared<SDK::TextBox>();
+filterBox->SetBounds(20, 430, 300, 30);
+filterBox->SetPlaceholder(L"Type to filter...");
+filterBox->SetEventCallback([grid](SDK::Widget* w, SDK::WidgetEvent e, void* data) {
+    if (e == SDK::WidgetEvent::TEXT_CHANGED) {
+        auto textBox = dynamic_cast<SDK::TextBox*>(w);
+        if (textBox) {
+            grid->SetFilter(textBox->GetText());
+        }
+    }
+});
+
+window->AddWidget(grid);
+window->AddWidget(filterBox);
+```
+
+### Keyboard Navigation
+
+The DataGrid supports keyboard navigation:
+
+- **Arrow Keys**: Navigate between rows
+- **F2**: Begin editing selected cell
+- **Enter**: Commit edit
+- **Escape**: Cancel edit
+- **Ctrl+A**: Select all (in multi-select mode)
+
+See `examples/richtext_datagrid_demo.cpp` for a complete working example.
