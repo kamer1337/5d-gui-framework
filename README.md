@@ -25,6 +25,9 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Container Widgets**: Panel (grouping with optional title bar)
 - **Advanced Widgets**: ComboBox, ListBox, ListView (with checkboxes), TabControl, Toolbar, ProgressBar, Tooltip
 - **Complex Widgets**: FileTree, FileExplorer, SyntaxHighlightTextEditor (with C++ syntax highlighting)
+- **Menu System (v1.3)**: MenuBar, ContextMenu, MenuItem with icons, shortcuts, and submenus
+- **Rich Text (v1.3)**: RichTextBox with formatting (bold, italic, underline), colors, fonts, and Markdown support
+- **Layout System (v1.3)**: Grid, Flow, and Stack layouts for automatic widget arrangement
 - **Toolbar Features**: Horizontal/vertical orientation, auto-hide functionality, customizable items
 - **Event System**: Comprehensive event handling (click, hover, focus, value changes)
 - **Hierarchy Support**: Parent-child widget relationships
@@ -38,6 +41,9 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Particle System**: Physics-based particle effects with emission
 - **Glow Effects**: Expanding glow halos for highlights
 - **Glass Effect**: Translucent window surfaces
+- **Advanced Effects (v1.3)**: Depth-of-field, motion blur, chromatic aberration
+- **Effect Presets (v1.3)**: CINEMATIC, GAME_UI, RETRO, DREAMY, MOTION - apply complex effect combinations instantly
+- **GPU Acceleration (v1.2+)**: Hardware-accelerated rendering via Direct2D when available
 
 ### Theming System
 - **Predefined Themes**: Default, Modern, Aurora, Dark, and Light themes
@@ -65,7 +71,10 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Window Groups**: Linked window movement and synchronized transformations
 - **Window Snapping**: Edge snapping, grid snapping, and magnetic windows
 - **Window Animations**: Smooth minimize/maximize/restore transitions with multiple animation types
-- **Easing Functions**: Linear, ease-in, ease-out, ease-in-out, and bounce effects
+- **Easing Functions**: Linear, ease-in, ease-out, ease-in-out, bounce, elastic, and back effects
+- **Bezier Curves (v1.3)**: Custom animation curves with control points
+- **Animation Control (v1.3)**: Pause, resume, and reverse animations
+- **Animation Groups (v1.3)**: Sequence or parallel animation playback
 
 ## Quick Start
 
