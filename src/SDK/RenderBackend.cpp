@@ -1,11 +1,17 @@
 #include "../../include/SDK/RenderBackend.h"
+
+#if SDK_PLATFORM_WINDOWS
 #include "../../include/SDK/GDIRenderBackend.h"
 #include "../../include/SDK/D2DRenderBackend.h"
 #include <d2d1.h>
+#elif SDK_PLATFORM_LINUX && SDK_HAS_X11
+#include "../../include/SDK/X11RenderBackend.h"
+#endif
 
 namespace SDK {
 
 std::unique_ptr<RenderBackend> RenderBackend::Create(BackendType type) {
+#if SDK_PLATFORM_WINDOWS
     if (type == BackendType::AUTO) {
         // Try Direct2D first (hardware accelerated)
         auto d2dBackend = std::make_unique<D2DRenderBackend>();
@@ -30,6 +36,12 @@ std::unique_ptr<RenderBackend> RenderBackend::Create(BackendType type) {
     } else {
         return std::make_unique<GDIRenderBackend>();
     }
+#elif SDK_PLATFORM_LINUX && SDK_HAS_X11
+    // On Linux, always use X11 backend
+    return std::make_unique<X11RenderBackend>();
+#else
+    return nullptr;
+#endif
 }
 
 void RenderBackend::ApplyEffectPreset(const RECT& rect, EffectPreset preset) {
