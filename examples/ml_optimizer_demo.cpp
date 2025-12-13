@@ -10,6 +10,7 @@
 #include <vector>
 #include <sstream>
 #include <iomanip>
+#include <random>
 
 // Global variables
 SDK::RendererOptimizer g_optimizer;
@@ -20,6 +21,7 @@ bool g_showStats = true;
 int g_frameCount = 0;
 DWORD g_lastTime = 0;
 float g_fps = 0.0f;
+std::mt19937 g_rng; // Better random number generator
 
 // Window procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -34,6 +36,10 @@ void RenderStats(HDC hdc);
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     // Initialize SDK
     SDK::Initialize();
+    
+    // Seed random number generator
+    std::random_device rd;
+    g_rng.seed(rd());
     
     // Register window class
     WNDCLASSEX wc = {};
@@ -177,8 +183,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         
         case WM_LBUTTONDOWN: {
             // Mark random elements as changed (simulate interaction)
+            std::uniform_int_distribution<int> dist(0, static_cast<int>(g_elementIds.size()) - 1);
             for (int i = 0; i < 5; ++i) {
-                int idx = rand() % g_elementIds.size();
+                int idx = dist(g_rng);
                 g_optimizer.MarkElementChanged(g_elementIds[idx]);
             }
             InvalidateRect(hwnd, nullptr, FALSE);

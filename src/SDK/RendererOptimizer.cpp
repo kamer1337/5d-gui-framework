@@ -34,9 +34,10 @@ std::vector<float> RendererOptimizer::OptimizationModel::ExtractFeatures(const E
     // Is animated (0 or 1)
     features.push_back(metrics.isAnimated ? 1.0f : 0.0f);
     
-    // Cache hit rate
+    // Cache hit rate (proper float division)
     float totalCacheAccess = static_cast<float>(metrics.cacheHits + metrics.cacheMisses);
-    float cacheHitRate = totalCacheAccess > 0 ? metrics.cacheHits / totalCacheAccess : 0.5f;
+    float cacheHitRate = totalCacheAccess > 0 ? 
+        static_cast<float>(metrics.cacheHits) / totalCacheAccess : 0.5f;
     features.push_back(cacheHitRate);
     
     return features;
@@ -261,20 +262,22 @@ RendererOptimizer::PerformanceStats RendererOptimizer::GetStats() const {
     PerformanceStats stats = {};
     stats.totalElements = static_cast<int>(elementMetrics_.size());
     
-    // Count strategy usage
+    // Count strategy usage and total renders
     stats.fullRenders = 0;
     stats.cachedRenders = 0;
     stats.skippedRenders = 0;
+    int totalRenderCount = 0;
     
     for (const auto& pair : elementMetrics_) {
         stats.fullRenders += pair.second.renderCount;
+        totalRenderCount += pair.second.renderCount;
     }
     
     stats.cachedRenders = cacheHits_;
     
-    // Calculate averages
-    if (stats.totalElements > 0) {
-        stats.avgRenderTime = totalRenderTime_ / stats.totalElements;
+    // Calculate averages (use total render count, not element count)
+    if (totalRenderCount > 0) {
+        stats.avgRenderTime = totalRenderTime_ / static_cast<float>(totalRenderCount);
     } else {
         stats.avgRenderTime = 0.0f;
     }
