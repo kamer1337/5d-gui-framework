@@ -22,6 +22,12 @@
  * - Prompt-based window generation
  * - Neural network for natural language GUI creation
  * - Advanced window features (groups, snapping, animations)
+ * - Advanced visual effects (v1.3): depth-of-field, motion blur, chromatic aberration
+ * - Effect presets (v1.3): CINEMATIC, GAME_UI, RETRO, DREAMY, MOTION
+ * - Enhanced animations (v1.3): Bezier curves, pause/resume/reverse
+ * - Layout system (v1.3): Grid, Flow, Stack layouts
+ * - Menu system (v1.3): MenuBar, ContextMenu with icons and shortcuts
+ * - Rich text rendering (v1.3): Markdown support, formatting
  * 
  * No external dependencies - pure Win32 API (Windows) or X11 (Linux)
  */
@@ -35,6 +41,9 @@
 #include "WindowAnimation.h"
 #include "Theme.h"
 #include "Renderer.h"
+#include "RenderBackend.h"
+#include "GDIRenderBackend.h"
+#include "D2DRenderBackend.h"
 #include "Widget.h"
 #include "ProgressBar.h"
 #include "Tooltip.h"
@@ -46,6 +55,9 @@
 #include "AdvancedWidgets.h"
 #include "CameraController.h"
 #include "Widget3D.h"
+#include "Layout.h"
+#include "Menu.h"
+#include "RichText.h"
 
 namespace SDK {
 
