@@ -33,6 +33,7 @@ set(SDK_COMMON_SOURCES
     src/SDK/Theme.cpp
     src/SDK/InstructionDecoder.cpp
     src/SDK/RenderBackend.cpp
+    src/SDK/Layout.cpp
 )
 
 # Platform-specific sources
@@ -186,6 +187,10 @@ if(PLATFORM_WINDOWS)
     # ML Optimizer demo application
     add_executable(ML_Optimizer_Demo examples/ml_optimizer_demo.cpp)
     target_link_libraries(ML_Optimizer_Demo PRIVATE 5DGUI_SDK)
+    
+    # Layout Engine demo application
+    add_executable(Layout_Engine_Demo examples/layout_engine_demo.cpp)
+    target_link_libraries(Layout_Engine_Demo PRIVATE 5DGUI_SDK)
 elseif(PLATFORM_LINUX)
     # Linux demo applications
     add_executable(5DGUI_Demo_Linux examples/demo_linux.cpp)
@@ -238,6 +243,9 @@ if(PLATFORM_WINDOWS)
         set_target_properties(ML_Optimizer_Demo PROPERTIES
             LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
         )
+        set_target_properties(Layout_Engine_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
     else()
         set_target_properties(5DGUI_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
@@ -278,6 +286,9 @@ if(PLATFORM_WINDOWS)
         set_target_properties(ML_Optimizer_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
         )
+        set_target_properties(Layout_Engine_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
     endif()
 endif()
 
@@ -294,7 +305,7 @@ install(DIRECTORY include/SDK
 )
 
 if(PLATFORM_WINDOWS)
-    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo RichText_DataGrid_Demo ML_Optimizer_Demo
+    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo RichText_DataGrid_Demo ML_Optimizer_Demo Layout_Engine_Demo
         RUNTIME DESTINATION bin
     )
 elseif(PLATFORM_LINUX)

@@ -29,6 +29,7 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Menu System (v1.3)**: MenuBar, ContextMenu, MenuItem with icons, shortcuts, and submenus
 - **Rich Text (v1.3)**: RichTextBox with formatting (bold, italic, underline), colors, fonts, and Markdown support
 - **Layout System (v1.3)**: Grid, Flow, and Stack layouts for automatic widget arrangement
+- **Advanced Layout (v1.3.1)**: Automatic layout engine with heuristics and constraint-based positioning
 - **Toolbar Features**: Horizontal/vertical orientation, auto-hide functionality, customizable items
 - **Event System**: Comprehensive event handling (click, hover, focus, value changes)
 - **Hierarchy Support**: Parent-child widget relationships
@@ -284,6 +285,7 @@ ShowWindow(hwnd, SW_SHOW);
 
 ### Feature Guides
 - **[Widget Guide](WIDGET_GUIDE.md)**: Complete widget system documentation
+- **[Advanced Layout Guide](ADVANCED_LAYOUT_GUIDE.md)**: Automatic layout engine and constraint solver
 - **[Neural Network Guide](NEURAL_NETWORK_GUIDE.md)**: AI-powered GUI creation with natural language
 - **[Optimization Guide](OPTIMIZATION_GUIDE.md)**: Rendering and memory optimization features
 - **[ML Renderer Optimization](ML_RENDERER_OPTIMIZATION.md)**: Machine learning-based renderer optimization
@@ -365,6 +367,7 @@ MaterialGameEngine/
 │   ├── CameraController.h    # 3D camera controls
 │   ├── Widget3D.h            # 3D widget placement
 │   ├── Toolbar.h             # Toolbar widget
+│   ├── Layout.h              # Layout system (Grid, Flow, Stack, Engine, Constraints)
 │   ├── WindowGroup.h         # Window grouping
 │   ├── WindowSnapping.h      # Window snapping
 │   └── WindowAnimation.h     # Window animations
@@ -376,6 +379,7 @@ MaterialGameEngine/
 │   ├── neural_network_demo.cpp  # Neural network GUI creation demo
 │   ├── camera_demo.cpp       # 3D camera controller demo
 │   ├── toolbar_demo.cpp      # Toolbar widget demo
+│   ├── layout_engine_demo.cpp   # Advanced layout engine demo
 │   └── advanced_window_demo.cpp  # Advanced window features demo
 ├── build/               # Build output (generated)
 ├── CMakeLists.txt       # CMake build file
