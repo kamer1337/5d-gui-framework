@@ -7,7 +7,12 @@
 
 namespace SDK {
 
-// Helper function to check if a wide string consists only of digits
+/**
+ * Helper function to check if a wide string consists only of numeric digits.
+ * Used throughout the entity extraction logic to validate numeric tokens.
+ * @param str The wide string to check
+ * @return true if the string is non-empty and contains only digits, false otherwise
+ */
 static bool IsAllDigits(const std::wstring& str) {
     return !str.empty() && std::all_of(str.begin(), str.end(), [](wchar_t c) { return std::iswdigit(c); });
 }
