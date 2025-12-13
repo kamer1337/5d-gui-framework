@@ -222,6 +222,11 @@ bool converged = solver.Solve(
     100,    // max iterations (default: 100)
     0.1f    // tolerance in pixels (default: 0.1)
 );
+
+// Configure solver damping (affects convergence speed vs stability)
+solver.SetDampingFactor(0.3f);  // Range: 0.0 to 1.0 (default: 0.5)
+// Lower values = more stable but slower convergence
+// Higher values = faster but may oscillate
 ```
 
 ### Layout Engine with Constraints
@@ -335,8 +340,9 @@ The constraint solver uses iterative relaxation:
 1. **Use base layouts**: Apply a base layout first, then add constraints for fine-tuning
 2. **Minimize constraints**: Only add necessary constraints
 3. **Set priorities**: Use `SetPriority()` on critical constraints
-4. **Cache layouts**: Reuse layout objects when possible
-5. **Batch updates**: Apply layout once per frame, not per widget change
+4. **Tune damping**: Adjust solver damping factor for your use case (default 0.5)
+5. **Cache layouts**: Reuse layout objects when possible
+6. **Batch updates**: Apply layout once per frame, not per widget change
 
 ### Priority System
 
