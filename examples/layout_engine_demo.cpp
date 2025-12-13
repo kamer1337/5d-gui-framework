@@ -54,7 +54,7 @@ void ApplyLayout() {
     if (!g_demoWindow || g_widgets.empty()) return;
     
     RECT clientRect;
-    GetClientRect(g_demoWindow->GetHWND(), &clientRect);
+    GetClientRect(g_demoWindow->GetHandle(), &clientRect);
     
     g_layoutEngine->ClearConstraints();
     
@@ -148,7 +148,7 @@ void ApplyLayout() {
 void RenderDemo(HDC hdc) {
     // Clear background
     RECT clientRect;
-    GetClientRect(g_demoWindow->GetHWND(), &clientRect);
+    GetClientRect(g_demoWindow->GetHandle(), &clientRect);
     HBRUSH bgBrush = CreateSolidBrush(RGB(240, 240, 240));
     FillRect(hdc, &clientRect, bgBrush);
     DeleteObject(bgBrush);
@@ -258,8 +258,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (!hwnd) return 0;
     
     // Initialize demo
-    g_demoWindow = std::make_shared<Window>();
-    g_demoWindow->SetHWND(hwnd);
+    g_demoWindow = std::make_shared<Window>(hwnd);
     
     g_layoutEngine = std::make_shared<LayoutEngine>();
     CreateDemoWidgets();
