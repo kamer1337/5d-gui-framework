@@ -249,11 +249,12 @@ void RenderElements(HDC hdc) {
         DeleteObject(brush);
         DeleteObject(pen);
         
-        // Draw element ID
+        // Draw element ID (create non-const copy for DrawTextW)
         std::wstring text = std::to_wstring(i);
+        RECT textRect = rect;
         SetTextColor(hdc, RGB(255, 255, 255));
         SetBkMode(hdc, TRANSPARENT);
-        DrawTextW(hdc, text.c_str(), -1, const_cast<RECT*>(&rect), 
+        DrawTextW(hdc, text.c_str(), -1, &textRect, 
             DT_CENTER | DT_VCENTER | DT_SINGLELINE);
         
         DWORD elementEndTime = GetTickCount();

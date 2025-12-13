@@ -159,7 +159,21 @@ void RendererOptimizer::RegisterElement(const std::string& elementId, const RECT
     metrics.cacheMisses = 0;
     metrics.isAnimated = false;
     metrics.changeFrequency = 0.5f; // Start with medium frequency
-    metrics.pixelArea = (bounds.right - bounds.left) * (bounds.bottom - bounds.top);
+    
+    // Calculate pixel area with overflow protection
+    int64_t width = static_cast<int64_t>(bounds.right) - bounds.left;
+    int64_t height = static_cast<int64_t>(bounds.bottom) - bounds.top;
+    int64_t area = width * height;
+    
+    // Clamp to int range (negative areas become 0)
+    if (area < 0) {
+        metrics.pixelArea = 0;
+    } else if (area > INT_MAX) {
+        metrics.pixelArea = INT_MAX;
+    } else {
+        metrics.pixelArea = static_cast<int>(area);
+    }
+    
     metrics.screenCoverage = 0.0f; // Will be updated
     metrics.lastUpdateTime = 0.0f;
     
@@ -275,17 +289,19 @@ RendererOptimizer::PerformanceStats RendererOptimizer::GetStats() const {
     PerformanceStats stats = {};
     stats.totalElements = static_cast<int>(elementMetrics_.size());
     
-    // Count strategy usage and total renders
+    // Note: stats.fullRenders currently shows total render count
+    // In future versions, this could be enhanced to track per-strategy counts
+    // by recording the actual strategy used for each render
     stats.fullRenders = 0;
     stats.cachedRenders = 0;
     stats.skippedRenders = 0;
     int totalRenderCount = 0;
     
     for (const auto& pair : elementMetrics_) {
-        stats.fullRenders += pair.second.renderCount;
         totalRenderCount += pair.second.renderCount;
     }
     
+    stats.fullRenders = totalRenderCount;
     stats.cachedRenders = cacheHits_;
     
     // Calculate averages (use total render count, not element count)
