@@ -334,18 +334,54 @@ void X11RenderBackend::DrawLinearGradient(const RECT& rect, Color startColor, Co
 
 void X11RenderBackend::DrawRadialGradient(const RECT& rect, Color centerColor, Color edgeColor, int cx, int cy)
 {
-    // TODO: Implement proper radial gradient using concentric circles
-    // Current implementation: Simplified fallback - just draw solid color
-    // For full implementation, draw multiple concentric circles with interpolated colors
     if (!m_initialized || !m_display || !m_backBuffer || !m_gc) {
         return;
     }
     
-    SetGCColor(centerColor);
-    XFillRectangle(m_display, m_backBuffer, m_gc,
-        rect.left, rect.top,
-        rect.right - rect.left,
-        rect.bottom - rect.top);
+    // Calculate gradient center
+    int gradientCx = (cx >= 0 && cx <= rect.right - rect.left) ? rect.left + cx : (rect.left + rect.right) / 2;
+    int gradientCy = (cy >= 0 && cy <= rect.bottom - rect.top) ? rect.top + cy : (rect.top + rect.bottom) / 2;
+    
+    // Calculate maximum radius from center to corners
+    int dx1 = gradientCx - rect.left;
+    int dy1 = gradientCy - rect.top;
+    int dx2 = rect.right - gradientCx;
+    int dy2 = rect.bottom - gradientCy;
+    
+    int maxRadius = static_cast<int>(std::sqrt(
+        std::max({dx1*dx1 + dy1*dy1, dx2*dx2 + dy1*dy1, 
+                  dx1*dx1 + dy2*dy2, dx2*dx2 + dy2*dy2})));
+    
+    if (maxRadius <= 0) {
+        return;
+    }
+    
+    // Draw concentric circles from outside to inside for proper layering
+    const int steps = std::min(maxRadius, 50); // Limit steps for performance
+    for (int i = steps; i >= 0; --i) {
+        float t = static_cast<float>(i) / static_cast<float>(steps);
+        int radius = static_cast<int>(maxRadius * t);
+        
+        // Interpolate color
+        Color color;
+        color.r = static_cast<uint8_t>(centerColor.r + t * (edgeColor.r - centerColor.r));
+        color.g = static_cast<uint8_t>(centerColor.g + t * (edgeColor.g - centerColor.g));
+        color.b = static_cast<uint8_t>(centerColor.b + t * (edgeColor.b - centerColor.b));
+        color.a = static_cast<uint8_t>(centerColor.a + t * (edgeColor.a - centerColor.a));
+        
+        SetGCColor(color);
+        
+        // Draw filled circle
+        if (radius > 0) {
+            XFillArc(m_display, m_backBuffer, m_gc,
+                gradientCx - radius, gradientCy - radius,
+                radius * 2, radius * 2,
+                0, 360 * 64); // X11 uses 1/64th degree units
+        } else {
+            // Draw center point
+            XDrawPoint(m_display, m_backBuffer, m_gc, gradientCx, gradientCy);
+        }
+    }
 }
 
 void X11RenderBackend::DrawShadow(const RECT& rect, int offsetX, int offsetY, int blur, Color shadowColor)
