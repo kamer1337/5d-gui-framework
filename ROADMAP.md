@@ -164,18 +164,18 @@ This document outlines planned features and improvements for the 5D GUI SDK.
   - Smooth maximize transitions
   - Restore animations
 
-## Version 2.0.0 (Future)
+## Version 2.0.0 (Completed) ✅
 
-### Modern Display Support
-- [ ] **High DPI Support**
-  - Per-monitor DPI awareness
-  - Automatic scaling
-  - Vector graphics support
+### Modern Display Support (Completed) ✅
+- [x] **High DPI Support** ✅ COMPLETED
+  - [x] Per-monitor DPI awareness
+  - [x] Automatic scaling
+  - [x] Vector graphics support
   
-- [ ] **Multi-Monitor**
-  - Multi-monitor window management
-  - Monitor-specific themes
-  - Window migration between monitors
+- [x] **Multi-Monitor** ✅ COMPLETED
+  - [x] Multi-monitor window management
+  - [x] Monitor-specific themes
+  - [x] Window migration between monitors
   
 - [ ] **HDR Support**
   - HDR color space rendering
@@ -352,7 +352,7 @@ We welcome contributions! Priority areas:
 
 ## Version History
 
-### v1.3.0 (Current - Released)
+### v1.3.0 (Released)
 - Advanced visual effects: depth-of-field, motion blur, chromatic aberration
 - Effect preset system: CINEMATIC, GAME_UI, RETRO, DREAMY, MOTION
 - Enhanced animations: Bezier curves, pause/resume/reverse
@@ -360,6 +360,16 @@ We welcome contributions! Priority areas:
 - Layout system: Grid, Flow, Stack layouts
 - Menu system: MenuBar, ContextMenu with icons and shortcuts
 - Rich text rendering with Markdown support
+
+### v2.0.0 (Released) ✅
+- Per-monitor DPI awareness with automatic scaling
+- DPI change detection and handling
+- Multi-monitor window management
+- Monitor enumeration and information gathering
+- Monitor-specific theme support
+- Window migration between monitors with DPI adjustment
+- Monitor change detection and callbacks
+- DPI scaling for widgets and UI elements
 
 ### v1.2.0 (Released)
 - Advanced UI components and layout system
@@ -388,7 +398,7 @@ We welcome contributions! Priority areas:
 **2025 Q2**: v1.1.0 (Enhanced hooking & performance) ✓
 **2025 Q3**: v1.2.0 (UI components & advanced features) ✓
 **2025 Q4**: v1.3.0 (Visual enhancements & UI components) ✓
-**2026 Q1**: v2.0.0 (Modern display support)
+**2025 Q4**: v2.0.0 (Modern display support) ✓
 **2026+**: v3.0.0 (Cross-platform & advanced features)
 
 ## Feedback
