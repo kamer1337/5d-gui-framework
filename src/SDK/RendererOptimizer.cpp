@@ -4,10 +4,11 @@
 
 namespace SDK {
 
-// Performance thresholds
+// Performance thresholds and constants
 namespace {
     constexpr float GOOD_PERFORMANCE_THRESHOLD_MS = 8.0f;  // Target render time for good performance (60fps = 16ms frame, aim for half)
     constexpr float MAX_CONFIDENCE = 0.95f;  // Maximum confidence to prevent overconfidence
+    constexpr float REFERENCE_SCREEN_AREA = 2073600.0f;  // Reference screen size (1920x1080) for normalization
 }
 
 // OptimizationModel Implementation
@@ -39,7 +40,7 @@ std::vector<float> RendererOptimizer::OptimizationModel::ExtractFeatures(const E
     features.push_back(metrics.changeFrequency);
     
     // Pixel area (normalize by typical screen size 1920x1080)
-    features.push_back(std::min(metrics.pixelArea / 2073600.0f, 1.0f));
+    features.push_back(std::min(metrics.pixelArea / REFERENCE_SCREEN_AREA, 1.0f));
     
     // Screen coverage (already 0-1)
     features.push_back(metrics.screenCoverage);
@@ -289,9 +290,9 @@ RendererOptimizer::PerformanceStats RendererOptimizer::GetStats() const {
     PerformanceStats stats = {};
     stats.totalElements = static_cast<int>(elementMetrics_.size());
     
-    // Note: stats.fullRenders currently shows total render count
-    // In future versions, this could be enhanced to track per-strategy counts
-    // by recording the actual strategy used for each render
+    // Count total renders
+    // Note: In current implementation, we track total renders rather than per-strategy counts
+    // This provides an overall performance view. Future enhancement could add per-strategy tracking.
     stats.fullRenders = 0;
     stats.cachedRenders = 0;
     stats.skippedRenders = 0;
@@ -301,6 +302,8 @@ RendererOptimizer::PerformanceStats RendererOptimizer::GetStats() const {
         totalRenderCount += pair.second.renderCount;
     }
     
+    // fullRenders represents total render operations (all strategies)
+    // cachedRenders represents successful cache access operations
     stats.fullRenders = totalRenderCount;
     stats.cachedRenders = cacheHits_;
     

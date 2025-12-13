@@ -128,9 +128,6 @@ private:
     
     // Update change frequency based on activity
     void UpdateChangeFrequency(ElementMetrics& metrics, bool changed);
-    
-    // Note: DecayMetrics is reserved for future time-based decay functionality
-    // Currently not needed as exponential moving averages handle aging
 };
 
 } // namespace SDK
