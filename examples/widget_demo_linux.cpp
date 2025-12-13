@@ -12,6 +12,7 @@
 #include "../include/SDK/Theme.h"
 #include <memory>
 #include <cmath>
+#include <cstdio>
 
 // Global state
 std::shared_ptr<SDK::WindowX11> g_mainWindow;

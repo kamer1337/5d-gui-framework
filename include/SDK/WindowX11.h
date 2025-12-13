@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <vector>
 
 namespace SDK {
 

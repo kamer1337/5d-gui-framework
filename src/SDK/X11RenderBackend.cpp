@@ -334,7 +334,9 @@ void X11RenderBackend::DrawLinearGradient(const RECT& rect, Color startColor, Co
 
 void X11RenderBackend::DrawRadialGradient(const RECT& rect, Color centerColor, Color edgeColor, int cx, int cy)
 {
-    // Simplified implementation - just draw solid color for now
+    // TODO: Implement proper radial gradient using concentric circles
+    // Current implementation: Simplified fallback - just draw solid color
+    // For full implementation, draw multiple concentric circles with interpolated colors
     if (!m_initialized || !m_display || !m_backBuffer || !m_gc) {
         return;
     }
@@ -414,7 +416,10 @@ unsigned long X11RenderBackend::ColorToPixel(const Color& color)
         return 0;
     }
     
-    // Apply alpha blending with white background (simple approach)
+    // Apply alpha blending with white background
+    // Note: X11 does not natively support alpha transparency without compositing.
+    // This implementation pre-multiplies alpha with a white (255, 255, 255) background.
+    // For true transparency, X Composite extension or ARGB visuals would be required.
     float alpha = color.a / 255.0f;
     BYTE r = static_cast<BYTE>(color.r * alpha + 255 * (1 - alpha));
     BYTE g = static_cast<BYTE>(color.g * alpha + 255 * (1 - alpha));
@@ -448,12 +453,18 @@ XFontStruct* X11RenderBackend::GetOrCreateFont(int fontSize)
         return it->second;
     }
     
-    // Try to load a good font
-    std::string fontName = "-*-helvetica-medium-r-*-*-" + std::to_string(fontSize) + "-*-*-*-*-*-*-*";
+    // X11 font specification format: -foundry-family-weight-slant-width-style-pixelsize-...
+    // Try to load a scalable font (helvetica is widely available)
+    const char* fontFamily = "helvetica";
+    const char* fontWeight = "medium";
+    const char* fontSlant = "r"; // regular (not italic)
+    std::string fontName = "-*-" + std::string(fontFamily) + "-" + std::string(fontWeight) + 
+                          "-" + std::string(fontSlant) + "-*-*-" + std::to_string(fontSize) + 
+                          "-*-*-*-*-*-*-*";
     XFontStruct* font = XLoadQueryFont(m_display, fontName.c_str());
     
     if (!font) {
-        // Fallback to fixed font
+        // Fallback to fixed font (always available on X11)
         font = XLoadQueryFont(m_display, "fixed");
     }
     
