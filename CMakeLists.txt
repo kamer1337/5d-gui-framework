@@ -173,6 +173,10 @@ if(PLATFORM_WINDOWS)
     # Hardware acceleration demo application
     add_executable(Hardware_Accel_Demo examples/hardware_accel_demo.cpp)
     target_link_libraries(Hardware_Accel_Demo PRIVATE 5DGUI_SDK)
+    
+    # Rich text and data grid demo application
+    add_executable(RichText_DataGrid_Demo examples/richtext_datagrid_demo.cpp)
+    target_link_libraries(RichText_DataGrid_Demo PRIVATE 5DGUI_SDK)
 endif()
 
 # Set subsystem to Windows (GUI application) - Windows only
@@ -211,6 +215,9 @@ if(PLATFORM_WINDOWS)
         set_target_properties(Hardware_Accel_Demo PROPERTIES
             LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
         )
+        set_target_properties(RichText_DataGrid_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
     else()
         set_target_properties(5DGUI_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
@@ -245,6 +252,9 @@ if(PLATFORM_WINDOWS)
         set_target_properties(Hardware_Accel_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
         )
+        set_target_properties(RichText_DataGrid_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
     endif()
 endif()
 
@@ -261,7 +271,7 @@ install(DIRECTORY include/SDK
 )
 
 if(PLATFORM_WINDOWS)
-    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo
+    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo RichText_DataGrid_Demo
         RUNTIME DESTINATION bin
     )
 endif()

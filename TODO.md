@@ -72,19 +72,19 @@ This document tracks active tasks, immediate improvements, and ongoing work for 
   - Keyboard navigation for menus
 
 ### Widget Improvements
-- [ ] **Rich Text Support**
-  - Add basic rich text rendering
-  - Implement text formatting (bold, italic, underline)
-  - Add hyperlink support
-  - Create text editor with formatting toolbar
-  - Add Markdown rendering support
+- [x] **Rich Text Support** ✅ COMPLETED
+  - [x] Add basic rich text rendering
+  - [x] Implement text formatting (bold, italic, underline)
+  - [x] Add hyperlink support
+  - [x] Create text editor with formatting toolbar
+  - [x] Add Markdown rendering support
 
-- [ ] **Data Grid Widget**
-  - Implement sortable columns
-  - Add filtering capabilities
-  - Create cell editing support
-  - Add virtual scrolling for large datasets
-  - Implement selection modes (single/multi)
+- [x] **Data Grid Widget** ✅ COMPLETED
+  - [x] Implement sortable columns
+  - [x] Add filtering capabilities
+  - [x] Create cell editing support
+  - [x] Add virtual scrolling for large datasets
+  - [x] Implement selection modes (single/multi)
 
 ## 🔧 Low Priority (v1.4.0+)
 
