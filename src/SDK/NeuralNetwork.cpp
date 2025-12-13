@@ -7,6 +7,11 @@
 
 namespace SDK {
 
+// Helper function to check if a wide string consists only of digits
+static bool IsAllDigits(const std::wstring& str) {
+    return !str.empty() && std::all_of(str.begin(), str.end(), [](wchar_t c) { return std::iswdigit(c); });
+}
+
 // ParsedPrompt convenience methods
 int NeuralNetwork::ParsedPrompt::GetWidth() const {
     auto it = entities.find(L"width");
@@ -522,7 +527,7 @@ std::vector<std::wstring> NeuralNetwork::Tokenize(const std::wstring& text) {
         } else if (ch == L'\'') {
             // Skip quotes
             continue;
-        } else if (ch == L'x' && !current.empty() && std::all_of(current.begin(), current.end(), [](wchar_t c) { return std::iswdigit(c); })) {
+        } else if (ch == L'x' && !current.empty() && IsAllDigits(current)) {
             // Handle dimension patterns like "800x600"
             tokens.push_back(current);
             current = L"x";
@@ -688,8 +693,8 @@ std::map<std::wstring, std::wstring> NeuralNetwork::ExtractEntities(const std::w
             std::wstring heightStr = token.substr(xPos + 1);
             
             if (!widthStr.empty() && !heightStr.empty() &&
-                std::all_of(widthStr.begin(), widthStr.end(), [](wchar_t c) { return std::iswdigit(c); }) &&
-                std::all_of(heightStr.begin(), heightStr.end(), [](wchar_t c) { return std::iswdigit(c); })) {
+                IsAllDigits(widthStr) &&
+                IsAllDigits(heightStr)) {
                 entities[L"width"] = widthStr;
                 entities[L"height"] = heightStr;
             }
@@ -698,7 +703,7 @@ std::map<std::wstring, std::wstring> NeuralNetwork::ExtractEntities(const std::w
         // Check for "width 800" pattern
         if ((token == L"width" || token == L"w") && i + 1 < tokens.size()) {
             const auto& nextToken = tokens[i + 1];
-            if (std::all_of(nextToken.begin(), nextToken.end(), [](wchar_t c) { return std::iswdigit(c); })) {
+            if (IsAllDigits(nextToken)) {
                 entities[L"width"] = nextToken;
             }
         }
@@ -706,7 +711,7 @@ std::map<std::wstring, std::wstring> NeuralNetwork::ExtractEntities(const std::w
         // Check for "height 600" pattern
         if ((token == L"height" || token == L"h") && i + 1 < tokens.size()) {
             const auto& nextToken = tokens[i + 1];
-            if (std::all_of(nextToken.begin(), nextToken.end(), [](wchar_t c) { return std::iswdigit(c); })) {
+            if (IsAllDigits(nextToken)) {
                 entities[L"height"] = nextToken;
             }
         }
@@ -786,7 +791,7 @@ std::map<std::wstring, std::wstring> NeuralNetwork::ExtractEntities(const std::w
         }
         
         // Extract item count (e.g., "3 buttons", "5 items")
-        if (std::all_of(token.begin(), token.end(), [](wchar_t c) { return std::iswdigit(c); }) && i + 1 < tokens.size()) {
+        if (IsAllDigits(token) && i + 1 < tokens.size()) {
             const auto& nextToken = tokens[i + 1];
             if (nextToken == L"buttons" || nextToken == L"labels" || nextToken == L"textboxes" ||
                 nextToken == L"items" || nextToken == L"widgets" || nextToken == L"controls") {
@@ -811,11 +816,11 @@ std::map<std::wstring, std::wstring> NeuralNetwork::ExtractEntities(const std::w
         
         // Extract range values (e.g., "from 0 to 100")
         if ((token == L"from" || token == L"min") && i + 1 < tokens.size() &&
-            std::all_of(tokens[i + 1].begin(), tokens[i + 1].end(), [](wchar_t c) { return std::iswdigit(c); })) {
+            IsAllDigits(tokens[i + 1])) {
             entities[L"min_value"] = tokens[i + 1];
         }
         if ((token == L"to" || token == L"max") && i + 1 < tokens.size() &&
-            std::all_of(tokens[i + 1].begin(), tokens[i + 1].end(), [](wchar_t c) { return std::iswdigit(c); })) {
+            IsAllDigits(tokens[i + 1])) {
             entities[L"max_value"] = tokens[i + 1];
         }
     }
@@ -1022,7 +1027,7 @@ NeuralNetwork::LayoutType NeuralNetwork::DetermineLayout(const std::wstring& pro
         // Check for number indicators suggesting grid
         auto tokens = Tokenize(prompt);
         for (const auto& token : tokens) {
-            if (!token.empty() && std::all_of(token.begin(), token.end(), [](wchar_t c) { return std::iswdigit(c); })) {
+            if (IsAllDigits(token)) {
                 try {
                     int count = static_cast<int>(std::stol(token));
                     // If count is 6, 9, 12, or other square-ish numbers, suggest grid
