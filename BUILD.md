@@ -401,6 +401,7 @@ After building:
    - `build/bin/Camera_Demo.exe` - 3D camera controller demo
    - `build/bin/Toolbar_Demo.exe` - Toolbar widget demo
    - `build/bin/Advanced_Window_Demo.exe` - Advanced window features demo
+   - `build/bin/ML_Optimizer_Demo.exe` - Machine learning renderer optimization demo
 2. Read the [API Documentation](API.md)
 3. See [Examples](examples/) for usage patterns
 4. Read [ARCHITECTURE.md](ARCHITECTURE.md) for internals

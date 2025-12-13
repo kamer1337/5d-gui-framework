@@ -181,7 +181,8 @@ This document tracks active tasks, immediate improvements, and ongoing work for 
 
 ### Experimental Features
 - [ ] WebGPU rendering backend investigation
-- [ ] Neural network-based auto-layout system
+- [x] **Neural network-based auto-layout system** ✅ COMPLETED (via NeuralPromptBuilder)
+- [x] **ML-based renderer optimization** ✅ COMPLETED
 - [ ] Voice control integration POC
 - [ ] Gesture recognition for touch/pen
 - [ ] Real-time collaborative editing

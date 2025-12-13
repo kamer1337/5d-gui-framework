@@ -48,6 +48,7 @@ if(PLATFORM_WINDOWS)
         src/SDK/RenderBackend.cpp
         src/SDK/GDIRenderBackend.cpp
         src/SDK/D2DRenderBackend.cpp
+        src/SDK/RendererOptimizer.cpp
         src/SDK/Widget.cpp
         src/SDK/ProgressBar.cpp
         src/SDK/Tooltip.cpp
@@ -84,6 +85,7 @@ set(SDK_HEADERS
     include/SDK/RenderBackend.h
     include/SDK/GDIRenderBackend.h
     include/SDK/D2DRenderBackend.h
+    include/SDK/RendererOptimizer.h
     include/SDK/InstructionDecoder.h
     include/SDK/Widget.h
     include/SDK/ProgressBar.h
@@ -177,6 +179,10 @@ if(PLATFORM_WINDOWS)
     # Rich text and data grid demo application
     add_executable(RichText_DataGrid_Demo examples/richtext_datagrid_demo.cpp)
     target_link_libraries(RichText_DataGrid_Demo PRIVATE 5DGUI_SDK)
+    
+    # ML Optimizer demo application
+    add_executable(ML_Optimizer_Demo examples/ml_optimizer_demo.cpp)
+    target_link_libraries(ML_Optimizer_Demo PRIVATE 5DGUI_SDK)
 endif()
 
 # Set subsystem to Windows (GUI application) - Windows only
@@ -218,6 +224,9 @@ if(PLATFORM_WINDOWS)
         set_target_properties(RichText_DataGrid_Demo PROPERTIES
             LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
         )
+        set_target_properties(ML_Optimizer_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
     else()
         set_target_properties(5DGUI_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
@@ -255,6 +264,9 @@ if(PLATFORM_WINDOWS)
         set_target_properties(RichText_DataGrid_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
         )
+        set_target_properties(ML_Optimizer_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
     endif()
 endif()
 
@@ -271,7 +283,7 @@ install(DIRECTORY include/SDK
 )
 
 if(PLATFORM_WINDOWS)
-    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo RichText_DataGrid_Demo
+    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo RichText_DataGrid_Demo ML_Optimizer_Demo
         RUNTIME DESTINATION bin
     )
 endif()

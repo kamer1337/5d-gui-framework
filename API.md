@@ -584,6 +584,77 @@ static void DeleteMemoryDC(HDC hdc, HBITMAP bitmap);
 
 ---
 
+## RendererOptimizer Class
+
+The `RendererOptimizer` class uses machine learning to predict optimal rendering strategies for UI elements.
+
+### Creating an Optimizer
+
+```cpp
+#include "SDK/RendererOptimizer.h"
+
+SDK::RendererOptimizer optimizer;
+```
+
+### Registering Elements
+
+```cpp
+RECT bounds = {100, 100, 200, 200};
+optimizer.RegisterElement("myElement", bounds);
+```
+
+### Getting Optimal Strategy
+
+```cpp
+auto strategy = optimizer.GetOptimalStrategy("myElement");
+
+switch (strategy) {
+    case SDK::RendererOptimizer::RenderStrategy::FULL_RENDER:
+        // Render element fully
+        break;
+    case SDK::RendererOptimizer::RenderStrategy::CACHED_RENDER:
+        // Use cached version
+        break;
+    case SDK::RendererOptimizer::RenderStrategy::SKIP_RENDER:
+        // Skip rendering
+        break;
+    case SDK::RendererOptimizer::RenderStrategy::LOD_HIGH:
+        // High detail
+        break;
+    // ... etc
+}
+```
+
+### Recording Metrics
+
+```cpp
+DWORD startTime = GetTickCount();
+RenderElement(hdc, element);
+DWORD endTime = GetTickCount();
+optimizer.RecordRenderMetrics("myElement", endTime - startTime, true);
+
+// Record cache access
+optimizer.RecordCacheAccess("myElement", true); // hit
+optimizer.RecordCacheAccess("myElement", false); // miss
+
+// Mark element as changed
+optimizer.MarkElementChanged("myElement");
+```
+
+### Getting Statistics
+
+```cpp
+auto stats = optimizer.GetStats();
+std::cout << "Total elements: " << stats.totalElements << "\n";
+std::cout << "Avg render time: " << stats.avgRenderTime << " ms\n";
+std::cout << "Cache hit rate: " << (stats.cacheHitRate * 100) << "%\n";
+std::cout << "ML accuracy: " << (stats.mlAccuracy * 100) << "%\n";
+```
+
+**See the complete guide:** [ML Renderer Optimization](ML_RENDERER_OPTIMIZATION.md)
+
+---
+
 ## Window Hooking
 
 ### WindowHook (Singleton)

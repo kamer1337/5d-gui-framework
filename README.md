@@ -16,6 +16,7 @@ The 5D GUI SDK provides an enhanced window rendering system with 5-depth layerin
 - **Layered Windows**: "Book stack" effect with perspective scaling
 - **Widget System**: ProgressBar, Tooltip, and extensible widget framework
 - **Neural Network GUI Creation**: AI-powered natural language window/widget generation
+- **ML Renderer Optimization**: Machine learning for adaptive rendering performance
 - **Prompt Window Builder**: Template-based window generation (extensible for AI)
 - **Multidimensional Rendering**: 3D/4D/5D/6D rendering with software projection
 - **Zero Dependencies**: Pure Win32 API - no external libraries required
@@ -285,6 +286,7 @@ ShowWindow(hwnd, SW_SHOW);
 - **[Widget Guide](WIDGET_GUIDE.md)**: Complete widget system documentation
 - **[Neural Network Guide](NEURAL_NETWORK_GUIDE.md)**: AI-powered GUI creation with natural language
 - **[Optimization Guide](OPTIMIZATION_GUIDE.md)**: Rendering and memory optimization features
+- **[ML Renderer Optimization](ML_RENDERER_OPTIMIZATION.md)**: Machine learning-based renderer optimization
 - **[Camera Controller Guide](CAMERA_GUIDE.md)**: 3D camera controls and widget placement
 - **[Advanced Window Features](ADVANCED_WINDOW_FEATURES.md)**: Window groups, snapping, and animations
 
