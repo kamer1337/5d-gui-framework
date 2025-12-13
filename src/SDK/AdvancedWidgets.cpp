@@ -86,7 +86,7 @@ void ComboBox::Render(HDC hdc) {
     
     // Draw dropdown list if open
     if (m_dropdownOpen && !m_items.empty()) {
-        RECT dropRect = {bounds.left, bounds.bottom, bounds.right, bounds.bottom + (int)m_items.size() * 25};
+        RECT dropRect = GetDropdownRect(bounds);
         Renderer::DrawRoundedRect(hdc, dropRect, 4, m_backgroundColor, Color(128, 128, 128, 255), 1);
         
         SetBkMode(hdc, TRANSPARENT);
@@ -107,6 +107,29 @@ void ComboBox::Render(HDC hdc) {
     Widget::Render(hdc);
 }
 
+RECT ComboBox::GetDropdownRect(const RECT& bounds) const {
+    if (m_items.empty()) {
+        return {0, 0, 0, 0};
+    }
+    
+    int dropdownHeight = (int)m_items.size() * 25;
+    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+    
+    // Check if there's enough space below
+    bool showBelow = (bounds.bottom + dropdownHeight <= screenHeight - 10);
+    
+    RECT dropRect;
+    if (showBelow) {
+        // Show below the combobox
+        dropRect = {bounds.left, bounds.bottom, bounds.right, bounds.bottom + dropdownHeight};
+    } else {
+        // Show above the combobox
+        dropRect = {bounds.left, bounds.top - dropdownHeight, bounds.right, bounds.top};
+    }
+    
+    return dropRect;
+}
+
 bool ComboBox::HandleMouseDown(int x, int y, int button) {
     if (!m_visible || !m_enabled) return false;
     
@@ -114,7 +137,7 @@ bool ComboBox::HandleMouseDown(int x, int y, int button) {
     
     if (m_dropdownOpen) {
         // Check dropdown items
-        RECT dropRect = {bounds.left, bounds.bottom, bounds.right, bounds.bottom + (int)m_items.size() * 25};
+        RECT dropRect = GetDropdownRect(bounds);
         if (x >= dropRect.left && x < dropRect.right && y >= dropRect.top && y < dropRect.bottom) {
             int index = (y - dropRect.top) / 25;
             SetSelectedIndex(index);

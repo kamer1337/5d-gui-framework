@@ -27,6 +27,8 @@ public:
     bool HandleMouseDown(int x, int y, int button) override;
     
 private:
+    RECT GetDropdownRect(const RECT& bounds) const;
+    
     std::vector<std::wstring> m_items;
     int m_selectedIndex;
     bool m_dropdownOpen;
