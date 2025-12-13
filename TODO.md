@@ -49,7 +49,7 @@ This document tracks active tasks, immediate improvements, and ongoing work for 
   - Create cross-platform abstraction layer
   - Test all demos on Linux
 
-## 📋 Medium Priority (v1.4.0)
+## 📋 Medium Priority (Future Enhancements)
 
 ### Visual Enhancements
 - [x] **Advanced Effects Implementation** ✅ COMPLETED (v1.3.0)
@@ -57,14 +57,19 @@ This document tracks active tasks, immediate improvements, and ongoing work for 
   - [x] Motion blur effect  
   - [x] Chromatic aberration option
   - [x] Effect preset system (CINEMATIC, GAME_UI, RETRO, DREAMY, MOTION)
-  - [ ] Move blur/bloom from basic to optimized implementations (deferred)
+
+- [ ] **Rendering Optimizations** (Deferred)
+  - Move blur/bloom from basic to optimized implementations
+  - Investigate shader-based effects
 
 - [x] **Animation Improvements** ✅ COMPLETED (v1.3.0)
   - [x] Add Bezier curve interpolation
   - [x] Add animation grouping/sequencing
   - [x] Add pause/resume/reverse controls
-  - [ ] Implement animation curves editor data format
-  - [ ] Create animation timeline system
+
+- [ ] **Animation System Extensions** (Future)
+  - Implement animation curves editor data format
+  - Create animation timeline system
 
 ### UI Components
 - [x] **Layout System** ✅ COMPLETED (v1.3.0)
@@ -72,8 +77,10 @@ This document tracks active tasks, immediate improvements, and ongoing work for 
   - [x] Add flow layout manager
   - [x] Create stack layout manager
   - [x] Add spacing and padding configuration
-  - [ ] Design automatic layout engine (partial)
-  - [ ] Add layout constraint solver
+
+- [ ] **Advanced Layout Features** (Future)
+  - Design automatic layout engine
+  - Add layout constraint solver
 
 - [x] **Menu System** ✅ COMPLETED (v1.3.0)
   - [x] Custom menu rendering with theme support
