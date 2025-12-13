@@ -245,11 +245,25 @@ switch (parsed.intent) {
 // Get confidence score (0.0 to 1.0)
 float confidence = parsed.confidence;
 
-// Access extracted entities
+// Access extracted entities (standard getters)
 int width = parsed.GetWidth();
 int height = parsed.GetHeight();
 std::wstring title = parsed.GetTitle();
 std::wstring text = parsed.GetWidgetText();
+
+// Access enhanced entities (v1.2.2)
+std::wstring color = parsed.GetColor();            // e.g., "red", "blue", "green"
+std::wstring colorMod = parsed.GetColorModifier(); // e.g., "dark", "light", "bright"
+std::wstring size = parsed.GetSize();              // e.g., "small", "medium", "large"
+std::wstring state = parsed.GetState();            // e.g., "enabled", "disabled", "readonly"
+std::wstring action = parsed.GetAction();          // e.g., "submit", "cancel", "save"
+std::wstring fontStyle = parsed.GetFontStyle();    // e.g., "bold", "italic", "underline"
+std::wstring pattern = parsed.GetPattern();        // e.g., "login", "signup", "settings"
+std::wstring validation = parsed.GetValidation();  // e.g., "required", "optional"
+std::wstring placeholder = parsed.GetPlaceholder();// Placeholder text
+int minValue = parsed.GetMinValue();               // For sliders/spinboxes
+int maxValue = parsed.GetMaxValue();               // For sliders/spinboxes
+int count = parsed.GetCount();                     // Number of widgets to create
 ```
 
 #### Intent Types
@@ -536,6 +550,12 @@ builder.BuildFromPrompt(
     hInstance
 );
 
+// Enhanced: Include colors and styles (v1.2.2!)
+builder.BuildFromPrompt(
+    L"Create window 800x600 with large red button, small textbox, and dark blue slider stacked vertically",
+    hInstance
+);
+
 // Avoid: Vague or ambiguous
 builder.BuildFromPrompt(L"Make something", hInstance);
 ```
@@ -549,6 +569,8 @@ builder.BuildFromPrompt(L"Add a progress bar", hInstance);
 // Also good: Use synonyms now supported
 builder.BuildFromPrompt(L"Add a slider", hInstance);
 builder.BuildFromPrompt(L"Add a dropdown menu", hInstance);  // Maps to combobox
+builder.BuildFromPrompt(L"Add a stepper", hInstance);        // Maps to spinbox (v1.2.2)
+builder.BuildFromPrompt(L"Add a picker", hInstance);         // Maps to combobox (v1.2.2)
 
 // Works but less accurate: Non-standard terms
 builder.BuildFromPrompt(L"Add a loading indicator", hInstance);
@@ -717,6 +739,98 @@ auto callback = builder.GenerateCallback(
 button->SetEventCallback(callback);
 button->SetPosition(50, 50);
 button->SetSize(120, 40);
+```
+
+## Enhanced Examples (v1.2.2)
+
+### Color and Style-Aware Windows
+
+```cpp
+// Window with color-coded buttons
+HWND colorWindow = builder.BuildFromPrompt(
+    L"Create window 600x400 with large red button 'Danger', "
+    L"medium green button 'Success', and small blue button 'Info' horizontally",
+    hInstance
+);
+
+// Form with styled inputs
+HWND styledForm = builder.BuildFromPrompt(
+    L"Create form 500x600 with bold label 'Name', textbox with placeholder 'Enter name', "
+    L"bold label 'Email', textbox with placeholder 'your@email.com', "
+    L"and large dark blue submit button at bottom",
+    hInstance
+);
+```
+
+### Context-Aware Form Generation
+
+```cpp
+// Simple login form - auto-generates username, password fields and login button
+HWND quickLogin = builder.BuildFromPrompt(
+    L"Create a login form",
+    hInstance
+);
+
+// Enhanced signup form
+HWND signupForm = builder.BuildFromPrompt(
+    L"Create signup page with email, password, confirm password, and register button",
+    hInstance
+);
+
+// Settings dialog with validation
+HWND settingsDialog = builder.BuildFromPrompt(
+    L"Create settings dialog with required textbox for API key, "
+    L"optional textbox for webhook URL, checkbox for notifications, "
+    L"and save button",
+    hInstance
+);
+```
+
+### Range-Based Widgets
+
+```cpp
+// Slider with explicit range
+HWND sliderWindow = builder.BuildFromPrompt(
+    L"Create window with slider from 0 to 100 for volume control",
+    hInstance
+);
+
+// Spinbox with range
+HWND spinboxWindow = builder.BuildFromPrompt(
+    L"Create window with counter from 1 to 10",
+    hInstance
+);
+```
+
+### Multi-Widget Counting
+
+```cpp
+// Create multiple identical widgets
+HWND buttonGrid = builder.BuildFromPrompt(
+    L"Create window with 9 buttons in a grid",
+    hInstance
+);
+
+HWND horizontalButtons = builder.BuildFromPrompt(
+    L"Create window with 5 small buttons side by side",
+    hInstance
+);
+```
+
+### State-Aware Widgets
+
+```cpp
+// Disabled input
+HWND disabledInput = builder.BuildFromPrompt(
+    L"Create window with disabled textbox showing 'Read Only'",
+    hInstance
+);
+
+// Readonly with placeholder
+HWND readonlyField = builder.BuildFromPrompt(
+    L"Create window with readonly textbox with placeholder 'Cannot edit'",
+    hInstance
+);
 ```
 
 ## Troubleshooting

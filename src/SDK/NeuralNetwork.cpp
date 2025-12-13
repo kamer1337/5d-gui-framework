@@ -121,6 +121,115 @@ std::vector<std::wstring> NeuralNetwork::ParsedPrompt::GetItems() const {
     return items;
 }
 
+// Enhanced getters for v1.2.2
+std::wstring NeuralNetwork::ParsedPrompt::GetColor() const {
+    auto it = entities.find(L"color");
+    if (it != entities.end()) {
+        return it->second;
+    }
+    return L"";
+}
+
+std::wstring NeuralNetwork::ParsedPrompt::GetColorModifier() const {
+    auto it = entities.find(L"color_modifier");
+    if (it != entities.end()) {
+        return it->second;
+    }
+    return L"";
+}
+
+std::wstring NeuralNetwork::ParsedPrompt::GetSize() const {
+    auto it = entities.find(L"size");
+    if (it != entities.end()) {
+        return it->second;
+    }
+    return L"medium";  // Default
+}
+
+std::wstring NeuralNetwork::ParsedPrompt::GetState() const {
+    auto it = entities.find(L"state");
+    if (it != entities.end()) {
+        return it->second;
+    }
+    return L"enabled";  // Default
+}
+
+std::wstring NeuralNetwork::ParsedPrompt::GetAction() const {
+    auto it = entities.find(L"action");
+    if (it != entities.end()) {
+        return it->second;
+    }
+    return L"";
+}
+
+std::wstring NeuralNetwork::ParsedPrompt::GetFontStyle() const {
+    auto it = entities.find(L"font_style");
+    if (it != entities.end()) {
+        return it->second;
+    }
+    return L"";
+}
+
+std::wstring NeuralNetwork::ParsedPrompt::GetPattern() const {
+    auto it = entities.find(L"pattern");
+    if (it != entities.end()) {
+        return it->second;
+    }
+    return L"";
+}
+
+std::wstring NeuralNetwork::ParsedPrompt::GetValidation() const {
+    auto it = entities.find(L"validation");
+    if (it != entities.end()) {
+        return it->second;
+    }
+    return L"";
+}
+
+std::wstring NeuralNetwork::ParsedPrompt::GetPlaceholder() const {
+    auto it = entities.find(L"placeholder");
+    if (it != entities.end()) {
+        return it->second;
+    }
+    return L"";
+}
+
+int NeuralNetwork::ParsedPrompt::GetMinValue() const {
+    auto it = entities.find(L"min_value");
+    if (it != entities.end()) {
+        try {
+            return std::stoi(it->second);
+        } catch (const std::exception&) {
+            // If parsing fails, return default
+        }
+    }
+    return 0;  // Default
+}
+
+int NeuralNetwork::ParsedPrompt::GetMaxValue() const {
+    auto it = entities.find(L"max_value");
+    if (it != entities.end()) {
+        try {
+            return std::stoi(it->second);
+        } catch (const std::exception&) {
+            // If parsing fails, return default
+        }
+    }
+    return 100;  // Default
+}
+
+int NeuralNetwork::ParsedPrompt::GetCount() const {
+    auto it = entities.find(L"count");
+    if (it != entities.end()) {
+        try {
+            return std::stoi(it->second);
+        } catch (const std::exception&) {
+            // If parsing fails, return default
+        }
+    }
+    return 1;  // Default
+}
+
 NeuralNetwork::NeuralNetwork() 
     : m_rng(std::random_device{}()) {
 }
