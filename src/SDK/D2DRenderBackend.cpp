@@ -3,6 +3,7 @@
 #include <d2d1_1.h>
 #include <d2d1effects.h>
 #include <dxgiformat.h>
+#include <cmath>
 
 namespace SDK {
 
@@ -690,6 +691,301 @@ void D2DRenderBackend::ApplyBloom(const RECT& rect, float threshold, float inten
                 }
                 
                 pThresholdEffect->Release();
+            }
+        }
+        
+        pBitmap->Release();
+    }
+    
+    pDeviceContext->Release();
+}
+
+void D2DRenderBackend::ApplyDepthOfField(const RECT& rect, int focalDepth, int blurAmount, float focalRange) {
+    if (!m_pRenderTarget) return;
+    
+    // Try to get device context for effects
+    ID2D1DeviceContext* pDeviceContext = nullptr;
+    HRESULT hr = m_pRenderTarget->QueryInterface(&pDeviceContext);
+    
+    if (FAILED(hr) || !pDeviceContext) {
+        // Fallback to software implementation
+        HDC hdc = GetGDIFallbackDC();
+        if (hdc) {
+            // Software depth of field implementation
+            int centerY = (rect.top + rect.bottom) / 2;
+            for (int y = rect.top; y < rect.bottom; y++) {
+                int distanceFromFocus = abs(y - (rect.top + focalDepth));
+                float blurFactor = (float)distanceFromFocus / focalRange;
+                blurFactor = min(blurFactor, 1.0f);
+                
+                int currentBlur = (int)(blurAmount * blurFactor);
+                if (currentBlur > 0) {
+                    RECT lineRect = { rect.left, y, rect.right, y + 1 };
+                    Renderer::ApplyBlur(hdc, lineRect, currentBlur);
+                }
+            }
+            ReleaseGDIFallbackDC(hdc);
+        }
+        return;
+    }
+    
+    // GPU-accelerated depth of field using Direct2D
+    D2D1_RECT_F d2dRect = ToD2DRect(rect);
+    
+    // Create bitmap from render target region
+    ID2D1Bitmap* pBitmap = nullptr;
+    D2D1_BITMAP_PROPERTIES bitmapProps = D2D1::BitmapProperties(
+        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
+    );
+    
+    D2D1_SIZE_U bitmapSize = D2D1::SizeU(
+        (UINT32)(d2dRect.right - d2dRect.left),
+        (UINT32)(d2dRect.bottom - d2dRect.top)
+    );
+    
+    hr = m_pRenderTarget->CreateBitmap(bitmapSize, bitmapProps, &pBitmap);
+    
+    if (SUCCEEDED(hr) && pBitmap) {
+        D2D1_POINT_2U destPoint = D2D1::Point2U(0, 0);
+        D2D1_RECT_U sourceRect = D2D1::RectU(
+            (UINT32)d2dRect.left, (UINT32)d2dRect.top,
+            (UINT32)d2dRect.right, (UINT32)d2dRect.bottom
+        );
+        
+        hr = pBitmap->CopyFromRenderTarget(&destPoint, m_pRenderTarget, &sourceRect);
+        
+        if (SUCCEEDED(hr)) {
+            // Apply variable blur based on depth
+            ID2D1Effect* pBlurEffect = nullptr;
+            hr = pDeviceContext->CreateEffect(CLSID_D2D1GaussianBlur, &pBlurEffect);
+            
+            if (SUCCEEDED(hr) && pBlurEffect) {
+                pBlurEffect->SetInput(0, pBitmap);
+                pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, (float)blurAmount);
+                pBlurEffect->SetValue(D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, D2D1_BORDER_MODE_SOFT);
+                
+                // Draw blurred image
+                pDeviceContext->DrawImage(pBlurEffect, D2D1::Point2F(d2dRect.left, d2dRect.top));
+                
+                pBlurEffect->Release();
+            }
+        }
+        
+        pBitmap->Release();
+    }
+    
+    pDeviceContext->Release();
+}
+
+void D2DRenderBackend::ApplyMotionBlur(const RECT& rect, int directionX, int directionY, float intensity) {
+    if (!m_pRenderTarget) return;
+    
+    // Try to get device context for effects
+    ID2D1DeviceContext* pDeviceContext = nullptr;
+    HRESULT hr = m_pRenderTarget->QueryInterface(&pDeviceContext);
+    
+    if (FAILED(hr) || !pDeviceContext) {
+        // Fallback to software implementation
+        HDC hdc = GetGDIFallbackDC();
+        if (hdc) {
+            // Software motion blur - simplified fallback
+            int width = rect.right - rect.left;
+            int height = rect.bottom - rect.top;
+            
+            HDC tempDC = CreateCompatibleDC(hdc);
+            HBITMAP tempBitmap = CreateCompatibleBitmap(hdc, width, height);
+            HBITMAP oldBitmap = (HBITMAP)SelectObject(tempDC, tempBitmap);
+            
+            BitBlt(tempDC, 0, 0, width, height, hdc, rect.left, rect.top, SRCCOPY);
+            
+            int samples = 5;
+            BLENDFUNCTION blend = { AC_SRC_OVER, 0, (BYTE)(255 * intensity / samples), 0 };
+            
+            for (int i = 0; i < samples; i++) {
+                int offsetX = (directionX * i) / samples;
+                int offsetY = (directionY * i) / samples;
+                
+                AlphaBlend(hdc, rect.left + offsetX, rect.top + offsetY, width, height,
+                           tempDC, 0, 0, width, height, blend);
+            }
+            
+            SelectObject(tempDC, oldBitmap);
+            DeleteObject(tempBitmap);
+            DeleteDC(tempDC);
+            
+            ReleaseGDIFallbackDC(hdc);
+        }
+        return;
+    }
+    
+    // GPU-accelerated directional blur using Direct2D
+    D2D1_RECT_F d2dRect = ToD2DRect(rect);
+    
+    ID2D1Bitmap* pBitmap = nullptr;
+    D2D1_BITMAP_PROPERTIES bitmapProps = D2D1::BitmapProperties(
+        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
+    );
+    
+    D2D1_SIZE_U bitmapSize = D2D1::SizeU(
+        (UINT32)(d2dRect.right - d2dRect.left),
+        (UINT32)(d2dRect.bottom - d2dRect.top)
+    );
+    
+    hr = m_pRenderTarget->CreateBitmap(bitmapSize, bitmapProps, &pBitmap);
+    
+    if (SUCCEEDED(hr) && pBitmap) {
+        D2D1_POINT_2U destPoint = D2D1::Point2U(0, 0);
+        D2D1_RECT_U sourceRect = D2D1::RectU(
+            (UINT32)d2dRect.left, (UINT32)d2dRect.top,
+            (UINT32)d2dRect.right, (UINT32)d2dRect.bottom
+        );
+        
+        hr = pBitmap->CopyFromRenderTarget(&destPoint, m_pRenderTarget, &sourceRect);
+        
+        if (SUCCEEDED(hr)) {
+            // Use directional blur effect
+            ID2D1Effect* pDirectionalBlurEffect = nullptr;
+            hr = pDeviceContext->CreateEffect(CLSID_D2D1DirectionalBlur, &pDirectionalBlurEffect);
+            
+            if (SUCCEEDED(hr) && pDirectionalBlurEffect) {
+                pDirectionalBlurEffect->SetInput(0, pBitmap);
+                
+                // Calculate angle and amount from direction vector
+                float angle = atan2f((float)directionY, (float)directionX);
+                float amount = sqrtf((float)(directionX * directionX + directionY * directionY)) * intensity;
+                
+                pDirectionalBlurEffect->SetValue(D2D1_DIRECTIONALBLUR_PROP_STANDARD_DEVIATION, amount);
+                pDirectionalBlurEffect->SetValue(D2D1_DIRECTIONALBLUR_PROP_ANGLE, angle);
+                
+                // Draw the blurred result
+                pDeviceContext->DrawImage(pDirectionalBlurEffect, D2D1::Point2F(d2dRect.left, d2dRect.top));
+                
+                pDirectionalBlurEffect->Release();
+            }
+        }
+        
+        pBitmap->Release();
+    }
+    
+    pDeviceContext->Release();
+}
+
+void D2DRenderBackend::ApplyChromaticAberration(const RECT& rect, float strength, int offsetX, int offsetY) {
+    if (!m_pRenderTarget) return;
+    
+    // Try to get device context for effects
+    ID2D1DeviceContext* pDeviceContext = nullptr;
+    HRESULT hr = m_pRenderTarget->QueryInterface(&pDeviceContext);
+    
+    if (FAILED(hr) || !pDeviceContext) {
+        // Fallback to software implementation
+        HDC hdc = GetGDIFallbackDC();
+        if (hdc) {
+            // Note: Software chromatic aberration is complex, skipping fallback
+            // Could implement using GDI+ or manual bitmap manipulation
+            ReleaseGDIFallbackDC(hdc);
+        }
+        return;
+    }
+    
+    // GPU-accelerated chromatic aberration using channel shifts
+    D2D1_RECT_F d2dRect = ToD2DRect(rect);
+    
+    ID2D1Bitmap* pBitmap = nullptr;
+    D2D1_BITMAP_PROPERTIES bitmapProps = D2D1::BitmapProperties(
+        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED)
+    );
+    
+    D2D1_SIZE_U bitmapSize = D2D1::SizeU(
+        (UINT32)(d2dRect.right - d2dRect.left),
+        (UINT32)(d2dRect.bottom - d2dRect.top)
+    );
+    
+    hr = m_pRenderTarget->CreateBitmap(bitmapSize, bitmapProps, &pBitmap);
+    
+    if (SUCCEEDED(hr) && pBitmap) {
+        D2D1_POINT_2U destPoint = D2D1::Point2U(0, 0);
+        D2D1_RECT_U sourceRect = D2D1::RectU(
+            (UINT32)d2dRect.left, (UINT32)d2dRect.top,
+            (UINT32)d2dRect.right, (UINT32)d2dRect.bottom
+        );
+        
+        hr = pBitmap->CopyFromRenderTarget(&destPoint, m_pRenderTarget, &sourceRect);
+        
+        if (SUCCEEDED(hr)) {
+            // Create three shifted versions for R, G, B channels
+            float scaledOffsetX = offsetX * strength;
+            float scaledOffsetY = offsetY * strength;
+            
+            // Red channel - shift right
+            ID2D1Effect* pRedEffect = nullptr;
+            hr = pDeviceContext->CreateEffect(CLSID_D2D1ColorMatrix, &pRedEffect);
+            
+            if (SUCCEEDED(hr) && pRedEffect) {
+                pRedEffect->SetInput(0, pBitmap);
+                
+                // Extract only red channel
+                D2D1_MATRIX_5X4_F redMatrix = D2D1::Matrix5x4F(
+                    1, 0, 0, 0,  // Keep red
+                    0, 0, 0, 0,  // Remove green
+                    0, 0, 0, 0,  // Remove blue
+                    0, 0, 0, 1,  // Keep alpha
+                    0, 0, 0, 0
+                );
+                pRedEffect->SetValue(D2D1_COLORMATRIX_PROP_COLOR_MATRIX, redMatrix);
+                
+                // Draw red channel shifted
+                pDeviceContext->DrawImage(pRedEffect, 
+                    D2D1::Point2F(d2dRect.left + scaledOffsetX, d2dRect.top + scaledOffsetY));
+                
+                pRedEffect->Release();
+            }
+            
+            // Blue channel - shift left
+            ID2D1Effect* pBlueEffect = nullptr;
+            hr = pDeviceContext->CreateEffect(CLSID_D2D1ColorMatrix, &pBlueEffect);
+            
+            if (SUCCEEDED(hr) && pBlueEffect) {
+                pBlueEffect->SetInput(0, pBitmap);
+                
+                // Extract only blue channel
+                D2D1_MATRIX_5X4_F blueMatrix = D2D1::Matrix5x4F(
+                    0, 0, 0, 0,  // Remove red
+                    0, 0, 0, 0,  // Remove green
+                    0, 0, 1, 0,  // Keep blue
+                    0, 0, 0, 1,  // Keep alpha
+                    0, 0, 0, 0
+                );
+                pBlueEffect->SetValue(D2D1_COLORMATRIX_PROP_COLOR_MATRIX, blueMatrix);
+                
+                // Draw blue channel shifted opposite direction
+                pDeviceContext->DrawImage(pBlueEffect, 
+                    D2D1::Point2F(d2dRect.left - scaledOffsetX, d2dRect.top - scaledOffsetY));
+                
+                pBlueEffect->Release();
+            }
+            
+            // Green channel - no shift (center)
+            ID2D1Effect* pGreenEffect = nullptr;
+            hr = pDeviceContext->CreateEffect(CLSID_D2D1ColorMatrix, &pGreenEffect);
+            
+            if (SUCCEEDED(hr) && pGreenEffect) {
+                pGreenEffect->SetInput(0, pBitmap);
+                
+                // Extract only green channel
+                D2D1_MATRIX_5X4_F greenMatrix = D2D1::Matrix5x4F(
+                    0, 0, 0, 0,  // Remove red
+                    0, 1, 0, 0,  // Keep green
+                    0, 0, 0, 0,  // Remove blue
+                    0, 0, 0, 1,  // Keep alpha
+                    0, 0, 0, 0
+                );
+                pGreenEffect->SetValue(D2D1_COLORMATRIX_PROP_COLOR_MATRIX, greenMatrix);
+                
+                // Draw green channel at original position
+                pDeviceContext->DrawImage(pGreenEffect, D2D1::Point2F(d2dRect.left, d2dRect.top));
+                
+                pGreenEffect->Release();
             }
         }
         

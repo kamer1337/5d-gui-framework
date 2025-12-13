@@ -39,6 +39,9 @@ public:
     bool SupportsGPUEffects() const override { return false; }
     void ApplyBlur(const RECT& rect, int blurRadius) override;
     void ApplyBloom(const RECT& rect, float threshold, float intensity) override;
+    void ApplyDepthOfField(const RECT& rect, int focalDepth, int blurAmount, float focalRange) override;
+    void ApplyMotionBlur(const RECT& rect, int directionX, int directionY, float intensity) override;
+    void ApplyChromaticAberration(const RECT& rect, float strength, int offsetX, int offsetY) override;
     
     BackendType GetType() const override { return BackendType::GDI; }
     bool IsHardwareAccelerated() const override { return false; }
