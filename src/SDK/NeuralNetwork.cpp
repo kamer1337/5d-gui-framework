@@ -1022,11 +1022,16 @@ NeuralNetwork::LayoutType NeuralNetwork::DetermineLayout(const std::wstring& pro
         // Check for number indicators suggesting grid
         auto tokens = Tokenize(prompt);
         for (const auto& token : tokens) {
-            if (std::all_of(token.begin(), token.end(), ::iswdigit)) {
-                int count = std::stoi(token);
-                // If count is 6, 9, 12, or other square-ish numbers, suggest grid
-                if (count >= 6 && (count % 3 == 0 || count % 4 == 0)) {
-                    return LayoutType::GRID;
+            if (!token.empty() && std::all_of(token.begin(), token.end(), ::iswdigit)) {
+                try {
+                    int count = std::stoi(token);
+                    // If count is 6, 9, 12, or other square-ish numbers, suggest grid
+                    if (count >= 6 && (count % 3 == 0 || count % 4 == 0)) {
+                        return LayoutType::GRID;
+                    }
+                } catch (const std::exception&) {
+                    // If conversion fails, skip this token
+                    continue;
                 }
             }
         }
