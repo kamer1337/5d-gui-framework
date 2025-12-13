@@ -1,7 +1,6 @@
 #include "SDK/SDK.h"
 #include "SDK/Window.h"
 #include "SDK/Widget.h"
-#include "SDK/AdvancedWidgets.h"
 #include "SDK/Layout.h"
 #include <memory>
 #include <vector>

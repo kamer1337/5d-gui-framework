@@ -82,9 +82,14 @@ void FlowLayout::Apply(const RECT& bounds, std::vector<std::shared_ptr<Widget>>&
             int widgetWidth, widgetHeight;
             widget->GetSize(widgetWidth, widgetHeight);
             
-            // Check if we need to wrap
-            if (m_wrap && currentX + widgetWidth > bounds.right - m_paddingRight && 
-                currentX != bounds.left + m_paddingLeft) {
+            // Check if we need to wrap (would widget extend beyond boundary?)
+            bool needsWrap = m_wrap && 
+                (m_direction == Direction::LEFT_TO_RIGHT ? 
+                 (currentX + widgetWidth > bounds.right - m_paddingRight) :
+                 (currentX - widgetWidth < bounds.left + m_paddingLeft));
+            
+            if (needsWrap && currentX != (m_direction == Direction::LEFT_TO_RIGHT ? 
+                                          bounds.left + m_paddingLeft : bounds.right - m_paddingRight)) {
                 // Move to next row
                 currentY += rowHeight + m_spacing;
                 currentX = (m_direction == Direction::LEFT_TO_RIGHT) ? 
@@ -112,9 +117,14 @@ void FlowLayout::Apply(const RECT& bounds, std::vector<std::shared_ptr<Widget>>&
             int widgetWidth, widgetHeight;
             widget->GetSize(widgetWidth, widgetHeight);
             
-            // Check if we need to wrap
-            if (m_wrap && currentY + widgetHeight > bounds.bottom - m_paddingBottom && 
-                currentY != bounds.top + m_paddingTop) {
+            // Check if we need to wrap (would widget extend beyond boundary?)
+            bool needsWrap = m_wrap &&
+                (m_direction == Direction::TOP_TO_BOTTOM ?
+                 (currentY + widgetHeight > bounds.bottom - m_paddingBottom) :
+                 (currentY - widgetHeight < bounds.top + m_paddingTop));
+            
+            if (needsWrap && currentY != (m_direction == Direction::TOP_TO_BOTTOM ?
+                                          bounds.top + m_paddingTop : bounds.bottom - m_paddingBottom)) {
                 // Move to next column
                 currentX += colWidth + m_spacing;
                 currentY = (m_direction == Direction::TOP_TO_BOTTOM) ? 
@@ -185,7 +195,9 @@ void StackLayout::Apply(const RECT& bounds, std::vector<std::shared_ptr<Widget>>
                         bounds.top + m_paddingTop : bounds.left + m_paddingLeft;
             int widgetCount = static_cast<int>(widgets.size());
             if (widgetCount > 1) {
-                totalSpacing = extraSpace;
+                totalSpacing = extraSpace / (widgetCount - 1);
+            } else {
+                totalSpacing = 0;  // Only one widget, no spacing needed
             }
             break;
         }
@@ -254,7 +266,7 @@ void StackLayout::Apply(const RECT& bounds, std::vector<std::shared_ptr<Widget>>
 // ============================================================================
 
 LayoutConstraintSolver::LayoutConstraintSolver()
-    : m_converged(false), m_iterations(0) {
+    : m_converged(false), m_iterations(0), m_dampingFactor(0.5f) {
 }
 
 LayoutConstraintSolver::~LayoutConstraintSolver() {
@@ -395,9 +407,8 @@ bool LayoutConstraintSolver::Solve(const RECT& bounds,
                 
                 int targetValue = value2 + constraint.GetConstant();
                 
-                // Apply correction (damped to improve convergence)
-                float damping = 0.5f;
-                int correction = static_cast<int>((targetValue - value1) * damping);
+                // Apply correction with configurable damping to improve convergence
+                int correction = static_cast<int>((targetValue - value1) * m_dampingFactor);
                 
                 if (constraint.GetType() == LayoutConstraint::Type::EQUAL) {
                     int newValue = value1 + correction;

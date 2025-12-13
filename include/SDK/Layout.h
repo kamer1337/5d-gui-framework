@@ -230,10 +230,15 @@ public:
     bool DidConverge() const { return m_converged; }
     int GetIterationCount() const { return m_iterations; }
     
+    // Configure solver behavior
+    void SetDampingFactor(float damping) { m_dampingFactor = damping; }
+    float GetDampingFactor() const { return m_dampingFactor; }
+    
 private:
     std::vector<LayoutConstraint> m_constraints;
     bool m_converged;
     int m_iterations;
+    float m_dampingFactor;  // Damping factor for convergence (0.0 to 1.0)
     
     // Helper methods
     int GetAttributeValue(std::shared_ptr<Widget> widget, LayoutConstraint::Attribute attr) const;
