@@ -349,6 +349,9 @@ HWND PromptWindowBuilder::CreateWidgetsWindow(const WindowConfig& config, HINSTA
     // Register window with SDK
     auto window = WindowManager::GetInstance().RegisterWindow(hwnd);
     if (window) {
+        // Batch all updates to avoid excessive redraws
+        window->BeginUpdate();
+        
         // Apply theme (use provided or default to ModernTheme)
         auto theme = config.theme ? config.theme : std::make_shared<Theme>(Theme::CreateModernTheme());
         window->SetTheme(theme);
@@ -366,8 +369,10 @@ HWND PromptWindowBuilder::CreateWidgetsWindow(const WindowConfig& config, HINSTA
             window->SetRenderCallback(config.renderCallback);
         }
         
-        // Update appearance
-        window->UpdateAppearance();
+        // End batched updates - this will trigger a single redraw
+        window->EndUpdate();
+        
+        // Note: UpdateAppearance() is now called only once by EndUpdate()
     }
     
     return hwnd;

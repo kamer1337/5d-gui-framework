@@ -24,6 +24,8 @@ Window::Window(HWND hwnd)
     , m_theme(nullptr)
     , m_renderCallback(nullptr)
     , m_currentMonitor(nullptr)
+    , m_deferUpdates(false)
+    , m_needsUpdate(false)
 {
     // Initialize DPI info
     m_currentDPI = DPIManager::GetInstance().GetDPIForWindow(hwnd);
@@ -86,9 +88,30 @@ void Window::SetShadowIntensity(float intensity) {
 void Window::UpdateAppearance() {
     if (!IsValid()) return;
     
-    // Force window redraw
-    InvalidateRect(m_hwnd, nullptr, TRUE);
-    UpdateWindow(m_hwnd);
+    // If updates are deferred, just mark as needing update
+    if (m_deferUpdates) {
+        m_needsUpdate = true;
+        return;
+    }
+    
+    // Use FALSE to avoid erasing background, which causes flickering
+    // The WM_PAINT handler should clear the background as needed
+    InvalidateRect(m_hwnd, nullptr, FALSE);
+    // Remove UpdateWindow() call to avoid immediate synchronous redraw
+    // Let the normal message loop handle repaints
+}
+
+void Window::BeginUpdate() {
+    m_deferUpdates = true;
+    m_needsUpdate = false;
+}
+
+void Window::EndUpdate() {
+    m_deferUpdates = false;
+    if (m_needsUpdate) {
+        m_needsUpdate = false;
+        UpdateAppearance();
+    }
 }
 
 void Window::EnableLayeredMode() {
@@ -112,7 +135,10 @@ void Window::Render(HDC hdc) {
     RECT rect;
     GetClientRect(m_hwnd, &rect);
     
-    // Render shadow if enabled
+    // Determine background color
+    Color bgColor = m_theme ? m_theme->GetBackgroundColor() : Color(255, 255, 255, 255);
+    
+    // Render shadow if enabled (before background to avoid overlap)
     if (m_shadowEnabled && m_theme) {
         int shadowOffsetX, shadowOffsetY;
         m_theme->GetShadowOffset(shadowOffsetX, shadowOffsetY);
@@ -136,17 +162,18 @@ void Window::Render(HDC hdc) {
         Renderer::DrawShadow(hdc, rect, shadowOffsetX, shadowOffsetY, shadowBlur, shadowColor);
     }
     
-    // Render window background
+    // Render themed background (handles clearing and decorations)
     if (m_theme) {
-        Color bgColor = m_theme->GetBackgroundColor();
         if (m_roundedCorners) {
+            // DrawRoundedRect will fill the background
             Color borderColor = m_theme->GetBorderColor();
             int borderWidth = m_theme->GetBorderWidth();
             Renderer::DrawRoundedRect(hdc, rect, m_cornerRadius, bgColor, borderColor, borderWidth);
         } else {
-            HBRUSH brush = CreateSolidBrush(bgColor.ToCOLORREF());
-            FillRect(hdc, &rect, brush);
-            DeleteObject(brush);
+            // Clear background with solid color
+            HBRUSH bgBrush = CreateSolidBrush(bgColor.ToCOLORREF());
+            FillRect(hdc, &rect, bgBrush);
+            DeleteObject(bgBrush);
         }
         
         // Render title bar with gradient
@@ -154,6 +181,10 @@ void Window::Render(HDC hdc) {
         titleRect.bottom = titleRect.top + m_theme->GetTitleBarHeight();
         Gradient titleGradient = m_theme->GetTitleBarGradient();
         Renderer::DrawGradient(hdc, titleRect, titleGradient);
+    } else {
+        // No theme - just clear with white background
+        // Use stock brush for better performance
+        FillRect(hdc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
     }
     
     // Custom rendering callback
@@ -168,6 +199,9 @@ void Window::Render(HDC hdc) {
 }
 
 void Window::ApplyDepthSettings() {
+    // Batch all updates to avoid multiple redraws
+    BeginUpdate();
+    
     // Apply depth-based defaults
     switch (m_depth) {
         case WindowDepth::FAR_BACKGROUND:
@@ -205,6 +239,8 @@ void Window::ApplyDepthSettings() {
             SetShadowIntensity(1.0f);
             break;
     }
+    
+    EndUpdate();
 }
 
 void Window::UpdateLayeredWindow() {

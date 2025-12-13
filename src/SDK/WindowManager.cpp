@@ -47,6 +47,9 @@ std::shared_ptr<Window> WindowManager::RegisterWindow(HWND hwnd) {
     // Create new window
     auto window = std::make_shared<Window>(hwnd);
     
+    // Batch initialization to avoid multiple redraws
+    window->BeginUpdate();
+    
     // Apply default theme
     if (m_defaultTheme) {
         window->SetTheme(m_defaultTheme);
@@ -54,6 +57,9 @@ std::shared_ptr<Window> WindowManager::RegisterWindow(HWND hwnd) {
     
     // Enable layered mode for alpha support
     window->EnableLayeredMode();
+    
+    // End batched updates
+    window->EndUpdate();
     
     // Register
     m_windows[hwnd] = window;
