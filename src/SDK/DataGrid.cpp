@@ -773,7 +773,8 @@ bool DataGrid::HandleKeyDown(int keyCode) {
 
 bool DataGrid::HandleChar(wchar_t ch) {
     if (IsEditing()) {
-        if (ch >= 32 && ch < 127) { // Printable characters
+        // Allow printable characters (including Unicode)
+        if (ch >= 32) {  // Accept all printable characters including Unicode
             m_editBuffer += ch;
             return true;
         }

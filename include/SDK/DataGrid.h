@@ -229,8 +229,8 @@ private:
     void UpdateScrollbar();
     void CalculateVisibleRows();
     
-    std::vector<Row>& GetDisplayRows() { return m_filterText.empty() ? m_rows : m_filteredRows; }
-    const std::vector<Row>& GetDisplayRows() const { return m_filterText.empty() ? m_rows : m_filteredRows; }
+    std::vector<Row>& GetDisplayRows() { return (!m_filterText.empty() || !m_columnFilters.empty()) ? m_filteredRows : m_rows; }
+    const std::vector<Row>& GetDisplayRows() const { return (!m_filterText.empty() || !m_columnFilters.empty()) ? m_filteredRows : m_rows; }
 };
 
 } // namespace SDK

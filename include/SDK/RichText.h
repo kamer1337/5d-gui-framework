@@ -114,6 +114,9 @@ public:
     }
     
     // Formatting operations
+    // NOTE: These are simplified implementations that apply formatting to all spans.
+    // A full implementation would need to track character positions within spans
+    // and split/merge spans to apply formatting only to the selected range.
     void SetSelectionBold(bool bold);
     void SetSelectionItalic(bool italic);
     void SetSelectionUnderline(bool underline);
