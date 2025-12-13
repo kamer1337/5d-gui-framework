@@ -105,7 +105,7 @@ public:
     void ClearFilter();
     
     std::wstring GetFilter() const { return m_filterText; }
-    bool IsFiltered() const { return !m_filterText.empty(); }
+    bool IsFiltered() const { return !m_filterText.empty() || !m_columnFilters.empty(); }
     
     // Selection
     void SetSelectionMode(SelectionMode mode) { m_selectionMode = mode; }

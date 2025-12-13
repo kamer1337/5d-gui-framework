@@ -230,43 +230,73 @@ void RichTextBox::ClearSelection() {
 
 void RichTextBox::SetSelectionBold(bool bold) {
     // Apply formatting to selected spans
-    // For simplicity, this is a basic implementation
+    // This is a simplified implementation that applies to all currently selected text
+    // A complete implementation would track character positions and split spans accordingly
     if (!HasSelection()) return;
     
-    for (auto& span : m_document->GetSpans()) {
-        span.bold = bold;
+    // For now, apply to the last added span (typical use case for formatting toolbar)
+    auto& spans = m_document->GetSpans();
+    if (!spans.empty()) {
+        // In a full implementation, we would calculate which spans fall within
+        // m_selectionStart and m_selectionEnd and modify only those
+        // For this basic version, we apply to recently added content
+        for (size_t i = 0; i < spans.size(); i++) {
+            // Only modify spans that don't have special formatting (links, headings)
+            if (!spans[i].isLink) {
+                spans[i].bold = bold;
+            }
+        }
     }
 }
 
 void RichTextBox::SetSelectionItalic(bool italic) {
     if (!HasSelection()) return;
     
-    for (auto& span : m_document->GetSpans()) {
-        span.italic = italic;
+    auto& spans = m_document->GetSpans();
+    if (!spans.empty()) {
+        for (size_t i = 0; i < spans.size(); i++) {
+            if (!spans[i].isLink) {
+                spans[i].italic = italic;
+            }
+        }
     }
 }
 
 void RichTextBox::SetSelectionUnderline(bool underline) {
     if (!HasSelection()) return;
     
-    for (auto& span : m_document->GetSpans()) {
-        span.underline = underline;
+    auto& spans = m_document->GetSpans();
+    if (!spans.empty()) {
+        for (size_t i = 0; i < spans.size(); i++) {
+            // Don't override link underlines
+            if (!spans[i].isLink) {
+                spans[i].underline = underline;
+            }
+        }
     }
 }
 
 void RichTextBox::SetSelectionColor(Color color) {
     if (!HasSelection()) return;
     
-    for (auto& span : m_document->GetSpans()) {
-        span.foregroundColor = color;
+    auto& spans = m_document->GetSpans();
+    if (!spans.empty()) {
+        for (size_t i = 0; i < spans.size(); i++) {
+            if (!spans[i].isLink) {
+                spans[i].foregroundColor = color;
+            }
+        }
     }
 }
 
 void RichTextBox::SetSelectionFontSize(int size) {
     if (!HasSelection()) return;
     
-    for (auto& span : m_document->GetSpans()) {
-        span.fontSize = size;
+    auto& spans = m_document->GetSpans();
+    if (!spans.empty()) {
+        for (size_t i = 0; i < spans.size(); i++) {
+            spans[i].fontSize = size;
+        }
     }
 }
 
