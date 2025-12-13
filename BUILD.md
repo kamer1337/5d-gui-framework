@@ -177,10 +177,12 @@ build/
 ```
 build/
 ├── lib5DGUI_SDK.a               # SDK static library
+├── 5DGUI_Demo_Linux             # X11 rendering demo
+├── 5DGUI_WidgetDemo_Linux       # Widget system demo
 └── *.o                          # Object files
 ```
 
-**Note**: Demo applications are currently Windows-only. Linux support for demos is planned for future releases.
+**Note**: Demo applications use X11 for window management and rendering.
 
 ## Configuration Options
 
@@ -394,6 +396,8 @@ For faster builds:
 
 After building:
 1. Run the demos:
+   
+   **Windows:**
    - `build/bin/5DGUI_Demo.exe` - Main 5D rendering demo
    - `build/bin/5DGUI_WidgetDemo.exe` - Widget system demo
    - `build/bin/Widget_Showcase.exe` - Complete widget showcase
@@ -402,9 +406,15 @@ After building:
    - `build/bin/Toolbar_Demo.exe` - Toolbar widget demo
    - `build/bin/Advanced_Window_Demo.exe` - Advanced window features demo
    - `build/bin/ML_Optimizer_Demo.exe` - Machine learning renderer optimization demo
+   
+   **Linux:**
+   - `build/5DGUI_Demo_Linux` - X11 rendering demo
+   - `build/5DGUI_WidgetDemo_Linux` - Widget system demo
+
 2. Read the [API Documentation](API.md)
 3. See [Examples](examples/) for usage patterns
 4. Read [ARCHITECTURE.md](ARCHITECTURE.md) for internals
+5. For Linux-specific information, see [LINUX_SUPPORT.md](LINUX_SUPPORT.md)
 
 ## Support
 

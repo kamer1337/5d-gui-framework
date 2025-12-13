@@ -4,13 +4,14 @@ This document provides information about Linux support in the 5D GUI SDK.
 
 ## Current Status
 
-The 5D GUI SDK now includes **foundation-level Linux support** as of version 1.2.1. This means:
+The 5D GUI SDK now includes **X11 backend support** as of version 1.3.0. This means:
 
 - ✅ **SDK compiles on Linux** - The core SDK library builds successfully
 - ✅ **Neural network fully functional** - All AI-powered GUI creation features work
 - ✅ **Cross-platform code** - Platform abstraction layer implemented
-- ⚠️ **Basic window support** - Window system integration is in foundation stage
-- ❌ **Demo applications** - Windows-only for now
+- ✅ **X11 window support** - Full X11 window creation and event handling
+- ✅ **X11 rendering backend** - Complete rendering implementation with Xlib
+- ✅ **Demo applications** - Linux demos available (demo_linux, widget_demo_linux)
 
 ## Features Available on Linux
 
@@ -33,18 +34,37 @@ The 5D GUI SDK now includes **foundation-level Linux support** as of version 1.2
   - Color schemes
   - Gradient definitions
 
+### Fully Functional on Linux
+- **X11 Window Management**: Complete window system
+  - X11 window creation and destruction
+  - Window positioning and sizing
+  - Window show/hide operations
+  - Event loop and message processing
+
+- **X11 Rendering Backend**: Full rendering capabilities
+  - Basic shapes (rectangles, lines, ellipses)
+  - Rounded rectangles with anti-aliasing
+  - Linear gradients
+  - Text rendering with fonts
+  - Color management with alpha blending
+  - Double-buffered rendering for smooth updates
+
+- **Event Handling**: Complete event system
+  - Mouse movement tracking
+  - Mouse button events
+  - Keyboard input
+  - Window close events
+  - Expose/repaint events
+
 ### Partially Implemented
-- **Window Management**: Basic window type definitions
-  - Window handle abstraction (HWND type alias)
-  - Window depth enumeration
-  - Window properties
+- **Advanced Effects**: Limited on X11
+  - Basic shadows (simplified)
+  - Gradients (linear only, radial simplified)
+  - No GPU-accelerated effects (blur, bloom, etc.)
 
 ### Not Yet Available
-- **Window Rendering**: Platform-specific rendering code needed
-  - X11 window creation
-  - Drawing and painting
-  - Event handling
-  - Visual effects
+- **Layered Windows**: X11 doesn't support Windows-style layered windows
+  - Compositing requires different approach
 
 - **Window Hooking**: Linux doesn't support inline hooking like Windows
   - Alternative approaches needed (LD_PRELOAD, etc.)
@@ -94,11 +114,121 @@ make -j$(nproc)
 After successful build:
 ```
 build/
-├── lib5DGUI_SDK.a      # Static library
-└── CMakeFiles/         # Build artifacts
+├── lib5DGUI_SDK.a           # Static library
+├── 5DGUI_Demo_Linux         # Basic rendering demo
+├── 5DGUI_WidgetDemo_Linux   # Widget system demo
+└── CMakeFiles/              # Build artifacts
 ```
 
+## Running Demo Applications
+
+### Linux X11 Demos
+
+The SDK includes two demo applications for Linux:
+
+**Basic Rendering Demo:**
+```bash
+cd build
+./5DGUI_Demo_Linux
+```
+
+This demo showcases:
+- X11 window creation
+- Basic shape rendering (rectangles, rounded rectangles, ellipses, lines)
+- Linear gradients
+- Text rendering
+- Event handling
+
+**Widget System Demo:**
+```bash
+cd build
+./5DGUI_WidgetDemo_Linux
+```
+
+This demo showcases:
+- Progress bars with gradient fills
+- Interactive buttons
+- Checkboxes with state management
+- Slider controls
+- Click event handling
+- Real-time animation
+
+### Screenshots
+
+**Basic Demo:**
+![Linux Demo](https://github.com/user-attachments/assets/7bba6e76-b78f-4fe5-9dfa-52b386b1a74a)
+
+**Widget Demo:**
+![Widget Demo](https://github.com/user-attachments/assets/249aec5a-ee83-464e-9d4e-b4f6e7ff85d2)
+
 ## Using the SDK on Linux
+
+### X11 Window Creation (Fully Functional)
+
+```cpp
+#include "SDK/WindowX11.h"
+#include "SDK/X11WindowManager.h"
+
+int main() {
+    // Create window
+    auto window = SDK::X11WindowManager::GetInstance().CreateWindow(
+        L"My Window",
+        100, 100,  // Position
+        800, 600   // Size
+    );
+    
+    if (!window) {
+        return 1;
+    }
+    
+    // Set up callbacks
+    window->SetPaintCallback([]() {
+        // Paint window content
+    });
+    
+    window->SetCloseCallback([]() {
+        SDK::X11WindowManager::GetInstance().Quit();
+    });
+    
+    // Show window
+    window->Show();
+    
+    // Run event loop
+    SDK::X11WindowManager::GetInstance().RunEventLoop();
+    
+    return 0;
+}
+```
+
+### X11 Rendering (Fully Functional)
+
+```cpp
+#include "SDK/WindowX11.h"
+#include "SDK/X11RenderBackend.h"
+
+void OnPaint() {
+    auto renderBackend = window->GetRenderBackend();
+    
+    window->BeginPaint();
+    
+    // Clear background
+    renderBackend->Clear(SDK::Color(240, 240, 245, 255));
+    
+    // Draw rectangle
+    RECT rect = {50, 50, 200, 150};
+    renderBackend->DrawRectangle(rect,
+        SDK::Color(100, 149, 237, 255),  // Fill
+        SDK::Color(65, 105, 225, 255),   // Border
+        2.0f);
+    
+    // Draw text
+    RECT textRect = {50, 160, 200, 180};
+    renderBackend->DrawText(L"Hello X11!", textRect,
+        SDK::Color(50, 50, 50, 255), L"", 14, 400);
+    
+    window->EndPaint();
+}
+```
 
 ### Neural Network Features (Fully Functional)
 
@@ -164,11 +294,16 @@ g++ -std=c++17 your_app.cpp -I/path/to/5d-gui-framework/include \
 | Neural Network | ✅ Full | ✅ Full |
 | Widget Definitions | ✅ Full | ✅ Full |
 | Theme System | ✅ Full | ✅ Full |
-| Window Creation | ✅ Full | ⚠️ Basic |
-| Window Rendering | ✅ Full | ❌ Planned |
+| Window Creation | ✅ Full | ✅ Full (X11) |
+| Window Rendering | ✅ Full | ✅ Full (X11) |
+| Basic Shapes | ✅ Full | ✅ Full |
+| Gradients | ✅ Full | ✅ Linear, ⚠️ Radial (simplified) |
+| Text Rendering | ✅ Full | ✅ Full |
+| Event Handling | ✅ Full | ✅ Full |
 | Layered Windows | ✅ Full | ❌ Different approach needed |
+| GPU Effects | ✅ Direct2D | ❌ Not available |
 | Window Hooking | ✅ Full | ❌ Not applicable |
-| Demo Applications | ✅ Full | ❌ Planned |
+| Demo Applications | ✅ Full | ✅ Available (2 demos) |
 
 ### Type Compatibility
 
@@ -192,24 +327,106 @@ The Platform.h header provides type aliases for cross-platform compatibility:
 - [x] Neural network cross-platform support
 - [x] Documentation
 
-### Phase 2: X11 Integration (Planned)
-- [ ] X11 window creation
-- [ ] Basic rendering with Xlib
-- [ ] Event handling (mouse, keyboard)
-- [ ] Window management (move, resize, close)
+### Phase 2: X11 Integration (✅ Complete)
+- [x] X11 window creation
+- [x] Basic rendering with Xlib
+- [x] Event handling (mouse, keyboard)
+- [x] Window management (move, resize, close)
+- [x] X11RenderBackend implementation
+- [x] WindowX11 window wrapper
+- [x] X11WindowManager for event loop
 
-### Phase 3: Advanced Features (Future)
-- [ ] Compositing and effects
+### Phase 3: Demo Applications (✅ Complete)
+- [x] Demo applications for Linux
+- [x] demo_linux.cpp - Basic rendering showcase
+- [x] widget_demo_linux.cpp - Interactive widgets
+- [x] Cross-platform build system
+
+### Phase 4: Advanced Features (Future)
+- [ ] Compositing and effects with X Composite extension
 - [ ] Wayland support
 - [ ] GTK integration (optional)
 - [ ] Hardware acceleration with OpenGL
-- [ ] Demo applications for Linux
+- [ ] GPU-accelerated effects
 
-### Phase 4: Feature Parity (Long-term)
+### Phase 5: Feature Parity (Long-term)
 - [ ] All Windows features on Linux
 - [ ] Performance optimization
 - [ ] Comprehensive testing
 - [ ] Full documentation
+
+## X11 Backend Implementation
+
+### Architecture
+
+The Linux X11 backend consists of three main components:
+
+**1. X11RenderBackend** (`include/SDK/X11RenderBackend.h`, `src/SDK/X11RenderBackend.cpp`)
+- Implements the `RenderBackend` interface using Xlib
+- Provides drawing primitives (rectangles, lines, ellipses, text)
+- Supports gradients and basic effects
+- Uses double-buffering for smooth rendering
+- Manages font cache for text rendering
+
+**2. WindowX11** (`include/SDK/WindowX11.h`, `src/SDK/WindowX11.cpp`)
+- Wraps X11 window creation and management
+- Handles window properties (title, position, size)
+- Manages event processing for individual windows
+- Provides callback system for events (paint, close, mouse, keyboard)
+
+**3. X11WindowManager** (`include/SDK/WindowX11.h`, `src/SDK/WindowX11.cpp`)
+- Manages multiple X11 windows
+- Provides event loop implementation
+- Handles window lifecycle
+- Singleton pattern for easy access
+
+### Key Features
+
+**Double Buffering:**
+All rendering is performed on an off-screen pixmap (back buffer) and then copied to the window, eliminating flicker.
+
+**Event System:**
+Complete event handling with callbacks:
+- Paint events for rendering
+- Mouse events (move, button press/release)
+- Keyboard events (key press/release)
+- Window close events
+
+**Color Management:**
+RGB color support with alpha blending. Alpha values are pre-blended with a white background due to X11 limitations.
+
+**Font Rendering:**
+Dynamic font loading with caching. Falls back to "fixed" font if specific fonts are unavailable.
+
+### Rendering Capabilities
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Rectangles | ✅ Full | With border and fill colors |
+| Rounded Rectangles | ✅ Full | Using X11 arcs for corners |
+| Lines | ✅ Full | With thickness control |
+| Ellipses/Circles | ✅ Full | With border and fill colors |
+| Text | ✅ Full | UTF-8 support, font caching |
+| Linear Gradients | ✅ Full | Horizontal and vertical |
+| Radial Gradients | ⚠️ Simplified | Solid color fallback |
+| Shadows | ⚠️ Basic | Offset rectangles |
+| Blur/Bloom/DOF | ❌ Not available | Requires GPU or complex CPU work |
+
+### Platform Differences
+
+**Type Compatibility:**
+The `Platform.h` header provides type aliases for cross-platform code:
+- `HWND` → `void*` (casts to X11 Window)
+- `HDC` → `void*` (casts to X11 Window for compatibility)
+- `RECT`, `POINT`, `COLORREF` → Native structs/types
+
+**Entry Point:**
+Linux demos use standard `main()` instead of Windows' `WinMain()`:
+```cpp
+int main() {
+    // Cross-platform code
+}
+```
 
 ## Technical Challenges
 
@@ -301,4 +518,4 @@ For Linux-specific questions:
 
 **Last Updated**: December 2025  
 **Next Review**: March 2026  
-**Target for X11 Integration**: Q2 2026
+**X11 Integration**: ✅ Complete (v1.3.0)
