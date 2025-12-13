@@ -2,11 +2,11 @@
 
 #if SDK_PLATFORM_LINUX && SDK_HAS_X11
 
+#include "SDK/StringUtils.h"
 #include <cmath>
 #include <cstring>
 #include <algorithm>
 #include <locale>
-#include <codecvt>
 
 namespace SDK {
 
@@ -284,8 +284,7 @@ void X11RenderBackend::DrawText(const std::wstring& text, const RECT& rect, Colo
     }
     
     // Convert wstring to UTF-8
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-    std::string utf8Text = converter.to_bytes(text);
+    std::string utf8Text = WStringToUTF8(text);
     
     // Draw text
     int x = rect.left + 5; // Small padding

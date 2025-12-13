@@ -3,8 +3,8 @@
 #if SDK_PLATFORM_LINUX && SDK_HAS_X11
 
 #include "SDK/X11RenderBackend.h"
+#include "SDK/StringUtils.h"
 #include <locale>
-#include <codecvt>
 #include <cstring>
 #include <algorithm>
 
@@ -131,8 +131,7 @@ void WindowX11::SetTitle(const std::wstring& title)
     }
     
     // Convert wstring to UTF-8
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-    std::string utf8Title = converter.to_bytes(title);
+    std::string utf8Title = WStringToUTF8(title);
     
     XStoreName(m_display, m_window, utf8Title.c_str());
     XFlush(m_display);

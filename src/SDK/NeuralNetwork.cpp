@@ -3,7 +3,6 @@
 #include <sstream>
 #include <cctype>
 #include <locale>
-#include <codecvt>
 
 namespace SDK {
 
