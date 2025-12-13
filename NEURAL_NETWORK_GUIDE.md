@@ -100,6 +100,12 @@ builder.BuildFromPrompt(L"Add a slider from 0 to 100", hInstance);
 builder.BuildFromPrompt(L"Add a combobox with items: Red, Green, Blue", hInstance);
 builder.BuildFromPrompt(L"Add a listbox with multiple items", hInstance);
 builder.BuildFromPrompt(L"Add a panel with title 'Settings'", hInstance);
+
+// Enhanced with colors and styles (v1.2.2!)
+builder.BuildFromPrompt(L"Add a large red button with bold text", hInstance);
+builder.BuildFromPrompt(L"Add a small light blue label at top", hInstance);
+builder.BuildFromPrompt(L"Add a disabled textbox with placeholder 'Enter name'", hInstance);
+builder.BuildFromPrompt(L"Add 3 buttons side by side", hInstance);
 ```
 
 ### Layout Control (NEW!)
@@ -153,8 +159,37 @@ builder.BuildFromPrompt(
 
 // Data entry form
 builder.BuildFromPrompt(
-    L"Create form 700x600 with label, textbox for name, combobox for category, "
-    L"slider for priority, checkbox for urgent, and two buttons",
+    L"Create form 700x600 with label 'Name', textbox for name, combobox for category, "
+    L"slider for priority, checkbox for urgent, and button 'Submit'",
+    hInstance
+);
+
+// Enhanced contextual forms (v1.2.2!)
+builder.BuildFromPrompt(
+    L"Create a login form",  // Automatically creates: window with username, password, and login button
+    hInstance
+);
+
+builder.BuildFromPrompt(
+    L"Create a signup page with email, password, and confirm password",
+    hInstance
+);
+
+builder.BuildFromPrompt(
+    L"Create settings dialog with dark theme dropdown and large save button",
+    hInstance
+);
+
+// Color and style-aware prompts (v1.2.2!)
+builder.BuildFromPrompt(
+    L"Create window 800x600 with red submit button, green cancel button, "
+    L"and blue reset button arranged horizontally",
+    hInstance
+);
+
+builder.BuildFromPrompt(
+    L"Create form with required textbox for email, optional textbox for phone, "
+    L"and bold submit button at bottom",
     hInstance
 );
 ```
@@ -417,17 +452,18 @@ The neural network uses a simple feedforward architecture:
 
 The network is pre-initialized with:
 
-- **Vocabulary**: 2100+ words related to GUI development (EXPANDED!)
+- **Vocabulary**: 2400+ words related to GUI development (EXPANDED from 2100+!)
 - **Embeddings**: Random initialization with uniform distribution
-- **Patterns**: Keyword-based intent recognition for 22 intents
-- **Entity Extractors**: Regex-based dimension, title, and type extraction
+- **Patterns**: Keyword-based intent recognition for 22 intents with 60+ synonyms
+- **Entity Extractors**: Enhanced regex and pattern-based dimension, title, type, color, and property extraction
 
 The hybrid approach combines:
 - **Neural network inference** for complex natural language understanding
-- **Pattern matching** for high-confidence simple cases
-- **Entity extraction** for structured information
-- **Layout detection** for spatial arrangement (NEW!)
-- **Multi-widget parsing** for complex prompts (NEW!)
+- **Pattern matching** for high-confidence simple cases with extensive synonym support
+- **Entity extraction** for structured information (dimensions, colors, styles, ranges)
+- **Layout detection** for spatial arrangement with contextual inference (NEW!)
+- **Multi-widget parsing** for complex prompts with pattern-aware creation (NEW!)
+- **Contextual understanding** for common UI patterns (login forms, settings dialogs)
 
 ### Performance
 
@@ -435,37 +471,53 @@ The hybrid approach combines:
 - **Single prompt parsing**: < 5ms
 - **Multi-widget parsing**: < 10ms (NEW!)
 - **Window creation**: Depends on window complexity
-- **Memory footprint**: ~1.2MB for network weights and expanded vocabulary (2100+ words)
+- **Memory footprint**: ~1.4MB for network weights and expanded vocabulary (2400+ words, up from 2100+)
 
 ### Limitations
 
-1. **Fixed vocabulary**: Unknown words are mapped to `<UNK>` token (2100+ words supported)
+1. **Fixed vocabulary**: Unknown words are mapped to `<UNK>` token (2400+ words supported, up from 2100+)
 2. **Simple architecture**: Not suitable for extremely complex semantic understanding
 3. **Limited context**: No conversation history or multi-turn dialogues
 4. **English only**: Currently trained on English GUI terminology
 5. **Layout constraints**: Complex nested layouts may require manual adjustment
 
-### Recent Enhancements (v1.2.1)
+### Recent Enhancements (v1.2.2)
 
-**Expanded Vocabulary**: Added 200+ new GUI-related terms including:
-- Advanced widget types (slider, combobox, listbox, toolbar, etc.)
-- Layout and positioning keywords (left, right, top, bottom, center, horizontal, vertical)
-- State and visibility terms (enabled, disabled, hidden, visible)
-- Common GUI actions (submit, cancel, apply, save, load, search)
-- Neural network-specific terms (neural, network, ai, intelligent, smart)
+**Significantly Expanded Vocabulary** (400+ terms, up from 200+):
+- Advanced widget types with multiple synonyms (slider/trackbar/range, combobox/dropdown/picker)
+- Comprehensive layout and positioning keywords (centered, anchor, dock, pin, absolute, relative)
+- Extended color vocabulary (all basic colors plus modifiers: dark, light, bright, pale)
+- Rich state and visibility terms (readonly, editable, valid, invalid, loading, active)
+- Expanded GUI action words (undo, redo, delete, remove, edit, modify, copy, paste)
+- UI pattern terms (navigation, header, footer, sidebar, modal, wizard, carousel)
+- Form-specific vocabulary (required, optional, mandatory, placeholder, validation)
+- Neural network and AI terms (neural, network, ai, intelligent, smart, suggest, recommend)
 
-**Improved Entity Extraction**:
-- Position detection (left, right, top, bottom, center)
-- Alignment recognition (horizontal, vertical)
-- State extraction (visible, hidden, enabled, disabled)
-- Action keywords (submit, cancel, apply, save, load)
-- Support for double quotes in addition to single quotes
-- Enhanced callback type detection (added onChange)
+**Enhanced Entity Extraction**:
+- **Color detection**: Recognizes all basic colors and modifiers (e.g., "dark blue", "light green")
+- **Size keywords**: small, medium, large, tiny, huge
+- **Font styles**: bold, italic, underline detection
+- **Item counting**: "3 buttons", "5 items" pattern recognition
+- **Range values**: "from 0 to 100" pattern extraction for sliders/spinboxes
+- **Form patterns**: Auto-detects login, signup, settings forms and applies appropriate defaults
+- **Validation modifiers**: required, optional, mandatory field detection
+- **Placeholder text**: Extracts placeholder values from prompts
+- **Double-click events**: Enhanced callback detection including double-click, keypress
+- **Contextual defaults**: Automatically infers window titles for common patterns (Login, Sign Up, Settings)
+
+**Improved Layout Intelligence**:
+- **Priority-based detection**: Explicit layout keywords take precedence over contextual hints
+- **Weighted indicators**: Counts positional words to determine likely layout direction
+- **Contextual inference**: Forms default to vertical, toolbars to horizontal
+- **Grid detection**: Smart detection for multiple items suggesting grid layout (6, 9, 12 items)
+- **Absolute positioning**: Support for fixed/absolute positioning keywords
+- **Pattern-aware layouts**: Login forms automatically use vertical layout
 
 **Better Pattern Matching**:
-- More synonym support for common widgets
-- Improved form/dialog detection
-- Enhanced field/input recognition
+- 60+ new widget synonyms (btn, entry, caption, heading, stepper, counter, etc.)
+- Improved form/dialog detection with automatic title generation
+- Enhanced field/input recognition with more variations
+- Context-aware widget creation based on detected patterns
 
 ## Best Practices
 
