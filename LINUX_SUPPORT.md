@@ -156,10 +156,12 @@ This demo showcases:
 ### Screenshots
 
 **Basic Demo:**
-![Linux Demo](https://github.com/user-attachments/assets/7bba6e76-b78f-4fe5-9dfa-52b386b1a74a)
+![Linux X11 Demo](https://github.com/user-attachments/assets/49167026-46e9-430e-b5eb-5478f5f24b58)
+*X11 backend demonstrating basic shape rendering, rounded corners, gradients, and text*
 
 **Widget Demo:**
-![Widget Demo](https://github.com/user-attachments/assets/249aec5a-ee83-464e-9d4e-b4f6e7ff85d2)
+![Linux Widget Demo](https://github.com/user-attachments/assets/a4e519d3-3445-45ad-a41d-989d5a45c5e7)
+*Interactive widget system with progress bars, buttons, checkboxes, and sliders*
 
 ## Using the SDK on Linux
 

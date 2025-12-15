@@ -482,18 +482,29 @@ MaterialGameEngine/
 - **Features**: All features fully supported including window hooking, layered windows, and advanced effects
 
 ### Linux
-- **Linux**: Basic support (Foundation)
-- **Display Servers**: X11 (primary), Wayland (experimental)
+- **Linux**: Full X11 backend support (v1.3.0+)
+- **Display Servers**: X11 (fully implemented), Wayland (planned)
 - **Architecture**: x86_64, ARM64
 - **Features**: 
   - ✅ Core SDK compilation
   - ✅ Neural network support (platform-independent)
   - ✅ Widget system (platform-independent)
-  - ⚠️ Window rendering (basic X11 implementation)
-  - ⚠️ Window hooking (not available on Linux)
-  - ⚠️ Demo applications (Windows only for now)
+  - ✅ X11 window creation and management
+  - ✅ X11 rendering backend (shapes, text, gradients)
+  - ✅ Event handling (mouse, keyboard, window events)
+  - ✅ Demo applications (2 Linux demos available)
+  - ❌ Window hooking (not available on Linux)
+  - ❌ Advanced effects (GPU-accelerated effects not yet available)
 
-**Note**: Linux support is currently in foundation stage. The SDK compiles and neural network features work cross-platform, but full GUI rendering requires platform-specific implementation.
+**Note**: Linux X11 backend is fully functional with window creation, rendering, and event handling. See [Linux Support Guide](LINUX_SUPPORT.md) for details.
+
+#### Linux Screenshots
+
+**Basic Rendering Demo:**
+![Linux X11 Demo](https://github.com/user-attachments/assets/49167026-46e9-430e-b5eb-5478f5f24b58)
+
+**Widget System Demo:**
+![Linux Widget Demo](https://github.com/user-attachments/assets/a4e519d3-3445-45ad-a41d-989d5a45c5e7)
 
 ## Dependencies
 
