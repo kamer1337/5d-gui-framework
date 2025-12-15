@@ -364,6 +364,7 @@ ShowWindow(hwnd, SW_SHOW);
 ### Core Documentation
 - **[Getting Started](USAGE.md)**: Practical examples and patterns
 - **[Build Guide](BUILD.md)**: Compilation instructions for all platforms
+- **[Demo Guide](DEMO_GUIDE.md)**: Complete guide to all 18 demo applications
 - **[API Reference](API.md)**: Complete API documentation with examples
 - **[Quick Reference](QUICKREF.md)**: Quick syntax reference and common patterns
 

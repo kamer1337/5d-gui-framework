@@ -199,6 +199,18 @@ if(PLATFORM_WINDOWS)
     # DPI and Multi-Monitor demo application (v2.0)
     add_executable(DPI_MultiMonitor_Demo examples/dpi_multimonitor_demo.cpp)
     target_link_libraries(DPI_MultiMonitor_Demo PRIVATE 5DGUI_SDK)
+    
+    # V1.3 Features Showcase demo application
+    add_executable(V13_Showcase_Demo examples/v13_showcase_demo.cpp)
+    target_link_libraries(V13_Showcase_Demo PRIVATE 5DGUI_SDK)
+    
+    # Widget Enhancements demo application
+    add_executable(Widget_Enhancements_Demo examples/widget_enhancements_demo.cpp)
+    target_link_libraries(Widget_Enhancements_Demo PRIVATE 5DGUI_SDK)
+    
+    # Advanced Neural Network demo application
+    add_executable(Neural_Network_Advanced_Demo examples/neural_network_advanced_demo.cpp)
+    target_link_libraries(Neural_Network_Advanced_Demo PRIVATE 5DGUI_SDK)
 elseif(PLATFORM_LINUX)
     # Linux demo applications
     add_executable(5DGUI_Demo_Linux examples/demo_linux.cpp)
@@ -257,6 +269,15 @@ if(PLATFORM_WINDOWS)
         set_target_properties(DPI_MultiMonitor_Demo PROPERTIES
             LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
         )
+        set_target_properties(V13_Showcase_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(Widget_Enhancements_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
+        set_target_properties(Neural_Network_Advanced_Demo PROPERTIES
+            LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:WinMainCRTStartup"
+        )
     else()
         set_target_properties(5DGUI_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
@@ -303,6 +324,15 @@ if(PLATFORM_WINDOWS)
         set_target_properties(DPI_MultiMonitor_Demo PROPERTIES
             LINK_FLAGS "-mwindows"
         )
+        set_target_properties(V13_Showcase_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(Widget_Enhancements_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
+        set_target_properties(Neural_Network_Advanced_Demo PROPERTIES
+            LINK_FLAGS "-mwindows"
+        )
     endif()
 endif()
 
@@ -319,7 +349,7 @@ install(DIRECTORY include/SDK
 )
 
 if(PLATFORM_WINDOWS)
-    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo RichText_DataGrid_Demo ML_Optimizer_Demo Layout_Engine_Demo DPI_MultiMonitor_Demo
+    install(TARGETS 5DGUI_Demo 5DGUI_WidgetDemo Widget_Showcase Camera_Demo Toolbar_Demo Advanced_Window_Demo Neural_Network_Demo Optimization_Demo New_Widgets_Demo Widget_Properties_Demo Hardware_Accel_Demo RichText_DataGrid_Demo ML_Optimizer_Demo Layout_Engine_Demo DPI_MultiMonitor_Demo V13_Showcase_Demo Widget_Enhancements_Demo Neural_Network_Advanced_Demo
         RUNTIME DESTINATION bin
     )
 elseif(PLATFORM_LINUX)
